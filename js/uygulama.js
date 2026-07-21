@@ -1,0 +1,2 @@
+let listem = yukle();
+listeyiCiz();

@@ -22,9 +22,12 @@ body {
 header h1 { font-size: 24px; margin: 0 0 4px; }
 header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 
+/* ---------- Arama kutusu ---------- */
+.arama-kutusu-sarmalayici { position: relative; }
+
 #arama {
   width: 100%;
-  padding: 14px 16px;
+  padding: 14px 44px 14px 16px;
   font-size: 16px;
   border: 1px solid #3a3448;
   border-radius: 12px;
@@ -34,6 +37,25 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 }
 #arama:focus { border-color: var(--vurgu); }
 #arama::placeholder { color: var(--soluk); }
+
+.arama-temizle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--soluk);
+  font-size: 15px;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.arama-temizle:hover { background: #ffffff10; }
 
 /* ---------- Sekmeler ---------- */
 .sekmeler {
@@ -88,6 +110,11 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 #listem, #sonuclar { display: grid; gap: 12px; }
 
 /* ---------- Kart ---------- */
+@keyframes kartGir {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .kart {
   display: flex;
   flex-direction: column;
@@ -95,6 +122,7 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   background: var(--kart);
   border-radius: 12px;
   padding: 10px;
+  animation: kartGir 0.25s ease;
 }
 .kart-ust {
   display: flex;
@@ -102,6 +130,7 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   align-items: center;
   cursor: pointer;
 }
+.kart-ust:active { opacity: 0.85; }
 
 .kart img {
   width: 54px;
@@ -144,16 +173,7 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   cursor: pointer;
   line-height: 1;
 }
-.sil-btn {
-  flex-shrink: 0;
-  border: 1px solid #3a3448;
-  background: transparent;
-  color: var(--soluk);
-  padding: 8px 12px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 13px;
-}
+/* Zaten listede olanlar için "eklendi" yazısı (buton değil) */
 .eklendi-etiket {
   flex-shrink: 0;
   color: var(--soluk);
@@ -161,6 +181,26 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   padding: 8px 12px;
   white-space: nowrap;
 }
+
+/* ---------- İkon butonlar (sil, sonraki bölüm vb.) ---------- */
+.ikon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ikon-btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+.sil-btn {
+  flex-shrink: 0;
+  border: 1px solid #3a3448;
+  background: transparent;
+  color: var(--soluk);
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.sil-btn:hover { color: #ff8fa3; border-color: #ff8fa350; }
 
 .sonraki-btn {
   flex-shrink: 0;
@@ -185,6 +225,20 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   max-width: 132px;
 }
 
+/* ---------- Bölüm ilerlemesi ---------- */
+.ilerleme-cubuk {
+  background: #00000050;
+  border-radius: 999px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.ilerleme-dolu {
+  background: var(--vurgu);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
 .bolum-etiket {
   display: block;
   font-size: 12px;
@@ -194,6 +248,52 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 
 .bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
 .bos { color: var(--soluk); font-size: 14px; }
+
+/* ---------- İskelet (yükleniyor) kartı ---------- */
+.iskelet-kart { pointer-events: none; flex-direction: row; align-items: center; }
+.iskelet-blok {
+  background: linear-gradient(90deg, #2a2535 25%, #3a344880 37%, #2a2535 63%);
+  background-size: 400% 100%;
+  animation: iskeletAkis 1.4s ease infinite;
+  border-radius: 8px;
+}
+@keyframes iskeletAkis {
+  0% { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ---------- Geri al bildirimi (snackbar) ---------- */
+.snackbar {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  background: #2a2535;
+  color: var(--yazi);
+  padding: 12px 18px;
+  border-radius: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  font-size: 14px;
+  z-index: 60;
+  animation: snackbarGir 0.25s ease;
+  max-width: calc(100% - 32px);
+}
+@keyframes snackbarGir {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+.snackbar button {
+  background: none;
+  border: none;
+  color: var(--vurgu);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
 
 /* ---------- Detay modalı ---------- */
 .modal-arkaplan {
@@ -214,6 +314,11 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   border-radius: 20px 20px 0 0;
   padding: 22px 18px 30px;
   position: relative;
+  animation: modalGir 0.25s ease;
+}
+@keyframes modalGir {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 .modal-kapat {
   position: absolute;

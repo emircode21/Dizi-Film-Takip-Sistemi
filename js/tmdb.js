@@ -1,3 +1,6 @@
+/* ---------------- TMDB İLE İLGİLİ AĞ İSTEKLERİ ---------------- */
+/* Bu dosya sadece veri çeker, sayfada hiçbir şey çizmez. */
+
 function posterUrl(path) {
   if (!path) {
     return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='80'><rect width='100%' height='100%' fill='%23342d40'/></svg>";
@@ -5,7 +8,19 @@ function posterUrl(path) {
   return "https://images.weserv.nl/?url=image.tmdb.org/t/p/w200" + path;
 }
 
-// Bir dizinin toplam kaç sezonu olduğunu TMDB'den öğrenir
+async function tmdbAra(kelime) {
+  const url = "https://api.themoviedb.org/3/search/multi"
+    + "?api_key=" + API_KEY
+    + "&language=tr-TR"
+    + "&query=" + encodeURIComponent(kelime);
+
+  const cevap = await fetch(url);
+  const veri = await cevap.json();
+  return (veri.results || []).filter(
+    (x) => x.media_type === "movie" || x.media_type === "tv"
+  );
+}
+
 async function sezonSayisiGetir(tvId) {
   try {
     const url = "https://api.themoviedb.org/3/tv/" + tvId + "?api_key=" + API_KEY + "&language=tr-TR";

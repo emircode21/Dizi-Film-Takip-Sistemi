@@ -1,48 +1,72 @@
+/* ---------------- ARAMA + LİSTEM (sekmeler, sıralama, kartlar) ---------------- */
+
 const kutu = document.getElementById("arama");
+const aramaTemizleBtn = document.getElementById("aramaTemizle");
 const sonucAlani = document.getElementById("sonuclar");
 const sonucBaslik = document.getElementById("sonuc-baslik");
 const listeAlani = document.getElementById("listem");
 const sekmeAlani = document.getElementById("sekmeler");
 const siralamaSecici = document.getElementById("siralamaSecici");
+const snackbarAlani = document.getElementById("snackbar");
 
-let zamanlayici;
 let sonSonuclar = [];
+let zamanlayici;
 let aktifSekme = "izliyor";
 let aktifSiralama = "eklenme";
+let silinenYedek = null;
+let silmeZamanlayici = null;
 
+const SVG_SIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_ILERI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4l14 8-14 8V4z" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const SVG_TIK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+
+/* ---------------- ARAMA ---------------- */
 kutu.addEventListener("input", () => {
   clearTimeout(zamanlayici);
   const kelime = kutu.value.trim();
+  aramaTemizleBtn.style.display = kutu.value ? "flex" : "none";
+
   if (kelime.length < 2) {
     sonucAlani.innerHTML = "";
-    sonucBaslik.style.display = "none"; // arama boşsa başlığı da gizle
+    sonucBaslik.style.display = "none";
     return;
   }
-  zamanlayici = setTimeout(() => ara(kelime), 400);
+  zamanlayici = setTimeout(() => aramaCalistir(kelime), 400);
 });
 
-async function ara(kelime) {
-  sonucBaslik.style.display = "block"; // arama sonuçları başlığını göster
-  sonucAlani.innerHTML = "<div class='bilgi'>Aranıyor...</div>";
+aramaTemizleBtn.addEventListener("click", () => {
+  kutu.value = "";
+  aramaTemizleBtn.style.display = "none";
+  sonucAlani.innerHTML = "";
+  sonucBaslik.style.display = "none";
+  kutu.focus();
+});
 
-  const url = "https://api.themoviedb.org/3/search/multi"
-    + "?api_key=" + API_KEY
-    + "&language=tr-TR"
-    + "&query=" + encodeURIComponent(kelime);
+async function aramaCalistir(kelime) {
+  sonucBaslik.style.display = "block";
+  sonucAlani.innerHTML = iskeletHTML(3);
 
   try {
-    const cevap = await fetch(url);
-    const veri = await cevap.json();
-    sonSonuclar = (veri.results || []).filter(
-      (x) => x.media_type === "movie" || x.media_type === "tv"
-    );
-    goster(sonSonuclar);
+    sonSonuclar = await tmdbAra(kelime);
+    sonucGoster(sonSonuclar);
   } catch (hata) {
     sonucAlani.innerHTML = "<div class='bilgi'>Bir şeyler ters gitti.</div>";
   }
 }
 
-function goster(liste) {
+function iskeletHTML(adet) {
+  return Array(adet).fill(`
+    <div class="kart iskelet-kart">
+      <div class="iskelet-blok" style="width:54px;height:80px;"></div>
+      <div class="orta">
+        <div class="iskelet-blok" style="width:70%;height:14px;margin-bottom:8px;"></div>
+        <div class="iskelet-blok" style="width:40%;height:12px;"></div>
+      </div>
+    </div>`).join("");
+}
+
+function sonucGoster(liste) {
   if (liste.length === 0) {
     sonucAlani.innerHTML = "<div class='bilgi'>Sonuç bulunamadı.</div>";
     return;
@@ -54,6 +78,7 @@ function goster(liste) {
     const tarih = diziMi ? x.first_air_date : x.release_date;
     const yil = tarih ? tarih.slice(0, 4) : "—";
 
+    // Bu öğe zaten listemde mi? Öyleyse "+" yerine "Eklendi" göster
     const key = x.media_type + "-" + x.id;
     const zatenVar = listem.some((o) => o.key === key);
     const sagKisim = zatenVar
@@ -110,11 +135,10 @@ async function ekle(x) {
   }
 
   listem.push(yeniOge);
-
   kaydet();
   listeyiCiz();
   // Arama sonuçları açıksa, oradaki "+" artık "Eklendi" olsun diye yeniden çiz
-  if (sonSonuclar.length) goster(sonSonuclar);
+  if (sonSonuclar.length) sonucGoster(sonSonuclar);
 }
 
 
@@ -163,24 +187,27 @@ function listeyiCiz() {
 function kartHTML(o) {
   const diziMi = o.type === "tv";
 
-  let bolumSatiri = "";
+  let ilerlemeHTML = "";
   let aksiyonHTML = "";
 
   if (diziMi && o.bolumSayilari) {
     const buSezonToplam = o.bolumSayilari[o.sezon] || 1;
-    bolumSatiri = `<span class="bolum-etiket">S${o.sezon} • B${o.bolum} / ${buSezonToplam}</span>`;
+    const yuzde = Math.round((o.bolum / buSezonToplam) * 100);
+    ilerlemeHTML = `
+      <div class="ilerleme-cubuk"><div class="ilerleme-dolu" style="width:${yuzde}%"></div></div>
+      <span class="bolum-etiket">S${o.sezon} • B${o.bolum} / ${buSezonToplam}</span>`;
 
     if (o.durum === "izlemek_istiyor") {
       aksiyonHTML = `<button class="sonraki-btn" data-baslat-izleme="${o.key}">İzlemeye Başla</button>`;
     } else if (o.durum === "izliyor") {
       const bitti = sonBolumMu(o);
-      aksiyonHTML = `<button class="sonraki-btn" data-sonraki="${o.key}" ${bitti ? "disabled" : ""}>${bitti ? "Bitti ✓" : "Sonraki Bölüm ▶"}</button>`;
+      aksiyonHTML = `<button class="sonraki-btn ikon-btn" data-sonraki="${o.key}" ${bitti ? "disabled" : ""}>${bitti ? SVG_TIK + "Bitti" : SVG_ILERI + "Sonraki Bölüm"}</button>`;
     }
   } else if (diziMi) {
     // Bölüm takibi özelliğinden önce eklenmiş eski bir dizi
     aksiyonHTML = `<button class="sonraki-btn" data-baslat="${o.key}">Bölüm takibini başlat</button>`;
   } else if (!diziMi && o.durum !== "bitirdi") {
-    aksiyonHTML = `<button class="sonraki-btn" data-izledim="${o.key}">İzledim</button>`;
+    aksiyonHTML = `<button class="sonraki-btn ikon-btn" data-izledim="${o.key}">${SVG_TIK}İzledim</button>`;
   }
 
   return `
@@ -191,7 +218,7 @@ function kartHTML(o) {
           <div class="baslik">${o.ad}</div>
           <div class="alt">${o.yil}</div>
           <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
-          ${bolumSatiri}
+          ${ilerlemeHTML}
         </div>
       </div>
       <div class="kart-aksiyonlar">
@@ -201,7 +228,7 @@ function kartHTML(o) {
           <option value="izlemek_istiyor" ${o.durum === "izlemek_istiyor" ? "selected" : ""}>İzlemek İstiyorum</option>
         </select>
         ${aksiyonHTML}
-        <button class="sil-btn" data-sil="${o.key}">Kaldır</button>
+        <button class="sil-btn ikon-btn" data-sil="${o.key}" aria-label="Kaldır" title="Kaldır">${SVG_SIL}</button>
       </div>
     </div>`;
 }
@@ -251,11 +278,7 @@ listeAlani.addEventListener("click", async (e) => {
     return;
   }
   if (silBtn) {
-    listem = listem.filter((o) => o.key !== silBtn.dataset.sil);
-    kaydet();
-    listeyiCiz();
-    // Listeden çıkanın arama sonucundaki hali tekrar "+" olsun
-    if (sonSonuclar.length) goster(sonSonuclar);
+    sil(silBtn.dataset.sil);
     return;
   }
   if (detayHedefi) {
@@ -317,4 +340,46 @@ async function sonrakiBolume(key) {
 
   kaydet();
   listeyiCiz();
+}
+
+
+/* ---------------- SİLME + GERİ AL ---------------- */
+function sil(key) {
+  const index = listem.findIndex((o) => o.key === key);
+  if (index === -1) return;
+
+  silinenYedek = { oge: listem[index], index: index };
+  listem.splice(index, 1);
+  kaydet();
+  listeyiCiz();
+  if (sonSonuclar.length) sonucGoster(sonSonuclar);
+
+  snackbarGoster(`"${silinenYedek.oge.ad}" kaldırıldı`, geriAl);
+}
+
+function geriAl() {
+  if (!silinenYedek) return;
+  listem.splice(silinenYedek.index, 0, silinenYedek.oge);
+  silinenYedek = null;
+  kaydet();
+  listeyiCiz();
+  if (sonSonuclar.length) sonucGoster(sonSonuclar);
+  snackbarGizle();
+}
+
+function snackbarGoster(mesaj, geriAlFn) {
+  clearTimeout(silmeZamanlayici);
+  snackbarAlani.innerHTML = `<span>${mesaj}</span><button id="snackbarGeriAlBtn">Geri Al</button>`;
+  snackbarAlani.style.display = "flex";
+  document.getElementById("snackbarGeriAlBtn").onclick = geriAlFn;
+
+  silmeZamanlayici = setTimeout(() => {
+    silinenYedek = null;
+    snackbarGizle();
+  }, 5000);
+}
+
+function snackbarGizle() {
+  snackbarAlani.style.display = "none";
+  snackbarAlani.innerHTML = "";
 }

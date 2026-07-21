@@ -249,6 +249,43 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 .bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
 .bos { color: var(--soluk); font-size: 14px; }
 
+/* ---------- Yıldız puanlama ---------- */
+.puan-satiri { margin-top: 6px; }
+.yildiz-btn {
+  background: none;
+  border: none;
+  font-size: 19px;
+  line-height: 1;
+  padding: 2px;
+  cursor: pointer;
+  color: #f5c542;
+}
+
+/* ---------- Ekleme seçimi (nereye eklensin) ---------- */
+.ekleme-secim-baslik { margin-top: 20px; font-weight: 600; font-size: 14px; }
+.ekleme-secenekler {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 12px;
+}
+.ekleme-secenek-btn {
+  width: 100%;
+  padding: 14px;
+  border: 1px solid #3a3448;
+  border-radius: 10px;
+  background: #1a1722;
+  color: var(--yazi);
+  font-size: 15px;
+  cursor: pointer;
+  text-align: center;
+}
+.ekleme-secenek-btn:hover {
+  background: rgba(224,101,138,0.18);
+  color: var(--vurgu);
+  border-color: var(--vurgu);
+}
+
 /* ---------- İskelet (yükleniyor) kartı ---------- */
 .iskelet-kart { pointer-events: none; flex-direction: row; align-items: center; }
 .iskelet-blok {

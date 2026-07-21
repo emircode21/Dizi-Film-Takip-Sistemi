@@ -101,12 +101,51 @@ function sonucGoster(liste) {
 sonucAlani.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-ekle]");
   if (!btn) return;
-  ekle(sonSonuclar[btn.dataset.ekle]);
+  eklemeSecimiAc(sonSonuclar[btn.dataset.ekle]);
+});
+
+
+/* ---------------- EKLERKEN "NEREYE EKLENSİN" SEÇİMİ ---------------- */
+const eklemeModal = document.getElementById("eklemeModal");
+const eklemeKapatBtn = document.getElementById("eklemeKapatBtn");
+const eklemePoster = document.getElementById("eklemePoster");
+const eklemeBaslik = document.getElementById("eklemeBaslik");
+const eklemeYil = document.getElementById("eklemeYil");
+const eklemeSecenekler = document.getElementById("eklemeSecenekler");
+
+let eklenecekOge = null;
+
+function eklemeSecimiAc(x) {
+  const diziMi = x.media_type === "tv";
+  const tarih = diziMi ? x.first_air_date : x.release_date;
+
+  eklenecekOge = x;
+  eklemePoster.src = posterUrl(x.poster_path);
+  eklemeBaslik.textContent = diziMi ? x.name : x.title;
+  eklemeYil.textContent = tarih ? tarih.slice(0, 4) : "—";
+  eklemeModal.style.display = "flex";
+}
+
+function eklemeKapat() {
+  eklemeModal.style.display = "none";
+  eklenecekOge = null;
+}
+
+eklemeKapatBtn.addEventListener("click", eklemeKapat);
+eklemeModal.addEventListener("click", (e) => {
+  if (e.target === eklemeModal) eklemeKapat();
+});
+
+eklemeSecenekler.addEventListener("click", async (e) => {
+  const btn = e.target.closest("[data-durum-ekle]");
+  if (!btn || !eklenecekOge) return;
+  await ekle(eklenecekOge, btn.dataset.durumEkle);
+  eklemeKapat();
 });
 
 
 /* ---------------- LİSTEYE EKLEME ---------------- */
-async function ekle(x) {
+async function ekle(x, secilenDurum) {
   const diziMi = x.media_type === "tv";
   const key = x.media_type + "-" + x.id;
   if (listem.some((o) => o.key === key)) return; // zaten varsa ekleme
@@ -119,19 +158,32 @@ async function ekle(x) {
     ad: diziMi ? x.name : x.title,
     yil: tarih ? tarih.slice(0, 4) : "—",
     poster: x.poster_path,
-    durum: "izliyor",
+    durum: secilenDurum,
     eklenmeZamani: Date.now(),
   };
 
-  if (diziMi) {
-    yeniOge.sezon = 1;
-    yeniOge.bolum = 1;
+  // "İzlemek İstiyorum" seçilirse bölüm bilgisini şimdiden çekmiyoruz,
+  // "İzlemeye Başla"ya basınca (bolumTakibiBaslat ile) lazım olduğunda çekilir
+  if (diziMi && secilenDurum !== "izlemek_istiyor") {
     yeniOge.sezonSayisi = await sezonSayisiGetir(x.id);
     yeniOge.bolumSayilari = {};
     yeniOge.bolumDetaylari = {};
-    const sonuc = await bolumSayisiGetir(x.id, 1);
-    yeniOge.bolumSayilari[1] = sonuc.sayi;
-    yeniOge.bolumDetaylari[1] = sonuc.bolumler;
+
+    if (secilenDurum === "bitirdi") {
+      // Dizinin tamamını izlemiş: son sezonun son bölümüne yerleştir
+      const sonSezon = yeniOge.sezonSayisi;
+      const sonuc = await bolumSayisiGetir(x.id, sonSezon);
+      yeniOge.bolumSayilari[sonSezon] = sonuc.sayi;
+      yeniOge.bolumDetaylari[sonSezon] = sonuc.bolumler;
+      yeniOge.sezon = sonSezon;
+      yeniOge.bolum = sonuc.sayi;
+    } else {
+      yeniOge.sezon = 1;
+      yeniOge.bolum = 1;
+      const sonuc = await bolumSayisiGetir(x.id, 1);
+      yeniOge.bolumSayilari[1] = sonuc.sayi;
+      yeniOge.bolumDetaylari[1] = sonuc.bolumler;
+    }
   }
 
   listem.push(yeniOge);
@@ -190,7 +242,10 @@ function kartHTML(o) {
   let ilerlemeHTML = "";
   let aksiyonHTML = "";
 
-  if (diziMi && o.bolumSayilari) {
+  if (diziMi && o.durum === "izlemek_istiyor" && !o.bolumSayilari) {
+    // Henüz hiç bölüm bilgisi çekilmemiş (izlemek istiyorum listesine direkt eklendi)
+    aksiyonHTML = `<button class="sonraki-btn" data-baslat-izleme="${o.key}">İzlemeye Başla</button>`;
+  } else if (diziMi && o.bolumSayilari) {
     const buSezonToplam = o.bolumSayilari[o.sezon] || 1;
     const yuzde = Math.round((o.bolum / buSezonToplam) * 100);
     ilerlemeHTML = `
@@ -210,6 +265,11 @@ function kartHTML(o) {
     aksiyonHTML = `<button class="sonraki-btn ikon-btn" data-izledim="${o.key}">${SVG_TIK}İzledim</button>`;
   }
 
+  const yildizHTML = o.durum === "bitirdi" ? `
+    <div class="puan-satiri">
+      ${[1, 2, 3, 4, 5].map((i) => `<button class="yildiz-btn" data-puan-ver="${o.key}" data-yildiz="${i}">${o.puan && i <= o.puan ? "★" : "☆"}</button>`).join("")}
+    </div>` : "";
+
   return `
     <div class="kart">
       <div class="kart-ust" data-detay="${o.key}">
@@ -219,6 +279,7 @@ function kartHTML(o) {
           <div class="alt">${o.yil}</div>
           <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
           ${ilerlemeHTML}
+          ${yildizHTML}
         </div>
       </div>
       <div class="kart-aksiyonlar">
@@ -249,7 +310,18 @@ listeAlani.addEventListener("click", async (e) => {
   const sonrakiBtn = e.target.closest("[data-sonraki]");
   const izledimBtn = e.target.closest("[data-izledim]");
   const silBtn = e.target.closest("[data-sil]");
+  const yildizBtn = e.target.closest("[data-puan-ver]");
 
+  if (yildizBtn) {
+    const o = listem.find((x) => x.key === yildizBtn.dataset.puanVer);
+    if (o) {
+      const secilen = Number(yildizBtn.dataset.yildiz);
+      o.puan = o.puan === secilen ? 0 : secilen; // aynı yıldıza tekrar basınca puanı kaldır
+      kaydet();
+      listeyiCiz();
+    }
+    return;
+  }
   if (baslatBtn) {
     await bolumTakibiBaslat(baslatBtn.dataset.baslat);
     return;

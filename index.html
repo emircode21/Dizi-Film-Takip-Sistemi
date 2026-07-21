@@ -43,6 +43,28 @@
   <!-- Silme sonrası "Geri Al" bildirimi -->
   <div id="snackbar" class="snackbar" style="display:none"></div>
 
+  <!-- Listeye eklerken "nereye eklensin" seçimi -->
+  <div id="eklemeModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="eklemeKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+
+      <div class="modal-ust">
+        <img id="eklemePoster" src="" alt="">
+        <div>
+          <div id="eklemeBaslik" class="modal-baslik"></div>
+          <div id="eklemeYil" class="alt"></div>
+        </div>
+      </div>
+
+      <div class="ekleme-secim-baslik">Nereye eklemek istersin?</div>
+      <div class="ekleme-secenekler" id="eklemeSecenekler">
+        <button class="ekleme-secenek-btn" data-durum-ekle="izliyor">İzliyorum</button>
+        <button class="ekleme-secenek-btn" data-durum-ekle="izlemek_istiyor">İzlemek İstiyorum</button>
+        <button class="ekleme-secenek-btn" data-durum-ekle="bitirdi">Bitirdim</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Dizi/film detay modalı -->
   <div id="detayModal" class="modal-arkaplan" style="display:none">
     <div class="modal-kutu">

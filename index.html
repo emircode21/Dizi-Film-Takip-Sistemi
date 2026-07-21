@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>İzleme Defteri</title>
+
+  <style>
+    /* ---------- GÖRÜNÜM (CSS) ---------- */
+    :root {
+      --arka: #14121a;
+      --kart: #211d2b;
+      --yazi: #efe9f5;
+      --soluk: #9a90ac;
+      --vurgu: #e0658a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--arka);
+      color: var(--yazi);
+      font-family: -apple-system, system-ui, "Segoe UI", Roboto, sans-serif;
+      padding: 20px 16px 60px;
+      max-width: 520px;
+      margin-inline: auto;
+    }
+
+    header h1 { font-size: 24px; margin: 0 0 4px; }
+    header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
+
+    #arama {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 1px solid #3a3448;
+      border-radius: 12px;
+      background: var(--kart);
+      color: var(--yazi);
+      outline: none;
+    }
+    #arama:focus { border-color: var(--vurgu); }
+    #arama::placeholder { color: var(--soluk); }
+
+    .bolum-baslik {
+      font-size: 15px;
+      color: var(--soluk);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 26px 0 12px;
+    }
+
+    #listem, #sonuclar { display: grid; gap: 12px; }
+
+    .kart {
+      display: flex;
+      gap: 12px;
+      background: var(--kart);
+      border-radius: 12px;
+      padding: 10px;
+      align-items: center;
+    }
+    .kart img {
+      width: 54px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #000;
+      flex-shrink: 0;
+    }
+    .kart .orta { flex: 1; min-width: 0; }
+    .kart .baslik { font-weight: 600; font-size: 15px; }
+    .kart .alt { color: var(--soluk); font-size: 13px; margin-top: 4px; }
+
+    .rozet {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-top: 6px;
+    }
+    .rozet.dizi { background: rgba(224,101,138,0.18); color: var(--vurgu); }
+    .rozet.film { background: rgba(140,180,255,0.18); color: #8cb4ff; }
+
+    .ekle-btn {
+      flex-shrink: 0;
+      border: none;
+      background: var(--vurgu);
+      color: #fff;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .sil-btn {
+      flex-shrink: 0;
+      border: 1px solid #3a3448;
+      background: transparent;
+      color: var(--soluk);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    /* Zaten listede olanlar için "eklendi" yazısı (buton değil) */
+    .eklendi-etiket {
+      flex-shrink: 0;
+      color: var(--soluk);
+      font-size: 13px;
+      padding: 8px 12px;
+      white-space: nowrap;
+    }
+
+    .bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
+    .bos { color: var(--soluk); font-size: 14px; }
+
+    .ilerleme {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .bolum-etiket {
+      font-size: 13px;
+      color: var(--yazi);
+      background: #35304080;
+      padding: 4px 10px;
+      border-radius: 999px;
+    }
+    .sonraki-btn {
+      border: none;
+      background: rgba(224,101,138,0.18);
+      color: var(--vurgu);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .sonraki-btn:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .alt-satir { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>İzleme Defteri</h1>
+    <p>Ara, "+" ile listene ekle. Eklediklerin kaydedilir, kapatıp açınca durur.</p>
+  </header>
+
+  <input id="arama" type="text" placeholder="Örn: Breaking Bad, Inception..." />
+
+  <!-- Kaydedilen liste -->
+  <div class="bolum-baslik">Listem</div>
+  <div id="listem"></div>
+
+  <!-- Arama sonuçları (sadece ararken görünür) -->
+  <div class="bolum-baslik" id="sonuc-baslik" style="display:none">Arama sonuçları</div>
+  <div id="sonuclar"></div>
+
+
+  <script>
+    /* ---------- BEYİN (JavaScript) ---------- */
+
+    const API_KEY = "39b78a1d396b1cfa373400eda1856126";
+
+    const kutu = document.getElementById("arama");
+    const sonucAlani = document.getElementById("sonuclar");
+    const sonucBaslik = document.getElementById("sonuc-baslik");
+    const listeAlani = document.getElementById("listem");
+
+    let listem = yukle();
+    listeyiCiz();
+
+
+    function posterUrl(path) {
+      if (!path) {
+        return "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='54' height='80'><rect width='100%' height='100%' fill='%23342d40'/></svg>";
+      }
+      return "https://images.weserv.nl/?url=image.tmdb.org/t/p/w200" + path;
+    }
+
+
+    /* ---------------- ARAMA ---------------- */
+    let zamanlayici;
+    let sonSonuclar = [];
+
+    kutu.addEventListener("input", () => {
+      clearTimeout(zamanlayici);
+      const kelime = kutu.value.trim();
+      if (kelime.length < 2) {
+        sonucAlani.innerHTML = "";
+        sonucBaslik.style.display = "none"; // arama boşsa başlığı da gizle
+        return;
+      }
+      zamanlayici = setTimeout(() => ara(kelime), 400);
+    });
+
+    async function ara(kelime) {
+      sonucBaslik.style.display = "block"; // arama sonuçları başlığını göster
+      sonucAlani.innerHTML = "<div class='bilgi'>Aranıyor...</div>";
+
+      const url = "https://api.themoviedb.org/3/search/multi"
+        + "?api_key=" + API_KEY
+        + "&language=tr-TR"
+        + "&query=" + encodeURIComponent(kelime);
+
+      try {
+        const cevap = await fetch(url);
+        const veri = await cevap.json();
+        sonSonuclar = (veri.results || []).filter(
+          (x) => x.media_type === "movie" || x.media_type === "tv"
+        );
+        goster(sonSonuclar);
+      } catch (hata) {
+        sonucAlani.innerHTML = "<div class='bilgi'>Bir şeyler ters gitti.</div>";
+      }
+    }
+
+    function goster(liste) {
+      if (liste.length === 0) {
+        sonucAlani.innerHTML = "<div class='bilgi'>Sonuç bulunamadı.</div>";
+        return;
+      }
+
+      sonucAlani.innerHTML = liste.map((x, i) => {
+        const diziMi = x.media_type === "tv";
+        const ad = diziMi ? x.name : x.title;
+        const tarih = diziMi ? x.first_air_date : x.release_date;
+        const yil = tarih ? tarih.slice(0, 4) : "—";
+
+        // Bu öğe zaten listemde mi? Öyleyse "+" yerine "Eklendi" göster
+        const key = x.media_type + "-" + x.id;
+        const zatenVar = listem.some((o) => o.key === key);
+        const sagKisim = zatenVar
+          ? `<span class="eklendi-etiket">✓ Eklendi</span>`
+          : `<button class="ekle-btn" data-ekle="${i}">+</button>`;
+
+        return `
+          <div class="kart">
+            <img src="${posterUrl(x.poster_path)}" alt="">
+            <div class="orta">
+              <div class="baslik">${ad}</div>
+              <div class="alt">${yil}</div>
+              <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
+            </div>
+            ${sagKisim}
+          </div>`;
+      }).join("");
+    }
+
+    sonucAlani.addEventListener("click", (e) => {
+      const btn = e.target.closest("[data-ekle]");
+      if (!btn) return;
+      ekle(sonSonuclar[btn.dataset.ekle]);
+    });
+
+
+    /* ---------------- LİSTEYE EKLE / ÇİZ / SİL ---------------- */
+    async function ekle(x) {
+      const diziMi = x.media_type === "tv";
+      const key = x.media_type + "-" + x.id;
+      if (listem.some((o) => o.key === key)) return; // zaten varsa ekleme
+
+      const tarih = diziMi ? x.first_air_date : x.release_date;
+      const yeniOge = {
+        key: key,
+        type: x.media_type,
+        tmdbId: x.id,
+        ad: diziMi ? x.name : x.title,
+        yil: tarih ? tarih.slice(0, 4) : "—",
+        poster: x.poster_path,
+      };
+
+      if (diziMi) {
+        // Dizilerde bölüm takibi 1. sezon, 1. bölümden başlar
+        yeniOge.sezon = 1;
+        yeniOge.bolum = 1;
+        yeniOge.sezonSayisi = await sezonSayisiGetir(x.id);
+        yeniOge.bolumSayilari = {}; // her sezonun kaç bölüm olduğunu burada saklıyoruz (önbellek)
+        yeniOge.bolumSayilari[1] = await bolumSayisiGetir(x.id, 1);
+      }
+
+      listem.push(yeniOge);
+
+      kaydet();
+      listeyiCiz();
+      // Arama sonuçları açıksa, oradaki "+" artık "Eklendi" olsun diye yeniden çiz
+      if (sonSonuclar.length) goster(sonSonuclar);
+    }
+
+    // Bir dizinin toplam kaç sezonu olduğunu TMDB'den öğrenir
+    async function sezonSayisiGetir(tvId) {
+      try {
+        const url = "https://api.themoviedb.org/3/tv/" + tvId + "?api_key=" + API_KEY + "&language=tr-TR";
+        const cevap = await fetch(url);
+        const veri = await cevap.json();
+        return veri.number_of_seasons || 1;
+      } catch (e) {
+        return 1;
+      }
+    }
+
+    // Belirli bir sezonun kaç bölüm olduğunu TMDB'den öğrenir
+    async function bolumSayisiGetir(tvId, sezonNo) {
+      try {
+        const url = "https://api.themoviedb.org/3/tv/" + tvId + "/season/" + sezonNo + "?api_key=" + API_KEY + "&language=tr-TR";
+        const cevap = await fetch(url);
+        const veri = await cevap.json();
+        return (veri.episodes || []).length || 1;
+      } catch (e) {
+        return 1;
+      }
+    }
+
+    function listeyiCiz() {
+      if (listem.length === 0) {
+        listeAlani.innerHTML = "<div class='bos'>Henüz bir şey eklemedin. Yukarıdan ara ve + ile ekle.</div>";
+        return;
+      }
+
+      listeAlani.innerHTML = listem.map((o) => {
+        const diziMi = o.type === "tv";
+
+        // Dizi ise bölüm bilgisi + "Sonraki Bölüm" butonu göster
+        // (Bölüm takibi özelliğinden önce eklenmiş eski dizilerde bu bilgiler henüz yok)
+        let bolumSatiri = "";
+        if (diziMi && o.bolumSayilari) {
+          bolumSatiri = `
+            <div class="ilerleme">
+              <span class="bolum-etiket">S${o.sezon} • B${o.bolum}</span>
+              <button class="sonraki-btn" data-sonraki="${o.key}" ${sonBolumMu(o) ? "disabled" : ""}>
+                ${sonBolumMu(o) ? "Bitti ✓" : "Sonraki Bölüm ▶"}
+              </button>
+            </div>`;
+        } else if (diziMi) {
+          bolumSatiri = `
+            <div class="ilerleme">
+              <button class="sonraki-btn" data-baslat="${o.key}">Bölüm takibini başlat</button>
+            </div>`;
+        }
+
+        return `
+          <div class="kart">
+            <img src="${posterUrl(o.poster)}" alt="">
+            <div class="orta">
+              <div class="baslik">${o.ad}</div>
+              <div class="alt">${o.yil}</div>
+              <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
+              ${bolumSatiri}
+            </div>
+            <button class="sil-btn" data-sil="${o.key}">Kaldır</button>
+          </div>`;
+      }).join("");
+    }
+
+    // Dizi son sezonun son bölümüne mi geldi?
+    function sonBolumMu(o) {
+      if (!o.bolumSayilari) return false;
+      const buSezonBolumSayisi = o.bolumSayilari[o.sezon];
+      return o.sezon >= o.sezonSayisi && o.bolum >= buSezonBolumSayisi;
+    }
+
+    // Bölüm takibi olmadan eklenmiş eski bir diziye sonradan bölüm takibi ekler
+    async function bolumTakibiBaslat(key) {
+      const o = listem.find((x) => x.key === key);
+      if (!o || o.bolumSayilari) return;
+
+      // Çok eski kayıtlarda tmdbId alanı yoktu, key'den ("tv-1396" gibi) çıkarıyoruz
+      if (!o.tmdbId) o.tmdbId = Number(o.key.split("-")[1]);
+
+      o.sezon = 1;
+      o.bolum = 1;
+      o.sezonSayisi = await sezonSayisiGetir(o.tmdbId);
+      o.bolumSayilari = {};
+      o.bolumSayilari[1] = await bolumSayisiGetir(o.tmdbId, 1);
+
+      kaydet();
+      listeyiCiz();
+    }
+
+    listeAlani.addEventListener("click", async (e) => {
+      const baslatBtn = e.target.closest("[data-baslat]");
+      if (baslatBtn) {
+        await bolumTakibiBaslat(baslatBtn.dataset.baslat);
+        return;
+      }
+
+      const silBtn = e.target.closest("[data-sil]");
+      if (silBtn) {
+        listem = listem.filter((o) => o.key !== silBtn.dataset.sil);
+        kaydet();
+        listeyiCiz();
+        // Listeden çıkanın arama sonucundaki hali tekrar "+" olsun
+        if (sonSonuclar.length) goster(sonSonuclar);
+        return;
+      }
+
+      const sonrakiBtn = e.target.closest("[data-sonraki]");
+      if (sonrakiBtn) {
+        await sonrakiBolume(sonrakiBtn.dataset.sonraki);
+      }
+    });
+
+    // Bir dizinin bölümünü bir ileri götürür, sezon biterse otomatik sonraki sezona geçer
+    async function sonrakiBolume(key) {
+      const o = listem.find((x) => x.key === key);
+      if (!o || sonBolumMu(o)) return;
+
+      const buSezonBolumSayisi = o.bolumSayilari[o.sezon];
+      if (o.bolum < buSezonBolumSayisi) {
+        o.bolum += 1;
+      } else {
+        o.sezon += 1;
+        o.bolum = 1;
+        if (!o.bolumSayilari[o.sezon]) {
+          o.bolumSayilari[o.sezon] = await bolumSayisiGetir(o.tmdbId, o.sezon);
+        }
+      }
+
+      kaydet();
+      listeyiCiz();
+    }
+
+
+    /* ---------------- HAFIZA (localStorage) ---------------- */
+    function kaydet() {
+      try {
+        localStorage.setItem("izleme_listem", JSON.stringify(listem));
+      } catch (e) {}
+    }
+    function yukle() {
+      try {
+        return JSON.parse(localStorage.getItem("izleme_listem")) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+  </script>
+</body>
+</html>

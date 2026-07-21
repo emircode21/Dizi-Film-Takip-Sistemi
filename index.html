@@ -37,10 +37,39 @@
   <div class="bolum-baslik" id="sonuc-baslik" style="display:none">Arama sonuçları</div>
   <div id="sonuclar"></div>
 
+  <!-- Dizi/film detay modalı -->
+  <div id="detayModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="detayKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+
+      <div class="modal-ust">
+        <img id="detayPoster" src="" alt="">
+        <div>
+          <div id="detayBaslik" class="modal-baslik"></div>
+          <div id="detayYil" class="alt"></div>
+          <span id="detayRozet" class="rozet"></span>
+        </div>
+      </div>
+
+      <p id="detayOzet" class="modal-ozet"></p>
+
+      <div id="detaySezonAlani" style="display:none">
+        <div class="modal-secim-satiri">
+          <select id="detaySezonSecici"></select>
+          <select id="detayBolumSecici"></select>
+          <button id="detayKaydetBtn" class="sonraki-btn">Kaydet</button>
+        </div>
+        <div class="modal-ilerleme-metni" id="detayKalanBilgi"></div>
+        <div id="detayBolumListesi" class="bolum-listesi"></div>
+      </div>
+    </div>
+  </div>
+
   <script src="js/config.js"></script>
   <script src="js/depo.js"></script>
   <script src="js/tmdb.js"></script>
   <script src="js/liste.js"></script>
+  <script src="js/detay.js"></script>
   <script src="js/uygulama.js"></script>
 </body>
 </html>

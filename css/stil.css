@@ -87,14 +87,22 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 
 #listem, #sonuclar { display: grid; gap: 12px; }
 
+/* ---------- Kart ---------- */
 .kart {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   background: var(--kart);
   border-radius: 12px;
   padding: 10px;
-  align-items: center;
 }
+.kart-ust {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+}
+
 .kart img {
   width: 54px;
   height: 80px;
@@ -106,6 +114,14 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 .kart .orta { flex: 1; min-width: 0; }
 .kart .baslik { font-weight: 600; font-size: 15px; }
 .kart .alt { color: var(--soluk); font-size: 13px; margin-top: 4px; }
+
+.kart-aksiyonlar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
 
 .rozet {
   display: inline-block;
@@ -138,7 +154,6 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   cursor: pointer;
   font-size: 13px;
 }
-/* Zaten listede olanlar için "eklendi" yazısı (buton değil) */
 .eklendi-etiket {
   flex-shrink: 0;
   color: var(--soluk);
@@ -147,37 +162,18 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   white-space: nowrap;
 }
 
-.bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
-.bos { color: var(--soluk); font-size: 14px; }
-
-.ilerleme {
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.bolum-etiket {
-  font-size: 13px;
-  color: var(--yazi);
-  background: #35304080;
-  padding: 4px 10px;
-  border-radius: 999px;
-}
 .sonraki-btn {
+  flex-shrink: 0;
   border: none;
   background: rgba(224,101,138,0.18);
   color: var(--vurgu);
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 8px;
   font-size: 13px;
   cursor: pointer;
+  white-space: nowrap;
 }
-.sonraki-btn:disabled {
-  opacity: 0.5;
-  cursor: default;
-}
-.alt-satir { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.sonraki-btn:disabled { opacity: 0.5; cursor: default; }
 
 .durum-secici {
   background: #1a1722;
@@ -188,3 +184,94 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   font-size: 12px;
   max-width: 132px;
 }
+
+.bolum-etiket {
+  display: block;
+  font-size: 12px;
+  color: var(--soluk);
+  margin-top: 4px;
+}
+
+.bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
+.bos { color: var(--soluk); font-size: 14px; }
+
+/* ---------- Detay modalı ---------- */
+.modal-arkaplan {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 100;
+}
+.modal-kutu {
+  background: var(--arka);
+  width: 100%;
+  max-width: 520px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 20px 20px 0 0;
+  padding: 22px 18px 30px;
+  position: relative;
+}
+.modal-kapat {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #2a2535;
+  border: none;
+  color: var(--yazi);
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 15px;
+}
+.modal-ust { display: flex; gap: 14px; margin-top: 10px; }
+.modal-ust img {
+  width: 80px; height: 118px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #000;
+  flex-shrink: 0;
+}
+.modal-baslik { font-size: 19px; font-weight: 700; margin-bottom: 4px; }
+.modal-ozet { color: var(--soluk); font-size: 14px; line-height: 1.55; margin-top: 16px; }
+
+.modal-secim-satiri {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 18px;
+  flex-wrap: wrap;
+}
+.modal-secim-satiri select {
+  background: #1a1722;
+  color: var(--yazi);
+  border: 1px solid #3a3448;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.modal-ilerleme-metni { color: var(--soluk); font-size: 13px; margin-top: 10px; }
+
+.bolum-listesi {
+  margin-top: 12px;
+  display: grid;
+  gap: 8px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.bolum-satiri {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  background: #1a1722;
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 13px;
+}
+.bolum-satiri.izlendi-satir { border-left: 3px solid var(--vurgu); }
+.bolum-satiri .bolum-adi { color: var(--yazi); }
+.bolum-satiri .bolum-tarih { color: var(--soluk); white-space: nowrap; font-size: 12px; }

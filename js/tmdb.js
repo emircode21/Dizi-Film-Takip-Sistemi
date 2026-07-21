@@ -17,14 +17,41 @@ async function sezonSayisiGetir(tvId) {
   }
 }
 
-// Belirli bir sezonun kaç bölüm olduğunu TMDB'den öğrenir
+// Bir sezonun bölüm sayısını VE her bölümün adı/yayın tarihini döner
 async function bolumSayisiGetir(tvId, sezonNo) {
   try {
     const url = "https://api.themoviedb.org/3/tv/" + tvId + "/season/" + sezonNo + "?api_key=" + API_KEY + "&language=tr-TR";
     const cevap = await fetch(url);
     const veri = await cevap.json();
-    return (veri.episodes || []).length || 1;
+    const bolumler = (veri.episodes || []).map((b) => ({
+      bolumNo: b.episode_number,
+      ad: b.name,
+      tarih: b.air_date,
+    }));
+    return { sayi: bolumler.length || 1, bolumler: bolumler };
   } catch (e) {
-    return 1;
+    return { sayi: 1, bolumler: [] };
+  }
+}
+
+async function diziOzetiGetir(tvId) {
+  try {
+    const url = "https://api.themoviedb.org/3/tv/" + tvId + "?api_key=" + API_KEY + "&language=tr-TR";
+    const cevap = await fetch(url);
+    const veri = await cevap.json();
+    return veri.overview || "";
+  } catch (e) {
+    return "";
+  }
+}
+
+async function filmOzetiGetir(movieId) {
+  try {
+    const url = "https://api.themoviedb.org/3/movie/" + movieId + "?api_key=" + API_KEY + "&language=tr-TR";
+    const cevap = await fetch(url);
+    const veri = await cevap.json();
+    return veri.overview || "";
+  } catch (e) {
+    return "";
   }
 }

@@ -103,7 +103,10 @@ async function ekle(x) {
     yeniOge.bolum = 1;
     yeniOge.sezonSayisi = await sezonSayisiGetir(x.id);
     yeniOge.bolumSayilari = {};
-    yeniOge.bolumSayilari[1] = await bolumSayisiGetir(x.id, 1);
+    yeniOge.bolumDetaylari = {};
+    const sonuc = await bolumSayisiGetir(x.id, 1);
+    yeniOge.bolumSayilari[1] = sonuc.sayi;
+    yeniOge.bolumDetaylari[1] = sonuc.bolumler;
   }
 
   listem.push(yeniOge);
@@ -164,10 +167,8 @@ function kartHTML(o) {
   let aksiyonHTML = "";
 
   if (diziMi && o.bolumSayilari) {
-    bolumSatiri = `
-      <div class="ilerleme">
-        <span class="bolum-etiket">S${o.sezon} • B${o.bolum}</span>
-      </div>`;
+    const buSezonToplam = o.bolumSayilari[o.sezon] || 1;
+    bolumSatiri = `<span class="bolum-etiket">S${o.sezon} • B${o.bolum} / ${buSezonToplam}</span>`;
 
     if (o.durum === "izlemek_istiyor") {
       aksiyonHTML = `<button class="sonraki-btn" data-baslat-izleme="${o.key}">İzlemeye Başla</button>`;
@@ -184,22 +185,24 @@ function kartHTML(o) {
 
   return `
     <div class="kart">
-      <img src="${posterUrl(o.poster)}" alt="">
-      <div class="orta">
-        <div class="baslik">${o.ad}</div>
-        <div class="alt">${o.yil}</div>
-        <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
-        ${bolumSatiri}
-        <div class="alt-satir">
-          <select class="durum-secici" data-durum-sec="${o.key}">
-            <option value="izliyor" ${o.durum === "izliyor" ? "selected" : ""}>İzliyorum</option>
-            <option value="bitirdi" ${o.durum === "bitirdi" ? "selected" : ""}>Bitirdim</option>
-            <option value="izlemek_istiyor" ${o.durum === "izlemek_istiyor" ? "selected" : ""}>İzlemek İstiyorum</option>
-          </select>
-          ${aksiyonHTML}
+      <div class="kart-ust" data-detay="${o.key}">
+        <img src="${posterUrl(o.poster)}" alt="">
+        <div class="orta">
+          <div class="baslik">${o.ad}</div>
+          <div class="alt">${o.yil}</div>
+          <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
+          ${bolumSatiri}
         </div>
       </div>
-      <button class="sil-btn" data-sil="${o.key}">Kaldır</button>
+      <div class="kart-aksiyonlar">
+        <select class="durum-secici" data-durum-sec="${o.key}">
+          <option value="izliyor" ${o.durum === "izliyor" ? "selected" : ""}>İzliyorum</option>
+          <option value="bitirdi" ${o.durum === "bitirdi" ? "selected" : ""}>Bitirdim</option>
+          <option value="izlemek_istiyor" ${o.durum === "izlemek_istiyor" ? "selected" : ""}>İzlemek İstiyorum</option>
+        </select>
+        ${aksiyonHTML}
+        <button class="sil-btn" data-sil="${o.key}">Kaldır</button>
+      </div>
     </div>`;
 }
 
@@ -213,6 +216,7 @@ function sonBolumMu(o) {
 
 /* ---------------- LİSTE KARTI OLAYLARI ---------------- */
 listeAlani.addEventListener("click", async (e) => {
+  const detayHedefi = e.target.closest("[data-detay]");
   const baslatBtn = e.target.closest("[data-baslat]");
   const baslatIzlemeBtn = e.target.closest("[data-baslat-izleme]");
   const sonrakiBtn = e.target.closest("[data-sonraki]");
@@ -252,6 +256,10 @@ listeAlani.addEventListener("click", async (e) => {
     listeyiCiz();
     // Listeden çıkanın arama sonucundaki hali tekrar "+" olsun
     if (sonSonuclar.length) goster(sonSonuclar);
+    return;
+  }
+  if (detayHedefi) {
+    detayAc(detayHedefi.dataset.detay);
   }
 });
 
@@ -278,8 +286,10 @@ async function bolumTakibiBaslat(key) {
   o.bolum = 1;
   o.sezonSayisi = await sezonSayisiGetir(o.tmdbId);
   o.bolumSayilari = {};
+  o.bolumDetaylari = {};
   const sonuc = await bolumSayisiGetir(o.tmdbId, 1);
-  o.bolumSayilari[1] = sonuc;
+  o.bolumSayilari[1] = sonuc.sayi;
+  o.bolumDetaylari[1] = sonuc.bolumler;
 
   kaydet();
   listeyiCiz();
@@ -297,7 +307,9 @@ async function sonrakiBolume(key) {
     o.sezon += 1;
     o.bolum = 1;
     if (!o.bolumSayilari[o.sezon]) {
-      o.bolumSayilari[o.sezon] = await bolumSayisiGetir(o.tmdbId, o.sezon);
+      const sonuc = await bolumSayisiGetir(o.tmdbId, o.sezon);
+      o.bolumSayilari[o.sezon] = sonuc.sayi;
+      o.bolumDetaylari[o.sezon] = sonuc.bolumler;
     }
   }
 

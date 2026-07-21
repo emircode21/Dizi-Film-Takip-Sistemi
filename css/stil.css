@@ -35,6 +35,48 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
 #arama:focus { border-color: var(--vurgu); }
 #arama::placeholder { color: var(--soluk); }
 
+/* ---------- Sekmeler ---------- */
+.sekmeler {
+  display: flex;
+  gap: 6px;
+  margin: 24px 0 10px;
+}
+.sekme-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--kart);
+  color: var(--soluk);
+  border: 1px solid #3a3448;
+  border-radius: 10px;
+  padding: 10px 4px;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.sekme-btn.aktif {
+  background: var(--vurgu);
+  color: #fff;
+  border-color: var(--vurgu);
+}
+.sekme-sayi { font-size: 11px; opacity: 0.85; }
+
+/* ---------- Sıralama ---------- */
+.siralama-satiri {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+.siralama-secici {
+  background: var(--kart);
+  color: var(--yazi);
+  border: 1px solid #3a3448;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
 .bolum-baslik {
   font-size: 15px;
   color: var(--soluk);
@@ -136,3 +178,13 @@ header p { margin: 0 0 20px; color: var(--soluk); font-size: 14px; }
   cursor: default;
 }
 .alt-satir { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+
+.durum-secici {
+  background: #1a1722;
+  color: var(--yazi);
+  border: 1px solid #3a3448;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  max-width: 132px;
+}

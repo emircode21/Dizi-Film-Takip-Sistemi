@@ -15,8 +15,22 @@
 
   <input id="arama" type="text" placeholder="Örn: Breaking Bad, Inception..." />
 
+  <!-- Durum sekmeleri -->
+  <div class="sekmeler" id="sekmeler">
+    <button class="sekme-btn aktif" data-sekme="izliyor">İzliyorum <span class="sekme-sayi">0</span></button>
+    <button class="sekme-btn" data-sekme="bitirdi">Bitirdim <span class="sekme-sayi">0</span></button>
+    <button class="sekme-btn" data-sekme="izlemek_istiyor">İzlemek İstiyorum <span class="sekme-sayi">0</span></button>
+  </div>
+
+  <div class="siralama-satiri">
+    <select id="siralamaSecici" class="siralama-secici">
+      <option value="eklenme">Son eklenen</option>
+      <option value="alfabetik">Alfabetik</option>
+      <option value="tur">Türe göre</option>
+    </select>
+  </div>
+
   <!-- Kaydedilen liste -->
-  <div class="bolum-baslik">Listem</div>
   <div id="listem"></div>
 
   <!-- Arama sonuçları (sadece ararken görünür) -->

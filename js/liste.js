@@ -2,9 +2,13 @@ const kutu = document.getElementById("arama");
 const sonucAlani = document.getElementById("sonuclar");
 const sonucBaslik = document.getElementById("sonuc-baslik");
 const listeAlani = document.getElementById("listem");
+const sekmeAlani = document.getElementById("sekmeler");
+const siralamaSecici = document.getElementById("siralamaSecici");
 
 let zamanlayici;
 let sonSonuclar = [];
+let aktifSekme = "izliyor";
+let aktifSiralama = "eklenme";
 
 kutu.addEventListener("input", () => {
   clearTimeout(zamanlayici);
@@ -50,7 +54,6 @@ function goster(liste) {
     const tarih = diziMi ? x.first_air_date : x.release_date;
     const yil = tarih ? tarih.slice(0, 4) : "—";
 
-    // Bu öğe zaten listemde mi? Öyleyse "+" yerine "Eklendi" göster
     const key = x.media_type + "-" + x.id;
     const zatenVar = listem.some((o) => o.key === key);
     const sagKisim = zatenVar
@@ -77,7 +80,7 @@ sonucAlani.addEventListener("click", (e) => {
 });
 
 
-/* ---------------- LİSTEYE EKLE / ÇİZ / SİL ---------------- */
+/* ---------------- LİSTEYE EKLEME ---------------- */
 async function ekle(x) {
   const diziMi = x.media_type === "tv";
   const key = x.media_type + "-" + x.id;
@@ -91,14 +94,15 @@ async function ekle(x) {
     ad: diziMi ? x.name : x.title,
     yil: tarih ? tarih.slice(0, 4) : "—",
     poster: x.poster_path,
+    durum: "izliyor",
+    eklenmeZamani: Date.now(),
   };
 
   if (diziMi) {
-    // Dizilerde bölüm takibi 1. sezon, 1. bölümden başlar
     yeniOge.sezon = 1;
     yeniOge.bolum = 1;
     yeniOge.sezonSayisi = await sezonSayisiGetir(x.id);
-    yeniOge.bolumSayilari = {}; // her sezonun kaç bölüm olduğunu burada saklıyoruz (önbellek)
+    yeniOge.bolumSayilari = {};
     yeniOge.bolumSayilari[1] = await bolumSayisiGetir(x.id, 1);
   }
 
@@ -110,45 +114,93 @@ async function ekle(x) {
   if (sonSonuclar.length) goster(sonSonuclar);
 }
 
+
+/* ---------------- SEKMELER / SIRALAMA ---------------- */
+sekmeAlani.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-sekme]");
+  if (!btn) return;
+  aktifSekme = btn.dataset.sekme;
+  listeyiCiz();
+});
+
+siralamaSecici.addEventListener("change", () => {
+  aktifSiralama = siralamaSecici.value;
+  listeyiCiz();
+});
+
+function gorunecekListe() {
+  const suzulmus = listem.filter((o) => o.durum === aktifSekme);
+
+  return suzulmus.slice().sort((a, b) => {
+    if (aktifSiralama === "alfabetik") return a.ad.localeCompare(b.ad, "tr");
+    if (aktifSiralama === "tur") return a.type.localeCompare(b.type);
+    return b.eklenmeZamani - a.eklenmeZamani; // son eklenen
+  });
+}
+
+
+/* ---------------- KART ÇİZİMİ ---------------- */
 function listeyiCiz() {
-  if (listem.length === 0) {
-    listeAlani.innerHTML = "<div class='bos'>Henüz bir şey eklemedin. Yukarıdan ara ve + ile ekle.</div>";
+  sekmeAlani.querySelectorAll("[data-sekme]").forEach((btn) => {
+    const sayi = listem.filter((o) => o.durum === btn.dataset.sekme).length;
+    btn.classList.toggle("aktif", btn.dataset.sekme === aktifSekme);
+    btn.querySelector(".sekme-sayi").textContent = sayi;
+  });
+
+  const goruntulenecek = gorunecekListe();
+
+  if (goruntulenecek.length === 0) {
+    listeAlani.innerHTML = "<div class='bos'>Bu bölümde henüz bir şey yok.</div>";
     return;
   }
 
-  listeAlani.innerHTML = listem.map((o) => {
-    const diziMi = o.type === "tv";
+  listeAlani.innerHTML = goruntulenecek.map(kartHTML).join("");
+}
 
-    // Dizi ise bölüm bilgisi + "Sonraki Bölüm" butonu göster
-    // (Bölüm takibi özelliğinden önce eklenmiş eski dizilerde bu bilgiler henüz yok)
-    let bolumSatiri = "";
-    if (diziMi && o.bolumSayilari) {
-      bolumSatiri = `
-        <div class="ilerleme">
-          <span class="bolum-etiket">S${o.sezon} • B${o.bolum}</span>
-          <button class="sonraki-btn" data-sonraki="${o.key}" ${sonBolumMu(o) ? "disabled" : ""}>
-            ${sonBolumMu(o) ? "Bitti ✓" : "Sonraki Bölüm ▶"}
-          </button>
-        </div>`;
-    } else if (diziMi) {
-      bolumSatiri = `
-        <div class="ilerleme">
-          <button class="sonraki-btn" data-baslat="${o.key}">Bölüm takibini başlat</button>
-        </div>`;
-    }
+function kartHTML(o) {
+  const diziMi = o.type === "tv";
 
-    return `
-      <div class="kart">
-        <img src="${posterUrl(o.poster)}" alt="">
-        <div class="orta">
-          <div class="baslik">${o.ad}</div>
-          <div class="alt">${o.yil}</div>
-          <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
-          ${bolumSatiri}
-        </div>
-        <button class="sil-btn" data-sil="${o.key}">Kaldır</button>
+  let bolumSatiri = "";
+  let aksiyonHTML = "";
+
+  if (diziMi && o.bolumSayilari) {
+    bolumSatiri = `
+      <div class="ilerleme">
+        <span class="bolum-etiket">S${o.sezon} • B${o.bolum}</span>
       </div>`;
-  }).join("");
+
+    if (o.durum === "izlemek_istiyor") {
+      aksiyonHTML = `<button class="sonraki-btn" data-baslat-izleme="${o.key}">İzlemeye Başla</button>`;
+    } else if (o.durum === "izliyor") {
+      const bitti = sonBolumMu(o);
+      aksiyonHTML = `<button class="sonraki-btn" data-sonraki="${o.key}" ${bitti ? "disabled" : ""}>${bitti ? "Bitti ✓" : "Sonraki Bölüm ▶"}</button>`;
+    }
+  } else if (diziMi) {
+    // Bölüm takibi özelliğinden önce eklenmiş eski bir dizi
+    aksiyonHTML = `<button class="sonraki-btn" data-baslat="${o.key}">Bölüm takibini başlat</button>`;
+  } else if (!diziMi && o.durum !== "bitirdi") {
+    aksiyonHTML = `<button class="sonraki-btn" data-izledim="${o.key}">İzledim</button>`;
+  }
+
+  return `
+    <div class="kart">
+      <img src="${posterUrl(o.poster)}" alt="">
+      <div class="orta">
+        <div class="baslik">${o.ad}</div>
+        <div class="alt">${o.yil}</div>
+        <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
+        ${bolumSatiri}
+        <div class="alt-satir">
+          <select class="durum-secici" data-durum-sec="${o.key}">
+            <option value="izliyor" ${o.durum === "izliyor" ? "selected" : ""}>İzliyorum</option>
+            <option value="bitirdi" ${o.durum === "bitirdi" ? "selected" : ""}>Bitirdim</option>
+            <option value="izlemek_istiyor" ${o.durum === "izlemek_istiyor" ? "selected" : ""}>İzlemek İstiyorum</option>
+          </select>
+          ${aksiyonHTML}
+        </div>
+      </div>
+      <button class="sil-btn" data-sil="${o.key}">Kaldır</button>
+    </div>`;
 }
 
 // Dizi son sezonun son bölümüne mi geldi?
@@ -158,46 +210,80 @@ function sonBolumMu(o) {
   return o.sezon >= o.sezonSayisi && o.bolum >= buSezonBolumSayisi;
 }
 
-// Bölüm takibi olmadan eklenmiş eski bir diziye sonradan bölüm takibi ekler
-async function bolumTakibiBaslat(key) {
-  const o = listem.find((x) => x.key === key);
-  if (!o || o.bolumSayilari) return;
 
-  // Çok eski kayıtlarda tmdbId alanı yoktu, key'den ("tv-1396" gibi) çıkarıyoruz
-  if (!o.tmdbId) o.tmdbId = Number(o.key.split("-")[1]);
-
-  o.sezon = 1;
-  o.bolum = 1;
-  o.sezonSayisi = await sezonSayisiGetir(o.tmdbId);
-  o.bolumSayilari = {};
-  o.bolumSayilari[1] = await bolumSayisiGetir(o.tmdbId, 1);
-
-  kaydet();
-  listeyiCiz();
-}
-
+/* ---------------- LİSTE KARTI OLAYLARI ---------------- */
 listeAlani.addEventListener("click", async (e) => {
   const baslatBtn = e.target.closest("[data-baslat]");
+  const baslatIzlemeBtn = e.target.closest("[data-baslat-izleme]");
+  const sonrakiBtn = e.target.closest("[data-sonraki]");
+  const izledimBtn = e.target.closest("[data-izledim]");
+  const silBtn = e.target.closest("[data-sil]");
+
   if (baslatBtn) {
     await bolumTakibiBaslat(baslatBtn.dataset.baslat);
     return;
   }
-
-  const silBtn = e.target.closest("[data-sil]");
+  if (baslatIzlemeBtn) {
+    const o = listem.find((x) => x.key === baslatIzlemeBtn.dataset.baslatIzleme);
+    if (o) {
+      o.durum = "izliyor";
+      if (!o.bolumSayilari) await bolumTakibiBaslat(o.key);
+      kaydet();
+      listeyiCiz();
+    }
+    return;
+  }
+  if (sonrakiBtn) {
+    await sonrakiBolume(sonrakiBtn.dataset.sonraki);
+    return;
+  }
+  if (izledimBtn) {
+    const o = listem.find((x) => x.key === izledimBtn.dataset.izledim);
+    if (o) {
+      o.durum = "bitirdi";
+      kaydet();
+      listeyiCiz();
+    }
+    return;
+  }
   if (silBtn) {
     listem = listem.filter((o) => o.key !== silBtn.dataset.sil);
     kaydet();
     listeyiCiz();
     // Listeden çıkanın arama sonucundaki hali tekrar "+" olsun
     if (sonSonuclar.length) goster(sonSonuclar);
-    return;
-  }
-
-  const sonrakiBtn = e.target.closest("[data-sonraki]");
-  if (sonrakiBtn) {
-    await sonrakiBolume(sonrakiBtn.dataset.sonraki);
   }
 });
+
+listeAlani.addEventListener("change", (e) => {
+  const secici = e.target.closest("[data-durum-sec]");
+  if (!secici) return;
+  const o = listem.find((x) => x.key === secici.dataset.durumSec);
+  if (o) {
+    o.durum = secici.value;
+    kaydet();
+    listeyiCiz();
+  }
+});
+
+
+/* ---------------- BÖLÜM TAKİBİ ---------------- */
+
+// Bölüm takibi olmadan eklenmiş eski bir diziye sonradan bölüm takibi ekler
+async function bolumTakibiBaslat(key) {
+  const o = listem.find((x) => x.key === key);
+  if (!o || o.bolumSayilari) return;
+
+  o.sezon = 1;
+  o.bolum = 1;
+  o.sezonSayisi = await sezonSayisiGetir(o.tmdbId);
+  o.bolumSayilari = {};
+  const sonuc = await bolumSayisiGetir(o.tmdbId, 1);
+  o.bolumSayilari[1] = sonuc;
+
+  kaydet();
+  listeyiCiz();
+}
 
 // Bir dizinin bölümünü bir ileri götürür, sezon biterse otomatik sonraki sezona geçer
 async function sonrakiBolume(key) {
@@ -214,6 +300,8 @@ async function sonrakiBolume(key) {
       o.bolumSayilari[o.sezon] = await bolumSayisiGetir(o.tmdbId, o.sezon);
     }
   }
+
+  if (sonBolumMu(o)) o.durum = "bitirdi"; // tüm bölümler bitince otomatik "Bitirdim"e taşı
 
   kaydet();
   listeyiCiz();

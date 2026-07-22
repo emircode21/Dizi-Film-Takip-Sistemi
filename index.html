@@ -30,6 +30,7 @@
     <button class="sekme-btn aktif" data-sekme="izliyor">İzliyorum <span class="sekme-sayi">0</span></button>
     <button class="sekme-btn" data-sekme="bitirdi">Bitirdim <span class="sekme-sayi">0</span></button>
     <button class="sekme-btn" data-sekme="izlemek_istiyor">İzlemek İstiyorum <span class="sekme-sayi">0</span></button>
+    <button class="sekme-btn" data-sekme="birlikte">Birlikte <span class="sekme-sayi">0</span></button>
   </div>
 
   <div class="siralama-satiri">
@@ -68,6 +69,7 @@
         <button class="ekleme-secenek-btn" data-durum-ekle="izliyor">İzliyorum</button>
         <button class="ekleme-secenek-btn" data-durum-ekle="izlemek_istiyor">İzlemek İstiyorum</button>
         <button class="ekleme-secenek-btn" data-durum-ekle="bitirdi">Bitirdim</button>
+        <button class="ekleme-secenek-btn ekleme-ortak" data-durum-ekle="birlikte">💛 Birlikte İzlenenler</button>
       </div>
     </div>
   </div>
@@ -100,11 +102,32 @@
     </div>
   </div>
 
+  <!-- Ortak koda bağlanma kutusu -->
+  <div id="ortakKodModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu ortak-kod-kutu">
+      <button id="ortakKodKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="modal-baslik">💛 Birlikte İzlenenler</div>
+      <p class="modal-ozet">
+        Ortak listeye bağlanmak için ikinizin belirlediği gizli kodu yazın.
+        Aynı kodu yazan herkes aynı listeyi görür ve anlık senkron olur.
+        Büyük/küçük harf farketmez.
+      </p>
+      <input id="ortakKodInput" class="ortak-kod-input" type="text" placeholder="Ortak kod" autocomplete="off" autocapitalize="off" />
+      <button id="ortakKodBaglanBtn" class="ekleme-secenek-btn">Bağlan</button>
+      <div id="ortakKodHata" class="ortak-kod-hata" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Firebase (Firestore) — ortak liste için, kendi sitemizin dışından yüklenir -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
   <script src="js/config.js"></script>
   <script src="js/depo.js"></script>
   <script src="js/tmdb.js"></script>
   <script src="js/liste.js"></script>
   <script src="js/detay.js"></script>
+  <script src="js/ortak.js"></script>
   <script src="js/uygulama.js"></script>
 </body>
 </html>

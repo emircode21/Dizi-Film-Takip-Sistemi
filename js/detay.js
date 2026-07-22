@@ -15,9 +15,27 @@ const detayKalanBilgi = document.getElementById("detayKalanBilgi");
 const detayBolumListesi = document.getElementById("detayBolumListesi");
 
 let acikOgeKey = null;
+let detayOrtakMi = false; // açık öğe ortak listeden mi geldi? (kaydetme yolunu belirler)
+
+// Öğeyi önce kişisel listede, yoksa ortak listede arar
+function detayOgeBul(key) {
+  let o = listem.find((x) => x.key === key);
+  if (o) { detayOrtakMi = false; return o; }
+  if (typeof ortakListem !== "undefined") {
+    o = ortakListem.find((x) => x.key === key);
+    if (o) { detayOrtakMi = true; return o; }
+  }
+  return null;
+}
+
+// Açık öğeyi doğru yere kaydeder (kişisel → localStorage, ortak → Firestore)
+function detayKaydet(o) {
+  if (detayOrtakMi) ortakGuncelle(o);
+  else kaydet();
+}
 
 async function detayAc(key) {
-  const o = listem.find((x) => x.key === key);
+  const o = detayOgeBul(key);
   if (!o) return;
 
   acikOgeKey = key;
@@ -68,7 +86,7 @@ async function detayBolumleriCiz(o, sezonNo) {
     const sonuc = await bolumSayisiGetir(o.tmdbId, sezonNo);
     o.bolumSayilari[sezonNo] = sonuc.sayi;
     o.bolumDetaylari[sezonNo] = sonuc.bolumler;
-    kaydet();
+    detayKaydet(o);
   }
 
   const toplamBuSezon = o.bolumSayilari[sezonNo];
@@ -98,14 +116,14 @@ async function detayBolumleriCiz(o, sezonNo) {
 }
 
 detaySezonSecici.addEventListener("change", async () => {
-  const o = listem.find((x) => x.key === acikOgeKey);
+  const o = (detayOrtakMi ? ortakListem : listem).find((x) => x.key === acikOgeKey);
   if (!o) return;
   await detayBolumleriCiz(o, Number(detaySezonSecici.value));
   detayBolumSecici.value = "1";
 });
 
 detayKaydetBtn.addEventListener("click", async () => {
-  const o = listem.find((x) => x.key === acikOgeKey);
+  const o = (detayOrtakMi ? ortakListem : listem).find((x) => x.key === acikOgeKey);
   if (!o) return;
 
   o.sezon = Number(detaySezonSecici.value);
@@ -114,7 +132,7 @@ detayKaydetBtn.addEventListener("click", async () => {
   if (sonBolumMu(o)) o.durum = "bitirdi";
   else if (o.durum === "izlemek_istiyor") o.durum = "izliyor";
 
-  kaydet();
+  detayKaydet(o);
   listeyiCiz();
   await detayBolumleriCiz(o, o.sezon);
 });

@@ -139,6 +139,15 @@ eklemeModal.addEventListener("click", (e) => {
 eklemeSecenekler.addEventListener("click", async (e) => {
   const btn = e.target.closest("[data-durum-ekle]");
   if (!btn || !eklenecekOge) return;
+
+  // "Birlikte İzlenenler" seçildiyse kişisel listeye değil, ortak (Firestore) listeye ekle
+  if (btn.dataset.durumEkle === "birlikte") {
+    const oge = eklenecekOge;
+    eklemeKapat();
+    ortakEkleAkisi(oge);
+    return;
+  }
+
   await ekle(eklenecekOge, btn.dataset.durumEkle);
   eklemeKapat();
 });
@@ -219,12 +228,28 @@ function gorunecekListe() {
 
 
 /* ---------------- KART ÇİZİMİ ---------------- */
-function listeyiCiz() {
+
+// Sekme başlıklarındaki sayaçları ve aktif vurguyu günceller.
+// "birlikte" sekmesi kişisel listeden değil, ortak (Firestore) listeden sayılır.
+function sekmeSayilariniGuncelle() {
   sekmeAlani.querySelectorAll("[data-sekme]").forEach((btn) => {
-    const sayi = listem.filter((o) => o.durum === btn.dataset.sekme).length;
-    btn.classList.toggle("aktif", btn.dataset.sekme === aktifSekme);
+    const s = btn.dataset.sekme;
+    const sayi = s === "birlikte"
+      ? (typeof ortakListem !== "undefined" ? ortakListem.length : 0)
+      : listem.filter((o) => o.durum === s).length;
+    btn.classList.toggle("aktif", s === aktifSekme);
     btn.querySelector(".sekme-sayi").textContent = sayi;
   });
+}
+
+function listeyiCiz() {
+  sekmeSayilariniGuncelle();
+
+  // "Birlikte İzlenenler" sekmesi tamamen ayrı bir kaynaktan (Firestore) çizilir
+  if (aktifSekme === "birlikte") {
+    ortakListeyiCiz();
+    return;
+  }
 
   const goruntulenecek = gorunecekListe();
 
@@ -304,6 +329,9 @@ function sonBolumMu(o) {
 
 /* ---------------- LİSTE KARTI OLAYLARI ---------------- */
 listeAlani.addEventListener("click", async (e) => {
+  // "Birlikte" sekmesindeyken kartlar ortak listeden gelir; olayları ortak.js yönetir
+  if (aktifSekme === "birlikte") { ortakListeTiklama(e); return; }
+
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatBtn = e.target.closest("[data-baslat]");
   const baslatIzlemeBtn = e.target.closest("[data-baslat-izleme]");
@@ -359,6 +387,9 @@ listeAlani.addEventListener("click", async (e) => {
 });
 
 listeAlani.addEventListener("change", (e) => {
+  // "Birlikte" sekmesindeyken durum değişimini ortak.js Firestore'a yazar
+  if (aktifSekme === "birlikte") { ortakListeDegisim(e); return; }
+
   const secici = e.target.closest("[data-durum-sec]");
   if (!secici) return;
   const o = listem.find((x) => x.key === secici.dataset.durumSec);

@@ -9,7 +9,7 @@ const kisiFoto = document.getElementById("kisiFoto");
 const kisiAdEl = document.getElementById("kisiAd");
 const kisiRol = document.getElementById("kisiRol");
 const kisiYapimlar = document.getElementById("kisiYapimlar");
-const kisiSiralaAlani = document.getElementById("kisiSirala");
+const kisiSiralaSecici = document.getElementById("kisiSiralaSecici");
 
 let kisiAcikId = null;
 let kisiYapimListesi = [];        // bilinirlik sırasında (kisiDetayGetir'den geldiği gibi)
@@ -66,14 +66,11 @@ function kisiYapimlariCiz() {
 
 function kisiSiraModAyarla(mod) {
   kisiSiraMod = mod;
-  kisiSiralaAlani.querySelectorAll(".kisi-sirala-btn").forEach((b) =>
-    b.classList.toggle("aktif", b.dataset.sira === mod));
+  if (kisiSiralaSecici) kisiSiralaSecici.value = mod;
 }
 
-kisiSiralaAlani.addEventListener("click", (e) => {
-  const btn = e.target.closest(".kisi-sirala-btn");
-  if (!btn) return;
-  kisiSiraModAyarla(btn.dataset.sira);
+kisiSiralaSecici.addEventListener("change", () => {
+  kisiSiraMod = kisiSiralaSecici.value;
   kisiYapimlariCiz();
 });
 

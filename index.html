@@ -173,11 +173,11 @@
       </div>
       <div class="kisi-yapim-baslik-satiri">
         <div class="detay-baslik-kucuk">Yapımları</div>
-        <div class="kisi-sirala" id="kisiSirala">
-          <button class="kisi-sirala-btn aktif" data-sira="bilinirlik">Bilinirlik</button>
-          <button class="kisi-sirala-btn" data-sira="yeni">Yeni</button>
-          <button class="kisi-sirala-btn" data-sira="puan">Puan</button>
-        </div>
+        <select id="kisiSiralaSecici" class="kisi-sirala-secici">
+          <option value="bilinirlik">Bilinirliğe göre</option>
+          <option value="yeni">Yeni → Eski</option>
+          <option value="puan">Puana göre</option>
+        </select>
       </div>
       <div id="kisiYapimlar" class="kisi-yapim-grid"></div>
     </div>

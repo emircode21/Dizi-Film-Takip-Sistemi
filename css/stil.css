@@ -765,13 +765,17 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; flex-wrap: wrap;
 }
-.kisi-sirala { display: flex; gap: 4px; background: var(--kart-2); border-radius: 10px; padding: 3px; }
-.kisi-sirala-btn {
-  border: none; background: none; color: var(--soluk);
-  font-size: 12px; font-weight: 600; padding: 6px 10px;
-  border-radius: 8px; cursor: pointer;
+.kisi-sirala-secici {
+  background: var(--kart-2);
+  color: var(--yazi);
+  border: 1px solid var(--kenar);
+  border-radius: 9px;
+  padding: 7px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
 }
-.kisi-sirala-btn.aktif { background: var(--arka); color: var(--vurgu); box-shadow: var(--golge); }
+.kisi-sirala-secici:focus { border-color: var(--vurgu); }
 
 .kisi-yapim-grid {
   display: grid;

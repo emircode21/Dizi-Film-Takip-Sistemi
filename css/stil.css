@@ -195,20 +195,38 @@ body {
   color: transparent;
 }
 .hero-slogan { color: var(--soluk); font-size: 14.5px; font-style: italic; margin: 8px 0 0; }
-.hero-sayac {
-  display: inline-block;
-  margin-top: 14px;
-  font-size: 13px;
-  color: var(--vurgu);
-  background: var(--vurgu-yumusak);
-  padding: 7px 15px;
-  border-radius: 999px;
-  line-height: 1.5;
-  font-variant-numeric: tabular-nums;
+/* ---------- Dijital birliktelik sayacı ---------- */
+.hero-sayac { margin-top: 18px; }
+.sayac-baslik { font-size: 12px; color: var(--soluk); letter-spacing: 1px; margin-bottom: 9px; }
+.sayac-satir { display: flex; gap: 10px; }
+.sayac-hucre {
+  min-width: 62px;
+  background: var(--kart);
+  border: 1px solid var(--kenar);
+  border-radius: 12px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  box-shadow: var(--golge);
 }
-.hero-sayac b { font-weight: 700; }
+.sayac-rakam {
+  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, var(--vurgu), var(--altin));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.sayac-etiket { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--soluk); }
 @media (max-width: 819px) {
-  .hero-sayac { font-size: 12px; }
+  .sayac-satir { justify-content: center; }
+  .sayac-hucre { min-width: 54px; padding: 9px 6px; }
+  .sayac-rakam { font-size: 25px; }
 }
 
 /* ---------- Araç satırı (arama + sıralama) ---------- */
@@ -434,6 +452,7 @@ body {
 
 .bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
 .bos {
+  grid-column: 1 / -1;
   color: var(--soluk);
   font-size: 14px;
   text-align: center;
@@ -604,30 +623,26 @@ body {
 .ortak-bilgi-baslik { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
 .ortak-bilgi-kutu p { color: var(--soluk); font-size: 14px; line-height: 1.55; margin: 0 0 16px; }
 
-.ortak-ust-bar {
+/* Minik, göz yormayan "kodu değiştir" satırı */
+.ortak-mini-bar {
   grid-column: 1 / -1;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: var(--vurgu-yumusak);
-  border: 1px solid var(--vurgu);
-  border-radius: 11px;
-  padding: 9px 13px;
-  font-size: 13px;
-  color: var(--yazi);
+  justify-content: flex-end;
+  margin-bottom: 4px;
 }
-.ortak-ust-bar b { color: var(--vurgu); }
 .ortak-degistir-btn {
-  flex-shrink: 0;
   background: none;
   border: none;
-  color: var(--vurgu);
-  font-size: 13px;
+  color: var(--soluk);
+  font-size: 12px;
   cursor: pointer;
-  text-decoration: underline;
-  padding: 2px 4px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
+.ortak-degistir-btn:hover { color: var(--vurgu); background: var(--vurgu-yumusak); }
 
 .ortak-kod-kutu { padding-top: 28px; }
 .ortak-kod-input {

@@ -170,9 +170,8 @@ function ortakListeyiCiz() {
   });
 
   const ustBar = `
-    <div class="ortak-ust-bar">
-      <span>🔗 Ortak liste: <b>${ortakKod}</b></span>
-      <button class="ortak-degistir-btn" data-ortak-degistir>Kodu değiştir</button>
+    <div class="ortak-mini-bar">
+      <button class="ortak-degistir-btn" data-ortak-degistir>🔗 kodu değiştir</button>
     </div>`;
 
   if (liste.length === 0) {

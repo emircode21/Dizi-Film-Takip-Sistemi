@@ -53,7 +53,15 @@ function markayiCiz() {
   const hero = document.getElementById("hero");
   if (hero) {
     const sayacHTML = birlikteSure()
-      ? `<div class="hero-sayac" id="heroSayac"></div>`
+      ? `<div class="hero-sayac" id="heroSayac">
+           <div class="sayac-baslik">birlikte ${kalp}</div>
+           <div class="sayac-satir">
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacGun">–</span><span class="sayac-etiket">days</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacSaat">–</span><span class="sayac-etiket">hrs</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacDakika">–</span><span class="sayac-etiket">min</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacSaniye">–</span><span class="sayac-etiket">sec</span></div>
+           </div>
+         </div>`
       : "";
     const sloganHTML = AYARLAR.kisiselMod && AYARLAR.slogan
       ? `<p class="hero-slogan">${AYARLAR.slogan}</p>`
@@ -71,16 +79,17 @@ function markayiCiz() {
 let sayacZamanlayici = null;
 
 function sayaciGuncelle() {
-  const el = document.getElementById("heroSayac");
+  const gunEl = document.getElementById("sayacGun");
   const s = birlikteSure();
-  if (!el || !s) {
+  if (!gunEl || !s) {
     if (sayacZamanlayici) { clearInterval(sayacZamanlayici); sayacZamanlayici = null; }
     return;
   }
-  const kalp = AYARLAR.kalp || "";
-  el.innerHTML =
-    `${kalp} birlikte <b>${s.gun}</b> gün <b>${s.saat}</b> saat ` +
-    `<b>${s.dakika}</b> dakika <b>${s.saniye}</b> saniye`;
+  const iki = (n) => String(n).padStart(2, "0"); // 09, 05 gibi iki haneli
+  gunEl.textContent = s.gun;
+  document.getElementById("sayacSaat").textContent = iki(s.saat);
+  document.getElementById("sayacDakika").textContent = iki(s.dakika);
+  document.getElementById("sayacSaniye").textContent = iki(s.saniye);
 }
 
 function sayaciBaslat() {

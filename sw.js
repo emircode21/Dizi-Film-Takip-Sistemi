@@ -1,7 +1,7 @@
 /* Uygulama kabuğunu (HTML/CSS/JS/ikonlar) önbelleğe alır.
    TMDB API isteklerine ve poster görsellerine hiç dokunmaz — onlar her zaman ağdan gelir. */
 
-const ONBELLEK_ADI = "izleme-defteri-v9";
+const ONBELLEK_ADI = "izleme-defteri-v10";
 
 const KABUK_DOSYALARI = [
   "./",
@@ -50,20 +50,16 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
   if (event.request.method !== "GET") return;
 
-  // Stale-while-revalidate: önce önbellekteki hızlı halini göster,
-  // arka planda güncel halini çekip bir sonraki açılış için önbelleği tazele
+  // Önce ağ, olmazsa önbellek: internet varken her zaman en güncel dosya gelir
+  // (güncellemeler anında uygulanır), internet yokken önbellekten açılır.
   event.respondWith(
     caches.open(ONBELLEK_ADI).then((onbellek) =>
-      onbellek.match(event.request).then((onbellekteki) => {
-        const agdanGetir = fetch(event.request)
-          .then((yanit) => {
-            onbellek.put(event.request, yanit.clone());
-            return yanit;
-          })
-          .catch(() => onbellekteki);
-
-        return onbellekteki || agdanGetir;
-      })
+      fetch(event.request)
+        .then((yanit) => {
+          onbellek.put(event.request, yanit.clone()); // çevrimdışı için tazele
+          return yanit;
+        })
+        .catch(() => onbellek.match(event.request)) // ağ yoksa önbellekten ver
     )
   );
 });

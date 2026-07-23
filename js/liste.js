@@ -35,11 +35,17 @@ kutu.addEventListener("input", () => {
   zamanlayici = setTimeout(() => aramaCalistir(kelime), 400);
 });
 
-aramaTemizleBtn.addEventListener("click", () => {
+// Arama kutusunu ve sonuçları sıfırlar (temizle butonu + sekme değişimi kullanır)
+function aramayiSifirla() {
+  clearTimeout(zamanlayici);
   kutu.value = "";
   aramaTemizleBtn.style.display = "none";
   sonucAlani.innerHTML = "";
   sonucBaslik.style.display = "none";
+}
+
+aramaTemizleBtn.addEventListener("click", () => {
+  aramayiSifirla();
   kutu.focus();
 });
 
@@ -48,9 +54,14 @@ async function aramaCalistir(kelime) {
   sonucAlani.innerHTML = iskeletHTML(3);
 
   try {
-    sonSonuclar = await tmdbAra(kelime);
+    const sonuc = await tmdbAra(kelime);
+    // İstek dönene kadar kullanıcı kutuyu değiştirdi/temizlediyse (ör. sekme değişimi)
+    // bu geç gelen sonucu ekrana basma
+    if (kutu.value.trim() !== kelime) return;
+    sonSonuclar = sonuc;
     sonucGoster(sonSonuclar);
   } catch (hata) {
+    if (kutu.value.trim() !== kelime) return;
     sonucAlani.innerHTML = "<div class='bilgi'>Bir şeyler ters gitti.</div>";
   }
 }
@@ -225,6 +236,7 @@ sekmeAlani.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-sekme]");
   if (!btn) return;
   aktifSekme = btn.dataset.sekme;
+  aramayiSifirla(); // sekme değişince arama kutusu boş kalsın
   listeyiCiz();
 
   // "Birlikte" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç

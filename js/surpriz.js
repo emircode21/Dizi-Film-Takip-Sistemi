@@ -20,7 +20,7 @@ let surprizSonSonuclar = [];  // keşif havuzu (reroll için)
 
 /* ---- Aç / kapat ---- */
 function surprizAc() {
-  surprizSonuc.innerHTML = "";
+  kesfetFormuSifirla();  // her açılışta temiz başla
   surprizModal.style.display = "flex";
   const mk = surprizModal.querySelector(".modal-kutu");
   if (mk) mk.scrollTop = 0;
@@ -243,11 +243,12 @@ function sonucKartiCiz(oge, mod) {
         cevirmeAnimasyonu(surprizSonSonuclar, (s) => sonucKartiCiz(s, "kesfet"));
       }
     } else if (a === "detay-kayitli") {
-      surprizKapat();
+      surprizModal.style.display = "none"; // gizle (filtre bir sonraki açılışta sıfırlanır)
       detayAc(btn.dataset.key);
     } else if (a === "detay-tmdb") {
-      surprizKapat();
-      detayAcTmdb(oge);
+      surprizModal.style.display = "none";
+      // Keşif havuzunu detaya taşı: detayda tek tuşla "başka öneri" için
+      detayAcTmdb(oge, true, mod === "kesfet" ? surprizSonSonuclar : null);
     } else if (a === "ekle") {
       surprizKapat();
       eklemeSecimiAc(oge);

@@ -40,6 +40,16 @@ function detayKaydet(o) {
 // Kayıtlı olmayan (arama/öneri) öğe için TMDB ham objesi — "Listeye ekle" bunu kullanır
 let detayOnizlemeHam = null;
 
+// Detay içi gezinme: "Benzer yapımlar" için geri yığını + sürpriz "başka öneri" havuzu
+const detayGeriBtn = document.getElementById("detayGeriBtn");
+let detayGecmis = [];          // her biri önceki görünümü yeniden açan fonksiyon
+let detaySuAnkiAcici = null;   // şu an görüneni yeniden açan fonksiyon
+let detaySurprizHavuz = null;  // sürprizden geldiyse "başka öneri" için aday havuzu
+
+function detayGeriGuncelle() {
+  if (detayGeriBtn) detayGeriBtn.style.display = detayGecmis.length ? "inline-flex" : "none";
+}
+
 // Başlık + zengin gövde çizimi; kayıtlı ve önizleme modu için ortak.
 // Dönen değer: detay objesi (başarılıysa) veya null (kullanıcı bu arada başka öğe açtıysa).
 async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
@@ -83,9 +93,14 @@ async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
 }
 
 // Kayıtlı bir öğenin detayı (sezon/bölüm takibiyle)
-async function detayAc(key) {
+// kok=true → yeni bir gezinme kökü (geçmiş temizlenir); false → geri/ileri gezinme
+async function detayAc(key, kok = true) {
   const o = detayOgeBul(key);
   if (!o) return;
+
+  if (kok) { detayGecmis = []; detaySurprizHavuz = null; }
+  detaySuAnkiAcici = () => detayAc(key, false);
+  detayGeriGuncelle();
 
   acikOgeKey = key;
   detayOnizlemeHam = null;
@@ -107,7 +122,13 @@ async function detayAc(key) {
 
 // Kayıtlı OLMAYAN bir TMDB öğesinin (arama sonucu / öneri) detay önizlemesi.
 // x: TMDB arama biçimi { media_type, id, poster_path, name/title, first_air_date/release_date }
-async function detayAcTmdb(x) {
+async function detayAcTmdb(x, kok = true, surprizHavuz = null) {
+  if (kok) { detayGecmis = []; detaySurprizHavuz = surprizHavuz; }
+  else if (surprizHavuz) { detaySurprizHavuz = surprizHavuz; }
+  const buHavuz = detaySurprizHavuz; // bu görünümdeki "başka öneri" havuzu
+  detaySuAnkiAcici = () => detayAcTmdb(x, false, buHavuz);
+  detayGeriGuncelle();
+
   const diziMi = x.media_type === "tv";
   const ad = diziMi ? (x.name || x.title) : (x.title || x.name);
   const tarih = diziMi ? x.first_air_date : x.release_date;
@@ -125,23 +146,47 @@ async function detayAcTmdb(x) {
   const zatenVar = listem.some((o) => o.key === kayitliKey)
     || (typeof ortakListem !== "undefined" && ortakListem.some((o) => o.key === kayitliKey));
 
-  detayEkleAlani.innerHTML = zatenVar
+  let ekleHTML = zatenVar
     ? `<div class="detay-ekli-not">✓ Bu yapım zaten listende</div>`
     : `<button id="detayEkleBtn" class="detay-ekle-btn">➕ Listeye ekle</button>`;
+  // Sürprizden gelindiyse tek tuşla başka öneri
+  if (buHavuz && buHavuz.length > 1) {
+    ekleHTML += `<button id="detayBaskaOneriBtn" class="detay-baska-btn">🎲 Başka öneri getir</button>`;
+  }
+  detayEkleAlani.innerHTML = ekleHTML;
   detayEkleAlani.style.display = "block";
 }
 
-// Detay önizlemesindeki "Listeye ekle" → mevcut "nereye eklensin" akışını aç
+// Detay önizleme alanı: "Listeye ekle" ve "Başka öneri getir"
 detayEkleAlani.addEventListener("click", (e) => {
-  if (!e.target.closest("#detayEkleBtn") || !detayOnizlemeHam) return;
-  const ham = detayOnizlemeHam;
-  detayKapat();
-  eklemeSecimiAc(ham);
+  if (e.target.closest("#detayEkleBtn") && detayOnizlemeHam) {
+    const ham = detayOnizlemeHam;
+    detayKapat();
+    eklemeSecimiAc(ham);
+    return;
+  }
+  if (e.target.closest("#detayBaskaOneriBtn") && detaySurprizHavuz && detaySurprizHavuz.length) {
+    const havuz = detaySurprizHavuz;
+    const yeni = havuz[Math.floor(Math.random() * havuz.length)];
+    detayAcTmdb(yeni, true, havuz); // yeni kök açılış, havuz korunur
+  }
 });
+
+// Geri: "Benzer yapımlar"a daldıktan sonra bir önceki yapıma dön
+if (detayGeriBtn) {
+  detayGeriBtn.addEventListener("click", () => {
+    const acici = detayGecmis.pop();
+    detayGeriGuncelle();
+    if (acici) acici();
+  });
+}
 
 function detayKapat() {
   detayModal.style.display = "none";
   acikOgeKey = null;
+  detayGecmis = [];
+  detaySurprizHavuz = null;
+  detayGeriGuncelle();
 }
 
 /* Puan rozetleri, tür/süre, oyuncular, yönetmen, sağlayıcılar, fragman */
@@ -223,7 +268,7 @@ function detayOnerileriCiz(oneriler) {
     `<div class="detay-baslik-kucuk">Benzer yapımlar</div><div class="oneri-serit">${kartlar}</div>`;
 }
 
-// Öneri posterine tıklayınca doğrudan o yapımın detay önizlemesini aç
+// Öneri posterine tıklayınca o yapımın detayına geç; öncekini geçmişe koy
 detayOneriler.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-oneri-tmdb]");
   if (!btn) return;
@@ -232,6 +277,10 @@ detayOneriler.addEventListener("click", (e) => {
   const poster = btn.dataset.oneriPoster || null;
   const yil = btn.dataset.oneriYil || "";
   const tarih = yil ? yil + "-01-01" : "";
+
+  // Şu anki yapımı geri yığınına ekle, benzer yapıma dal (kök değil)
+  if (detaySuAnkiAcici) detayGecmis.push(detaySuAnkiAcici);
+  detaySurprizHavuz = null; // benzer yapıma dalınca sürpriz havuzunu bırak
   detayAcTmdb({
     media_type: type,
     id: Number(btn.dataset.oneriTmdb),
@@ -239,7 +288,8 @@ detayOneriler.addEventListener("click", (e) => {
     name: ad, title: ad,
     first_air_date: type === "tv" ? tarih : "",
     release_date: type === "movie" ? tarih : "",
-  });
+  }, false);
+  detayGeriGuncelle();
 });
 
 detayKapatBtn.addEventListener("click", detayKapat);

@@ -565,6 +565,21 @@ body {
   .modal-kutu { border-radius: 20px; }
 }
 @keyframes modalGir { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+.modal-geri {
+  align-items: center;
+  gap: 3px;
+  margin: 0 0 14px;
+  background: var(--kart-2);
+  border: none;
+  color: var(--yazi);
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.modal-geri:hover { color: var(--vurgu); }
 .modal-kapat {
   position: absolute;
   top: 14px;
@@ -713,6 +728,21 @@ body {
   cursor: pointer;
 }
 .detay-ekle-btn:hover { filter: brightness(1.05); }
+
+/* Sürprizden gelindiğinde detayda "başka öneri" butonu */
+.detay-baska-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--kenar);
+  background: var(--kart-2);
+  color: var(--yazi);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.detay-baska-btn:hover { border-color: var(--vurgu); color: var(--vurgu); }
 .detay-ekli-not {
   margin-top: 6px;
   padding: 12px;

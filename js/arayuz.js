@@ -56,10 +56,10 @@ function markayiCiz() {
       ? `<div class="hero-sayac" id="heroSayac">
            <div class="sayac-baslik">birlikte ${kalp}</div>
            <div class="sayac-satir">
-             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacGun">–</span><span class="sayac-etiket">days</span></div>
-             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacSaat">–</span><span class="sayac-etiket">hrs</span></div>
-             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacDakika">–</span><span class="sayac-etiket">min</span></div>
-             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacSaniye">–</span><span class="sayac-etiket">sec</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacGun">–</span><span class="sayac-etiket">d</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacSaat">–</span><span class="sayac-etiket">h</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacDakika">–</span><span class="sayac-etiket">m</span></div>
+             <div class="sayac-hucre"><span class="sayac-rakam" id="sayacSaniye">–</span><span class="sayac-etiket">s</span></div>
            </div>
          </div>`
       : "";

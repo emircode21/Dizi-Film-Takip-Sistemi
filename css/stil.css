@@ -212,21 +212,20 @@ body {
   box-shadow: var(--golge);
 }
 .sayac-rakam {
-  font-family: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, monospace;
-  font-size: 30px;
-  font-weight: 700;
+  font-family: Georgia, "Iowan Old Style", Palatino, "Times New Roman", serif;
+  font-size: 33px;
+  font-weight: 600;
   line-height: 1;
-  font-variant-numeric: tabular-nums;
   background: linear-gradient(180deg, var(--vurgu), var(--altin));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
-.sayac-etiket { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--soluk); }
+.sayac-etiket { font-size: 11px; font-style: italic; letter-spacing: 0.5px; color: var(--soluk); }
 @media (max-width: 819px) {
   .sayac-satir { justify-content: center; }
   .sayac-hucre { min-width: 54px; padding: 9px 6px; }
-  .sayac-rakam { font-size: 25px; }
+  .sayac-rakam { font-size: 28px; }
 }
 
 /* ---------- Araç satırı (arama + sıralama) ---------- */

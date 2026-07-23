@@ -26,7 +26,25 @@ function surprizAc() {
   if (mk) mk.scrollTop = 0;
   turSeciciDoldur(); // keşif tür menüsü (önbellekli)
 }
-function surprizKapat() { surprizModal.style.display = "none"; }
+function surprizKapat() {
+  surprizModal.style.display = "none";
+  kesfetFormuSifirla(); // filtreler bir sonraki açılışa taşınmasın
+}
+
+// Keşfet filtrelerini ve sonucu varsayılana döndür
+function kesfetFormuSifirla() {
+  surprizSeciliKisi = null;
+  surprizSonSonuclar = [];
+  surprizKisiInput.value = "";
+  surprizKisiSonuc.innerHTML = "";
+  surprizKisiSecili.style.display = "none";
+  surprizKisiSecili.innerHTML = "";
+  const turSec = document.getElementById("surprizTurSecici");
+  if (turSec) turSec.value = "";
+  const puanSec = document.getElementById("surprizPuanSecici");
+  if (puanSec) puanSec.value = "7";
+  surprizSonuc.innerHTML = "";
+}
 
 surprizBtn.addEventListener("click", surprizAc);
 surprizKapatBtn.addEventListener("click", surprizKapat);
@@ -90,15 +108,20 @@ surprizKisiInput.addEventListener("input", () => {
   }, 400);
 });
 
-surprizKisiSonuc.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-kisi-id]");
-  if (!btn) return;
-  surprizSeciliKisi = { id: Number(btn.dataset.kisiId), ad: btn.dataset.kisiAd };
+// Bir kişiyi seç: çipini göster, arama kutusunu/sonuçlarını temizle
+function kisiSec(id, ad) {
+  surprizSeciliKisi = { id: Number(id), ad: ad };
   surprizKisiInput.value = "";
   surprizKisiSonuc.innerHTML = "";
   surprizKisiSecili.style.display = "flex";
   surprizKisiSecili.innerHTML =
-    `<span>👤 ${surprizSeciliKisi.ad}</span><button id="kisiKaldirBtn" aria-label="Kaldır">✕</button>`;
+    `<span>👤 ${ad}</span><button id="kisiKaldirBtn" aria-label="Kaldır">✕</button>`;
+}
+
+surprizKisiSonuc.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-kisi-id]");
+  if (!btn) return;
+  kisiSec(Number(btn.dataset.kisiId), btn.dataset.kisiAd);
 });
 
 surprizKisiSecili.addEventListener("click", (e) => {
@@ -134,6 +157,13 @@ document.getElementById("surprizGetirBtn").addEventListener("click", async () =>
   const minPuan = document.getElementById("surprizPuanSecici").value;
   surprizSonuc.innerHTML = `<div class="surpriz-yukleniyor">🎬 Aranıyor...</div>`;
 
+  // Kişi kutusuna isim yazılmış ama listeden seçilmemişse ilk eşleşeni otomatik seç
+  const yaziliIsim = surprizKisiInput.value.trim();
+  if (yaziliIsim.length >= 2 && !surprizSeciliKisi) {
+    const bulunan = await kisiAra(yaziliIsim);
+    if (bulunan.length) kisiSec(bulunan[0].id, bulunan[0].ad);
+  }
+
   surprizSonSonuclar = await kesfet({
     type: surprizKesfetTur,
     turId: turId || null,
@@ -142,8 +172,9 @@ document.getElementById("surprizGetirBtn").addEventListener("click", async () =>
   });
 
   if (surprizSonSonuclar.length === 0) {
-    surprizSonuc.innerHTML = `<div class="surpriz-bos">Bu filtrelere uygun bir şey bulamadım.
-      Filtreleri biraz gevşetip tekrar dene. 🙈</div>`;
+    const kisiKismi = surprizSeciliKisi ? ` (${surprizSeciliKisi.ad})` : "";
+    surprizSonuc.innerHTML = `<div class="surpriz-bos">Seçtiğin kriterlere${kisiKismi} uygun film/dizi bulunamadı.
+      Puanı düşürmeyi veya türü/kişiyi değiştirmeyi dene. 🙈</div>`;
     return;
   }
   cevirmeAnimasyonu(surprizSonSonuclar, (secilen) => sonucKartiCiz(secilen, "kesfet"));

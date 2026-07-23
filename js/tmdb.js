@@ -218,22 +218,49 @@ async function kisiAra(isim) {
   }
 }
 
-// TMDB Discover ile filtreli keşif. { type, turId, kisiId, minPuan }
-// Döndürür: TMDB arama biçiminde öğe dizisi (media_type dahil)
+// TMDB ile filtreli keşif. { type, turId, kisiId, minPuan }
+// Döndürür: TMDB arama biçiminde öğe dizisi (media_type dahil).
+// Not: dizi keşfinde TMDB with_people'ı yok saydığı için, kişi seçiliyse
+// kişinin gerçek filmografisini (credits) çekip istemcide filtreliyoruz.
 async function kesfet({ type, turId, kisiId, minPuan }) {
-  try {
-    let url = "https://api.themoviedb.org/3/discover/" + type
-      + "?api_key=" + API_KEY + "&language=tr-TR"
-      + "&sort_by=vote_count.desc"
-      + "&vote_count.gte=200"
-      + "&include_adult=false";
-    if (minPuan) url += "&vote_average.gte=" + minPuan;
-    if (turId) url += "&with_genres=" + turId;
-    // with_people hem oyuncuyu hem yönetmeni/ekibi kapsar (film ve dizide)
-    if (kisiId) url += "&with_people=" + kisiId;
+  const minP = minPuan ? Number(minPuan) : 0;
+  const turSayi = turId ? Number(turId) : null;
 
-    const veri = await (await fetch(url)).json();
-    return (veri.results || []).map((x) => ({
+  try {
+    let ham;
+
+    if (kisiId) {
+      // Kişinin filmografisi (oyuncu + ekip/yönetmen), tekilleştirilmiş
+      const url = "https://api.themoviedb.org/3/person/" + kisiId + "/"
+        + type + "_credits?api_key=" + API_KEY + "&language=tr-TR";
+      const veri = await (await fetch(url)).json();
+      const hepsi = [].concat(veri.cast || [], veri.crew || []);
+      const gorulen = new Set();
+      ham = hepsi.filter((x) => {
+        if (gorulen.has(x.id)) return false;
+        gorulen.add(x.id);
+        return true;
+      });
+    } else {
+      // Kişi yoksa Discover (sunucu tarafı filtreleme)
+      let url = "https://api.themoviedb.org/3/discover/" + type
+        + "?api_key=" + API_KEY + "&language=tr-TR"
+        + "&sort_by=vote_count.desc&vote_count.gte=200&include_adult=false";
+      if (minP) url += "&vote_average.gte=" + minP;
+      if (turSayi) url += "&with_genres=" + turSayi;
+      const veri = await (await fetch(url)).json();
+      ham = veri.results || [];
+    }
+
+    // Ortak filtreler (her iki yolda da güvenceye al)
+    const suzulmus = ham.filter((x) => {
+      if ((x.vote_count || 0) < 200) return false;          // yeterince bilinen
+      if (minP && (x.vote_average || 0) < minP) return false; // en az puan
+      if (turSayi && !(x.genre_ids || []).includes(turSayi)) return false; // tür
+      return true;
+    });
+
+    return suzulmus.map((x) => ({
       media_type: type,
       id: x.id,
       name: x.name,

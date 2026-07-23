@@ -8,6 +8,7 @@ const detayYil = document.getElementById("detayYil");
 const detayRozet = document.getElementById("detayRozet");
 const detayOzet = document.getElementById("detayOzet");
 const detayEkstra = document.getElementById("detayEkstra");
+const detayEkleAlani = document.getElementById("detayEkleAlani");
 const detayOneriler = document.getElementById("detayOneriler");
 const detaySezonAlani = document.getElementById("detaySezonAlani");
 const detaySezonSecici = document.getElementById("detaySezonSecici");
@@ -36,31 +37,32 @@ function detayKaydet(o) {
   else kaydet();
 }
 
-async function detayAc(key) {
-  const o = detayOgeBul(key);
-  if (!o) return;
+// Kayıtlı olmayan (arama/öneri) öğe için TMDB ham objesi — "Listeye ekle" bunu kullanır
+let detayOnizlemeHam = null;
 
-  acikOgeKey = key;
-  const diziMi = o.type === "tv";
+// Başlık + zengin gövde çizimi; kayıtlı ve önizleme modu için ortak.
+// Dönen değer: detay objesi (başarılıysa) veya null (kullanıcı bu arada başka öğe açtıysa).
+async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
+  const diziMi = type === "tv";
 
-  detayPoster.src = posterUrl(o.poster);
-  detayBaslik.textContent = o.ad;
-  detayYil.textContent = o.yil;
+  detayPoster.src = posterUrl(poster);
+  detayBaslik.textContent = ad;
+  detayYil.textContent = yil;
   detayRozet.textContent = diziMi ? "Dizi" : "Film";
   detayRozet.className = "rozet " + (diziMi ? "dizi" : "film");
   detayOzet.textContent = "Yükleniyor...";
   detayEkstra.innerHTML = "";
   detayOneriler.innerHTML = "";
+  detayEkleAlani.style.display = "none";
+  detaySezonAlani.style.display = "none";
   detayModal.style.display = "flex";
-  detayModal.scrollTop = 0;
-  const kutu = detayModal.querySelector(".modal-kutu");
-  if (kutu) kutu.scrollTop = 0;
+  const mKutu = detayModal.querySelector(".modal-kutu");
+  if (mKutu) mKutu.scrollTop = 0;
 
-  // Kapsamlı detayı tek yerde çek (tür, süre, oyuncu, yönetmen, fragman, puan, öneriler)
-  const detay = await detayGetir(o.type, o.tmdbId);
+  const detay = await detayGetir(type, tmdbId);
 
   // Kullanıcı beklerken başka bir öğe açtıysa bu sonucu yazma
-  if (acikOgeKey !== key) return;
+  if (acikOgeKey !== gecerliKey) return null;
 
   detayOzet.textContent = detay.ozet || "Özet bulunamadı.";
   detayEkstraCiz(detay, diziMi);
@@ -69,13 +71,28 @@ async function detayAc(key) {
   // IMDb puanını (varsa) arka planda çek ve rozeti güncelle
   if (detay.imdbId) {
     imdbPuanGetir(detay.imdbId).then((puan) => {
-      if (acikOgeKey !== key || !puan) return;
+      if (acikOgeKey !== gecerliKey || !puan) return;
       const yer = document.getElementById("imdbPuanYeri");
       if (yer) {
         yer.innerHTML = `<span class="puan-rozet imdb"><b>IMDb</b> ${puan}</span>`;
       }
     });
   }
+
+  return detay;
+}
+
+// Kayıtlı bir öğenin detayı (sezon/bölüm takibiyle)
+async function detayAc(key) {
+  const o = detayOgeBul(key);
+  if (!o) return;
+
+  acikOgeKey = key;
+  detayOnizlemeHam = null;
+  const diziMi = o.type === "tv";
+
+  const detay = await detayGovdeCiz(o.type, o.tmdbId, o.ad, o.yil, o.poster, key);
+  if (detay === null) return;
 
   if (diziMi && o.bolumSayilari) {
     detaySezonAlani.style.display = "block";
@@ -87,6 +104,40 @@ async function detayAc(key) {
     detaySezonAlani.style.display = "none";
   }
 }
+
+// Kayıtlı OLMAYAN bir TMDB öğesinin (arama sonucu / öneri) detay önizlemesi.
+// x: TMDB arama biçimi { media_type, id, poster_path, name/title, first_air_date/release_date }
+async function detayAcTmdb(x) {
+  const diziMi = x.media_type === "tv";
+  const ad = diziMi ? (x.name || x.title) : (x.title || x.name);
+  const tarih = diziMi ? x.first_air_date : x.release_date;
+  const yil = tarih ? tarih.slice(0, 4) : "—";
+  const key = "onizleme:" + x.media_type + "-" + x.id;
+
+  acikOgeKey = key;
+  detayOnizlemeHam = x;
+
+  const detay = await detayGovdeCiz(x.media_type, x.id, ad, yil, x.poster_path, key);
+  if (detay === null) return;
+
+  // Bu yapım zaten listede mi? (kişisel veya ortak)
+  const kayitliKey = x.media_type + "-" + x.id;
+  const zatenVar = listem.some((o) => o.key === kayitliKey)
+    || (typeof ortakListem !== "undefined" && ortakListem.some((o) => o.key === kayitliKey));
+
+  detayEkleAlani.innerHTML = zatenVar
+    ? `<div class="detay-ekli-not">✓ Bu yapım zaten listende</div>`
+    : `<button id="detayEkleBtn" class="detay-ekle-btn">➕ Listeye ekle</button>`;
+  detayEkleAlani.style.display = "block";
+}
+
+// Detay önizlemesindeki "Listeye ekle" → mevcut "nereye eklensin" akışını aç
+detayEkleAlani.addEventListener("click", (e) => {
+  if (!e.target.closest("#detayEkleBtn") || !detayOnizlemeHam) return;
+  const ham = detayOnizlemeHam;
+  detayKapat();
+  eklemeSecimiAc(ham);
+});
 
 function detayKapat() {
   detayModal.style.display = "none";
@@ -172,7 +223,7 @@ function detayOnerileriCiz(oneriler) {
     `<div class="detay-baslik-kucuk">Benzer yapımlar</div><div class="oneri-serit">${kartlar}</div>`;
 }
 
-// Öneri posterine tıklayınca "nereye eklensin" akışını aç (mevcut fonksiyonu kullan)
+// Öneri posterine tıklayınca doğrudan o yapımın detay önizlemesini aç
 detayOneriler.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-oneri-tmdb]");
   if (!btn) return;
@@ -180,9 +231,8 @@ detayOneriler.addEventListener("click", (e) => {
   const ad = btn.dataset.oneriAd;
   const poster = btn.dataset.oneriPoster || null;
   const yil = btn.dataset.oneriYil || "";
-  // eklemeSecimiAc TMDB arama biçimini bekler → uygun şekle çevir
   const tarih = yil ? yil + "-01-01" : "";
-  eklemeSecimiAc({
+  detayAcTmdb({
     media_type: type,
     id: Number(btn.dataset.oneriTmdb),
     poster_path: poster,

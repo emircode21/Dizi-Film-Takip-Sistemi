@@ -86,7 +86,7 @@ function sonucGoster(liste) {
       : `<button class="ekle-btn" data-ekle="${i}">+</button>`;
 
     return `
-      <div class="sonuc-kart">
+      <div class="sonuc-kart" data-sonuc="${i}">
         <img class="sonuc-poster" src="${posterUrl(x.poster_path)}" alt="">
         <div class="sonuc-bilgi">
           <div class="sonuc-ad">${ad}</div>
@@ -99,9 +99,17 @@ function sonucGoster(liste) {
 }
 
 sonucAlani.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-ekle]");
-  if (!btn) return;
-  eklemeSecimiAc(sonSonuclar[btn.dataset.ekle]);
+  // "+" butonuna basıldıysa "nereye eklensin" akışını aç
+  const ekleBtn = e.target.closest("[data-ekle]");
+  if (ekleBtn) {
+    eklemeSecimiAc(sonSonuclar[ekleBtn.dataset.ekle]);
+    return;
+  }
+  // Kartın başka bir yerine (poster/ad) tıklandıysa detay önizlemesini aç
+  const kart = e.target.closest("[data-sonuc]");
+  if (kart) {
+    detayAcTmdb(sonSonuclar[kart.dataset.sonuc]);
+  }
 });
 
 
@@ -134,6 +142,15 @@ function eklemeKapat() {
 eklemeKapatBtn.addEventListener("click", eklemeKapat);
 eklemeModal.addEventListener("click", (e) => {
   if (e.target === eklemeModal) eklemeKapat();
+});
+
+// "Önce detayına bak" → ekleme modalını kapat, detay önizlemesini aç
+const eklemeDetayBtn = document.getElementById("eklemeDetayBtn");
+eklemeDetayBtn.addEventListener("click", () => {
+  if (!eklenecekOge) return;
+  const oge = eklenecekOge;
+  eklemeKapat();
+  detayAcTmdb(oge);
 });
 
 eklemeSecenekler.addEventListener("click", async (e) => {

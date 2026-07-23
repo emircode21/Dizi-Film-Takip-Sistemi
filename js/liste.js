@@ -57,10 +57,10 @@ async function aramaCalistir(kelime) {
 
 function iskeletHTML(adet) {
   return Array(adet).fill(`
-    <div class="kart iskelet-kart">
-      <div class="iskelet-blok" style="width:54px;height:80px;"></div>
-      <div class="orta">
-        <div class="iskelet-blok" style="width:70%;height:14px;margin-bottom:8px;"></div>
+    <div class="sonuc-kart iskelet-kart">
+      <div class="iskelet-blok sonuc-poster"></div>
+      <div class="sonuc-bilgi">
+        <div class="iskelet-blok" style="width:70%;height:15px;margin-bottom:8px;"></div>
         <div class="iskelet-blok" style="width:40%;height:12px;"></div>
       </div>
     </div>`).join("");
@@ -86,14 +86,14 @@ function sonucGoster(liste) {
       : `<button class="ekle-btn" data-ekle="${i}">+</button>`;
 
     return `
-      <div class="kart">
-        <img src="${posterUrl(x.poster_path)}" alt="">
-        <div class="orta">
-          <div class="baslik">${ad}</div>
-          <div class="alt">${yil}</div>
+      <div class="sonuc-kart">
+        <img class="sonuc-poster" src="${posterUrl(x.poster_path)}" alt="">
+        <div class="sonuc-bilgi">
+          <div class="sonuc-ad">${ad}</div>
+          <div class="sonuc-yil">${yil}</div>
           <span class="rozet ${diziMi ? "dizi" : "film"}">${diziMi ? "Dizi" : "Film"}</span>
+          <div class="sonuc-aksiyon">${sagKisim}</div>
         </div>
-        ${sagKisim}
       </div>`;
   }).join("");
 }

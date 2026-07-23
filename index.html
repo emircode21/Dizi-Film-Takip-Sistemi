@@ -2,12 +2,29 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>İzleme Defteri</title>
+
+  <!-- Tema parlamasını önle: CSS boyanmadan önce doğru temayı ayarla -->
+  <script>
+    (function () {
+      try {
+        var t = localStorage.getItem("tema");
+        if (t !== "acik" && t !== "koyu") {
+          t = window.matchMedia("(prefers-color-scheme: light)").matches ? "acik" : "koyu";
+        }
+        document.documentElement.dataset.tema = t;
+      } catch (e) {
+        document.documentElement.dataset.tema = "koyu";
+      }
+    })();
+  </script>
+
   <link rel="stylesheet" href="css/stil.css" />
 
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#14121a" />
+  <meta name="theme-color" content="#141017" media="(prefers-color-scheme: dark)" />
+  <meta name="theme-color" content="#faf4f0" media="(prefers-color-scheme: light)" />
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -15,38 +32,65 @@
 </head>
 
 <body>
-  <header>
-    <h1>İzleme Defteri</h1>
-    <p>Ara, "+" ile listene ekle. Eklediklerin kaydedilir, kapatıp açınca durur.</p>
-  </header>
+  <!-- İlk açılış karşılama ekranı (arayuz.js doldurur) -->
+  <div class="karsilama" id="karsilama"></div>
 
-  <div class="arama-kutusu-sarmalayici">
-    <input id="arama" type="text" placeholder="Örn: Breaking Bad, Inception..." autocomplete="off" />
-    <button id="aramaTemizle" class="arama-temizle" style="display:none" aria-label="Aramayı temizle">✕</button>
+  <!-- Tema değiştirme (her ekranda sağ üstte) -->
+  <button id="temaBtn" class="tema-btn" aria-label="Tema değiştir">🌙</button>
+
+  <div class="uygulama">
+    <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
+    <aside class="yan-panel">
+      <div class="marka" id="marka"></div>
+
+      <nav class="sekmeler" id="sekmeler">
+        <button class="sekme-btn aktif" data-sekme="izliyor">
+          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
+          <span class="sekme-etiket">İzliyorum</span>
+          <span class="sekme-sayi">0</span>
+        </button>
+        <button class="sekme-btn" data-sekme="bitirdi">
+          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="sekme-etiket">Bitirdim</span>
+          <span class="sekme-sayi">0</span>
+        </button>
+        <button class="sekme-btn" data-sekme="izlemek_istiyor">
+          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-linejoin="round"/></svg></span>
+          <span class="sekme-etiket">İzlemek İstiyorum</span>
+          <span class="sekme-sayi">0</span>
+        </button>
+        <button class="sekme-btn" data-sekme="birlikte">
+          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg></span>
+          <span class="sekme-etiket">Birlikte</span>
+          <span class="sekme-sayi">0</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="icerik">
+      <!-- Romantik hero başlık (arayuz.js doldurur) -->
+      <header class="hero" id="hero"></header>
+
+      <div class="arac-satiri">
+        <div class="arama-kutusu-sarmalayici">
+          <input id="arama" type="text" placeholder="Dizi veya film ara..." autocomplete="off" />
+          <button id="aramaTemizle" class="arama-temizle" style="display:none" aria-label="Aramayı temizle">✕</button>
+        </div>
+        <select id="siralamaSecici" class="siralama-secici">
+          <option value="eklenme">Son eklenen</option>
+          <option value="alfabetik">Alfabetik</option>
+          <option value="tur">Türe göre</option>
+        </select>
+      </div>
+
+      <!-- Arama sonuçları (sadece ararken görünür) -->
+      <div class="bolum-baslik" id="sonuc-baslik" style="display:none">Arama sonuçları</div>
+      <div id="sonuclar"></div>
+
+      <!-- Kaydedilen liste -->
+      <div id="listem"></div>
+    </main>
   </div>
-
-  <!-- Durum sekmeleri -->
-  <div class="sekmeler" id="sekmeler">
-    <button class="sekme-btn aktif" data-sekme="izliyor">İzliyorum <span class="sekme-sayi">0</span></button>
-    <button class="sekme-btn" data-sekme="bitirdi">Bitirdim <span class="sekme-sayi">0</span></button>
-    <button class="sekme-btn" data-sekme="izlemek_istiyor">İzlemek İstiyorum <span class="sekme-sayi">0</span></button>
-    <button class="sekme-btn" data-sekme="birlikte">Birlikte <span class="sekme-sayi">0</span></button>
-  </div>
-
-  <div class="siralama-satiri">
-    <select id="siralamaSecici" class="siralama-secici">
-      <option value="eklenme">Son eklenen</option>
-      <option value="alfabetik">Alfabetik</option>
-      <option value="tur">Türe göre</option>
-    </select>
-  </div>
-
-  <!-- Kaydedilen liste -->
-  <div id="listem"></div>
-
-  <!-- Arama sonuçları (sadece ararken görünür) -->
-  <div class="bolum-baslik" id="sonuc-baslik" style="display:none">Arama sonuçları</div>
-  <div id="sonuclar"></div>
 
   <!-- Silme sonrası "Geri Al" bildirimi -->
   <div id="snackbar" class="snackbar" style="display:none"></div>
@@ -122,12 +166,14 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
+  <script src="js/ayarlar.js"></script>
   <script src="js/config.js"></script>
   <script src="js/depo.js"></script>
   <script src="js/tmdb.js"></script>
   <script src="js/liste.js"></script>
   <script src="js/detay.js"></script>
   <script src="js/ortak.js"></script>
+  <script src="js/arayuz.js"></script>
   <script src="js/uygulama.js"></script>
 </body>
 </html>

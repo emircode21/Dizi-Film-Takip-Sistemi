@@ -7,6 +7,8 @@ const detayBaslik = document.getElementById("detayBaslik");
 const detayYil = document.getElementById("detayYil");
 const detayRozet = document.getElementById("detayRozet");
 const detayOzet = document.getElementById("detayOzet");
+const detayEkstra = document.getElementById("detayEkstra");
+const detayOneriler = document.getElementById("detayOneriler");
 const detaySezonAlani = document.getElementById("detaySezonAlani");
 const detaySezonSecici = document.getElementById("detaySezonSecici");
 const detayBolumSecici = document.getElementById("detayBolumSecici");
@@ -47,13 +49,33 @@ async function detayAc(key) {
   detayRozet.textContent = diziMi ? "Dizi" : "Film";
   detayRozet.className = "rozet " + (diziMi ? "dizi" : "film");
   detayOzet.textContent = "Yükleniyor...";
+  detayEkstra.innerHTML = "";
+  detayOneriler.innerHTML = "";
   detayModal.style.display = "flex";
+  detayModal.scrollTop = 0;
+  const kutu = detayModal.querySelector(".modal-kutu");
+  if (kutu) kutu.scrollTop = 0;
 
-  const ozet = diziMi ? await diziOzetiGetir(o.tmdbId) : await filmOzetiGetir(o.tmdbId);
-  detayOzet.textContent = ozet || "Özet bulunamadı.";
+  // Kapsamlı detayı tek yerde çek (tür, süre, oyuncu, yönetmen, fragman, puan, öneriler)
+  const detay = await detayGetir(o.type, o.tmdbId);
 
-  // Modal açık kaldıysa (kullanıcı beklerken kapatmadıysa) devam et
+  // Kullanıcı beklerken başka bir öğe açtıysa bu sonucu yazma
   if (acikOgeKey !== key) return;
+
+  detayOzet.textContent = detay.ozet || "Özet bulunamadı.";
+  detayEkstraCiz(detay, diziMi);
+  detayOnerileriCiz(detay.oneriler);
+
+  // IMDb puanını (varsa) arka planda çek ve rozeti güncelle
+  if (detay.imdbId) {
+    imdbPuanGetir(detay.imdbId).then((puan) => {
+      if (acikOgeKey !== key || !puan) return;
+      const yer = document.getElementById("imdbPuanYeri");
+      if (yer) {
+        yer.innerHTML = `<span class="puan-rozet imdb"><b>IMDb</b> ${puan}</span>`;
+      }
+    });
+  }
 
   if (diziMi && o.bolumSayilari) {
     detaySezonAlani.style.display = "block";
@@ -70,6 +92,105 @@ function detayKapat() {
   detayModal.style.display = "none";
   acikOgeKey = null;
 }
+
+/* Puan rozetleri, tür/süre, oyuncular, yönetmen, sağlayıcılar, fragman */
+function detayEkstraCiz(d, diziMi) {
+  const parcalar = [];
+
+  // Puan rozetleri satırı (TMDB hemen; IMDb varsa arka planda dolar)
+  const puanlar = [];
+  if (d.tmdbPuan) {
+    puanlar.push(`<span class="puan-rozet tmdb"><b>TMDB</b> ${d.tmdbPuan}</span>`);
+  }
+  puanlar.push(`<span id="imdbPuanYeri"></span>`);
+  parcalar.push(`<div class="detay-puanlar">${puanlar.join("")}</div>`);
+
+  // Tür çipleri + süre
+  const turSure = [];
+  d.turler.forEach((t) => turSure.push(`<span class="tur-cip">${t}</span>`));
+  if (d.sure) {
+    const etiket = diziMi ? "bölüm ~" + d.sure + " dk" : d.sure + " dk";
+    turSure.push(`<span class="tur-cip sure-cip">⏱ ${etiket}</span>`);
+  }
+  if (turSure.length) parcalar.push(`<div class="detay-turler">${turSure.join("")}</div>`);
+
+  // Yönetmen / yaratıcı
+  if (d.yonetmen) {
+    const etiket = diziMi ? "Yaratıcı" : "Yönetmen";
+    parcalar.push(`<div class="detay-satir"><span class="detay-etiket">${etiket}:</span> ${d.yonetmen}</div>`);
+  }
+
+  // Nerede izlenir (sağlayıcı logoları)
+  if (d.saglayicilar.length) {
+    const logolar = d.saglayicilar.map((s) =>
+      `<img class="saglayici-logo" src="${posterUrl(s.logo)}" alt="${s.ad}" title="${s.ad}">`
+    ).join("");
+    const sar = d.saglayiciLink
+      ? `<a href="${d.saglayiciLink}" target="_blank" rel="noopener" class="saglayici-logolar">${logolar}</a>`
+      : `<div class="saglayici-logolar">${logolar}</div>`;
+    parcalar.push(`<div class="detay-satir"><span class="detay-etiket">Nerede:</span> ${sar}</div>`);
+  }
+
+  // Fragman butonu
+  if (d.fragmanKey) {
+    parcalar.push(
+      `<a class="fragman-btn" href="https://www.youtube.com/watch?v=${d.fragmanKey}" target="_blank" rel="noopener">▶ Fragmanı izle</a>`
+    );
+  }
+
+  // Oyuncular
+  if (d.oyuncular.length) {
+    const kartlar = d.oyuncular.map((k) => `
+      <div class="oyuncu-kart">
+        <img class="oyuncu-foto" src="${posterUrl(k.foto)}" alt="${k.ad}">
+        <div class="oyuncu-ad">${k.ad}</div>
+        ${k.karakter ? `<div class="oyuncu-karakter">${k.karakter}</div>` : ""}
+      </div>`).join("");
+    parcalar.push(
+      `<div class="detay-baslik-kucuk">Oyuncular</div><div class="oyuncu-serit">${kartlar}</div>`
+    );
+  }
+
+  detayEkstra.innerHTML = parcalar.join("");
+}
+
+/* "Benzer yapımlar" yatay poster şeridi */
+function detayOnerileriCiz(oneriler) {
+  if (!oneriler || !oneriler.length) { detayOneriler.innerHTML = ""; return; }
+  const kartlar = oneriler.map((x) => `
+    <button class="oneri-kart"
+            data-oneri-tmdb="${x.tmdbId}"
+            data-oneri-type="${x.type}"
+            data-oneri-poster="${x.poster || ""}"
+            data-oneri-yil="${x.yil || ""}"
+            data-oneri-ad="${(x.ad || "").replace(/"/g, "&quot;")}">
+      <img class="oneri-poster" src="${posterUrl(x.poster)}" alt="${x.ad}">
+      <div class="oneri-ad">${x.ad}</div>
+      ${x.puan ? `<div class="oneri-puan">★ ${x.puan}</div>` : ""}
+    </button>`).join("");
+  detayOneriler.innerHTML =
+    `<div class="detay-baslik-kucuk">Benzer yapımlar</div><div class="oneri-serit">${kartlar}</div>`;
+}
+
+// Öneri posterine tıklayınca "nereye eklensin" akışını aç (mevcut fonksiyonu kullan)
+detayOneriler.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-oneri-tmdb]");
+  if (!btn) return;
+  const type = btn.dataset.oneriType;
+  const ad = btn.dataset.oneriAd;
+  const poster = btn.dataset.oneriPoster || null;
+  const yil = btn.dataset.oneriYil || "";
+  // eklemeSecimiAc TMDB arama biçimini bekler → uygun şekle çevir
+  const tarih = yil ? yil + "-01-01" : "";
+  eklemeSecimiAc({
+    media_type: type,
+    id: Number(btn.dataset.oneriTmdb),
+    poster_path: poster,
+    name: ad, title: ad,
+    first_air_date: type === "tv" ? tarih : "",
+    release_date: type === "movie" ? tarih : "",
+  });
+});
 
 detayKapatBtn.addEventListener("click", detayKapat);
 detayModal.addEventListener("click", (e) => {

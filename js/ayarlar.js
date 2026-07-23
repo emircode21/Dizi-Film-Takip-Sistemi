@@ -35,9 +35,22 @@ function markaBasligi() {
 
 /* Başlangıç tarihinden bugüne kaç gün geçtiğini döndürür (yoksa null) */
 function birlikteGunSayisi() {
+  const s = birlikteSure();
+  return s ? s.gun : null;
+}
+
+/* Başlangıç tarihinden bugüne geçen süreyi gün/saat/dakika/saniye olarak döndürür (yoksa null) */
+function birlikteSure() {
   if (!AYARLAR.kisiselMod || !AYARLAR.baslangicTarihi) return null;
   const baslangic = Date.parse(AYARLAR.baslangicTarihi);
   if (isNaN(baslangic)) return null;
-  const gun = Math.floor((Date.now() - baslangic) / 86400000);
-  return gun >= 0 ? gun : null;
+
+  let fark = Date.now() - baslangic;
+  if (fark < 0) return null;
+
+  const gun = Math.floor(fark / 86400000); fark %= 86400000;
+  const saat = Math.floor(fark / 3600000); fark %= 3600000;
+  const dakika = Math.floor(fark / 60000); fark %= 60000;
+  const saniye = Math.floor(fark / 1000);
+  return { gun, saat, dakika, saniye };
 }

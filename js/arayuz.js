@@ -40,7 +40,6 @@ function markayiCiz() {
   document.title = AYARLAR.kisiselMod ? `${markaBasligi()} · İzleme Defteri` : AYARLAR.appAdi;
 
   const kalp = AYARLAR.kalp || "";
-  const gun = birlikteGunSayisi();
 
   // Sidebar / üst köşedeki küçük marka
   const markaAlani = document.getElementById("marka");
@@ -53,8 +52,8 @@ function markayiCiz() {
   // İçerikteki büyük hero başlık
   const hero = document.getElementById("hero");
   if (hero) {
-    const sayacHTML = gun !== null
-      ? `<div class="hero-sayac">${kalp} birlikte <b>${gun}</b>. günümüz</div>`
+    const sayacHTML = birlikteSure()
+      ? `<div class="hero-sayac" id="heroSayac"></div>`
       : "";
     const sloganHTML = AYARLAR.kisiselMod && AYARLAR.slogan
       ? `<p class="hero-slogan">${AYARLAR.slogan}</p>`
@@ -64,6 +63,31 @@ function markayiCiz() {
       ${sloganHTML}
       ${sayacHTML}`;
   }
+
+  sayaciBaslat();
+}
+
+/* ---- Canlı gün/saat/dakika/saniye sayacı ---- */
+let sayacZamanlayici = null;
+
+function sayaciGuncelle() {
+  const el = document.getElementById("heroSayac");
+  const s = birlikteSure();
+  if (!el || !s) {
+    if (sayacZamanlayici) { clearInterval(sayacZamanlayici); sayacZamanlayici = null; }
+    return;
+  }
+  const kalp = AYARLAR.kalp || "";
+  el.innerHTML =
+    `${kalp} birlikte <b>${s.gun}</b> gün <b>${s.saat}</b> saat ` +
+    `<b>${s.dakika}</b> dakika <b>${s.saniye}</b> saniye`;
+}
+
+function sayaciBaslat() {
+  if (sayacZamanlayici) { clearInterval(sayacZamanlayici); sayacZamanlayici = null; }
+  if (!birlikteSure()) return;
+  sayaciGuncelle();
+  sayacZamanlayici = setInterval(sayaciGuncelle, 1000);
 }
 
 /* ---- Karşılama (welcome) ekranı ----

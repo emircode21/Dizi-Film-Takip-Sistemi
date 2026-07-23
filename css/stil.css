@@ -201,10 +201,15 @@ body {
   font-size: 13px;
   color: var(--vurgu);
   background: var(--vurgu-yumusak);
-  padding: 6px 14px;
+  padding: 7px 15px;
   border-radius: 999px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
 }
 .hero-sayac b { font-weight: 700; }
+@media (max-width: 819px) {
+  .hero-sayac { font-size: 12px; }
+}
 
 /* ---------- Araç satırı (arama + sıralama) ---------- */
 .arac-satiri { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }

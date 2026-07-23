@@ -209,6 +209,11 @@ sekmeAlani.addEventListener("click", (e) => {
   if (!btn) return;
   aktifSekme = btn.dataset.sekme;
   listeyiCiz();
+
+  // "Birlikte" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç
+  if (aktifSekme === "birlikte" && typeof ortakKod !== "undefined" && !ortakKod) {
+    ortakKodModalAc();
+  }
 });
 
 siralamaSecici.addEventListener("change", () => {

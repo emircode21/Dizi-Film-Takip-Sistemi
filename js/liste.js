@@ -84,6 +84,21 @@ function sonucGoster(liste) {
   }
 
   sonucAlani.innerHTML = liste.map((x, i) => {
+    // Kişi (oyuncu/yönetmen) sonucu — yuvarlak fotoğraflı kart
+    if (x.media_type === "person") {
+      const dept = x.known_for_department === "Directing" ? "Yönetmen" : "Oyuncu";
+      return `
+        <div class="sonuc-kart kisi-arama-kart" data-sonuc="${i}">
+          <img class="kisi-arama-foto" src="${posterUrl(x.profile_path)}" alt="">
+          <div class="sonuc-bilgi">
+            <div class="sonuc-ad">${x.name}</div>
+            <div class="sonuc-yil">${dept}</div>
+            <span class="rozet kisi">Kişi</span>
+            <div class="sonuc-aksiyon"><span class="kisi-git-etiket">Yapımlarını gör →</span></div>
+          </div>
+        </div>`;
+    }
+
     const diziMi = x.media_type === "tv";
     const ad = diziMi ? x.name : x.title;
     const tarih = diziMi ? x.first_air_date : x.release_date;
@@ -116,10 +131,12 @@ sonucAlani.addEventListener("click", (e) => {
     eklemeSecimiAc(sonSonuclar[ekleBtn.dataset.ekle]);
     return;
   }
-  // Kartın başka bir yerine (poster/ad) tıklandıysa detay önizlemesini aç
+  // Karta tıklandıysa: kişiyse yapımlarını aç, film/diziyse detay önizlemesi
   const kart = e.target.closest("[data-sonuc]");
   if (kart) {
-    detayAcTmdb(sonSonuclar[kart.dataset.sonuc]);
+    const x = sonSonuclar[kart.dataset.sonuc];
+    if (x.media_type === "person") kisiDetayAc(x.id);
+    else detayAcTmdb(x);
   }
 });
 

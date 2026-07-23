@@ -17,8 +17,42 @@ async function tmdbAra(kelime) {
   const cevap = await fetch(url);
   const veri = await cevap.json();
   return (veri.results || []).filter(
-    (x) => x.media_type === "movie" || x.media_type === "tv"
+    (x) => x.media_type === "movie" || x.media_type === "tv" || x.media_type === "person"
   );
+}
+
+// Bir kişinin (oyuncu/yönetmen) bilgisi + filmografisi
+// Döndürür: { ad, foto, bolum, yapimlar[] } (yapimlar TMDB arama biçimine uygun alanlar taşır)
+async function kisiDetayGetir(personId) {
+  try {
+    const url = "https://api.themoviedb.org/3/person/" + personId
+      + "?api_key=" + API_KEY + "&language=tr-TR&append_to_response=combined_credits";
+    const veri = await (await fetch(url)).json();
+    const cast = (veri.combined_credits && veri.combined_credits.cast) || [];
+    const crew = (veri.combined_credits && veri.combined_credits.crew) || [];
+    const gorulen = new Set();
+    const yapimlar = [].concat(cast, crew)
+      .filter((x) => (x.media_type === "movie" || x.media_type === "tv") && x.poster_path)
+      .filter((x) => { if (gorulen.has(x.id)) return false; gorulen.add(x.id); return true; })
+      .sort((a, b) => (b.vote_count || 0) - (a.vote_count || 0))
+      .slice(0, 30)
+      .map((x) => ({
+        media_type: x.media_type,
+        id: x.id,
+        ad: x.title || x.name || "",
+        yil: (x.release_date || x.first_air_date || "").slice(0, 4),
+        poster: x.poster_path,
+        puan: x.vote_average ? Number(x.vote_average.toFixed(1)) : null,
+      }));
+    return {
+      ad: veri.name || "",
+      foto: veri.profile_path,
+      bolum: veri.known_for_department === "Directing" ? "Yönetmen" : "Oyuncu",
+      yapimlar: yapimlar,
+    };
+  } catch (e) {
+    return { ad: "", foto: null, bolum: "", yapimlar: [] };
+  }
 }
 
 async function sezonSayisiGetir(tvId) {

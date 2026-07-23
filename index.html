@@ -160,6 +160,22 @@
     </div>
   </div>
 
+  <!-- Kişi (oyuncu/yönetmen) detayı: fotoğraf + filmografi -->
+  <div id="kisiModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="kisiKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="kisi-ust">
+        <img id="kisiFoto" class="kisi-foto-buyuk" src="" alt="">
+        <div>
+          <div id="kisiAd" class="modal-baslik"></div>
+          <div id="kisiRol" class="alt"></div>
+        </div>
+      </div>
+      <div class="detay-baslik-kucuk">Yapımları</div>
+      <div id="kisiYapimlar" class="kisi-yapim-grid"></div>
+    </div>
+  </div>
+
   <!-- Sürpriz seçici: "Bu akşam ne izlesek?" -->
   <div id="surprizModal" class="modal-arkaplan" style="display:none">
     <div class="modal-kutu surpriz-kutu">
@@ -240,6 +256,7 @@
   <script src="js/detay.js"></script>
   <script src="js/ortak.js"></script>
   <script src="js/surpriz.js"></script>
+  <script src="js/kisi.js"></script>
   <script src="js/arayuz.js"></script>
   <script src="js/uygulama.js"></script>
 </body>

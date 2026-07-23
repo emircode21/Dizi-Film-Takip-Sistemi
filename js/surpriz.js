@@ -249,6 +249,10 @@ function sonucKartiCiz(oge, mod) {
       surprizModal.style.display = "none";
       // Keşif havuzunu detaya taşı: detayda tek tuşla "başka öneri" için
       detayAcTmdb(oge, true, mod === "kesfet" ? surprizSonSonuclar : null);
+      // "Geri" ile sürpriz ekranına (filtreler duruyor) dönebilelim
+      if (mod === "kesfet") {
+        detaySurprizDonAyarla(() => { surprizModal.style.display = "flex"; });
+      }
     } else if (a === "ekle") {
       surprizKapat();
       eklemeSecimiAc(oge);

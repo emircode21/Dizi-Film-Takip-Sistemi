@@ -4,7 +4,7 @@ const API_KEY = "39b78a1d396b1cfa373400eda1856126";
 
 /* OMDb anahtarı — detay ekranında gerçek IMDb puanını göstermek için (omdbapi.com, ücretsiz).
    Boş bırakılırsa IMDb puanı sessizce gizlenir, uygulama sorunsuz çalışır. */
-const OMDB_KEY = "";
+const OMDB_KEY = "a2197e2e";
 
 /* Firebase (Firestore) bağlantı bilgileri — "Birlikte İzlenenler" ortak listesi için.
    Bu apiKey de herkese açık görünür ve normaldir; Firebase'de gerçek güvenlik bu

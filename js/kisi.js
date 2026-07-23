@@ -13,7 +13,7 @@ const kisiSiralaSecici = document.getElementById("kisiSiralaSecici");
 
 let kisiAcikId = null;
 let kisiYapimListesi = [];        // bilinirlik sırasında (kisiDetayGetir'den geldiği gibi)
-let kisiSiraMod = "bilinirlik";   // bilinirlik | yeni | puan
+let kisiSiraMod = "yeni";   // yeni | eski | puan
 
 async function kisiDetayAc(personId) {
   kisiAcikId = personId;
@@ -22,7 +22,7 @@ async function kisiDetayAc(personId) {
   kisiRol.textContent = "";
   kisiYapimlar.innerHTML = "";
   kisiYapimListesi = [];
-  kisiSiraModAyarla("bilinirlik"); // her yeni kişide varsayılana dön
+  kisiSiraModAyarla("yeni"); // her yeni kişide varsayılan: yeniden eskiye
   kisiModal.style.display = "flex";
   const mk = kisiModal.querySelector(".modal-kutu");
   if (mk) mk.scrollTop = 0;
@@ -45,11 +45,14 @@ function kisiYapimlariCiz() {
   }
   let liste = kisiYapimListesi.slice();
   if (kisiSiraMod === "yeni") {
+    // Yeniden eskiye; yılı bilinmeyenler sona
     liste.sort((a, b) => (Number(b.yil) || 0) - (Number(a.yil) || 0));
+  } else if (kisiSiraMod === "eski") {
+    // Eskiden yeniye; yılı bilinmeyenler sona
+    liste.sort((a, b) => (Number(a.yil) || 9999) - (Number(b.yil) || 9999));
   } else if (kisiSiraMod === "puan") {
     liste.sort((a, b) => (b.puan || 0) - (a.puan || 0));
   }
-  // "bilinirlik" → geldiği sıra (oy sayısına göre) korunur
 
   kisiYapimlar.innerHTML = liste.map((y) => `
     <button class="kisi-yapim"

@@ -71,6 +71,8 @@
       <!-- Romantik hero başlık (arayuz.js doldurur) -->
       <header class="hero" id="hero"></header>
 
+      <button id="surprizBtn" class="surpriz-btn">🎲 Bu akşam ne izlesek?</button>
+
       <div class="arac-satiri">
         <div class="arama-kutusu-sarmalayici">
           <input id="arama" type="text" placeholder="Dizi veya film ara..." autocomplete="off" />
@@ -157,6 +159,58 @@
     </div>
   </div>
 
+  <!-- Sürpriz seçici: "Bu akşam ne izlesek?" -->
+  <div id="surprizModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu surpriz-kutu">
+      <button id="surprizKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="surpriz-baslik"><span class="surpriz-emoji">🎲</span> Bu akşam ne izlesek?</div>
+
+      <!-- Mod seçimi -->
+      <div class="surpriz-mod-secim">
+        <button class="surpriz-mod-btn aktif" data-mod="liste">Listemizden</button>
+        <button class="surpriz-mod-btn" data-mod="kesfet">Keşfet</button>
+      </div>
+
+      <!-- Mod A: Listemizden -->
+      <div id="surprizPanelListe" class="surpriz-panel">
+        <div class="surpriz-turtoggle" data-grup="liste">
+          <button class="tur-toggle-btn aktif" data-tur="hepsi">Hepsi</button>
+          <button class="tur-toggle-btn" data-tur="tv">Dizi</button>
+          <button class="tur-toggle-btn" data-tur="movie">Film</button>
+        </div>
+        <button id="surprizCevirBtn" class="surpriz-cevir-btn">🎲 Çevir</button>
+      </div>
+
+      <!-- Mod B: Keşfet -->
+      <div id="surprizPanelKesfet" class="surpriz-panel" style="display:none">
+        <div class="surpriz-turtoggle" data-grup="kesfet">
+          <button class="tur-toggle-btn aktif" data-tur="movie">Film</button>
+          <button class="tur-toggle-btn" data-tur="tv">Dizi</button>
+        </div>
+        <label class="surpriz-etiket">Tür</label>
+        <select id="surprizTurSecici" class="surpriz-select"></select>
+
+        <label class="surpriz-etiket">Oyuncu / yönetmen (opsiyonel)</label>
+        <input id="surprizKisiInput" class="surpriz-input" type="text" placeholder="İsim yaz..." autocomplete="off" />
+        <div id="surprizKisiSonuc" class="surpriz-kisi-sonuc"></div>
+        <div id="surprizKisiSecili" class="surpriz-kisi-secili" style="display:none"></div>
+
+        <label class="surpriz-etiket">En az TMDB puanı</label>
+        <select id="surprizPuanSecici" class="surpriz-select">
+          <option value="">Farketmez</option>
+          <option value="6">6+</option>
+          <option value="7" selected>7+</option>
+          <option value="8">8+</option>
+        </select>
+
+        <button id="surprizGetirBtn" class="surpriz-cevir-btn">🎬 Öneri getir</button>
+      </div>
+
+      <!-- Sonuç (iki mod da kullanır) -->
+      <div id="surprizSonuc" class="surpriz-sonuc"></div>
+    </div>
+  </div>
+
   <!-- Ortak koda bağlanma kutusu -->
   <div id="ortakKodModal" class="modal-arkaplan" style="display:none">
     <div class="modal-kutu ortak-kod-kutu">
@@ -184,6 +238,7 @@
   <script src="js/liste.js"></script>
   <script src="js/detay.js"></script>
   <script src="js/ortak.js"></script>
+  <script src="js/surpriz.js"></script>
   <script src="js/arayuz.js"></script>
   <script src="js/uygulama.js"></script>
 </body>

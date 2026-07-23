@@ -184,3 +184,66 @@ async function imdbPuanGetir(imdbId) {
     return null;
   }
 }
+
+/* ---------------- KEŞİF / SÜRPRİZ (Faz 2) ---------------- */
+
+// Tür listesini getirir (önbellekli). type: "movie" | "tv" → [{id, ad}]
+const _turOnbellek = {};
+async function turleriGetir(type) {
+  if (_turOnbellek[type]) return _turOnbellek[type];
+  try {
+    const url = "https://api.themoviedb.org/3/genre/" + type + "/list"
+      + "?api_key=" + API_KEY + "&language=tr-TR";
+    const veri = await (await fetch(url)).json();
+    const liste = (veri.genres || []).map((t) => ({ id: t.id, ad: t.name }));
+    _turOnbellek[type] = liste;
+    return liste;
+  } catch (e) {
+    return [];
+  }
+}
+
+// Kişi (oyuncu/yönetmen) arar → [{id, ad, foto}]
+async function kisiAra(isim) {
+  try {
+    const url = "https://api.themoviedb.org/3/search/person"
+      + "?api_key=" + API_KEY + "&language=tr-TR"
+      + "&query=" + encodeURIComponent(isim);
+    const veri = await (await fetch(url)).json();
+    return (veri.results || []).slice(0, 6).map((k) => ({
+      id: k.id, ad: k.name, foto: k.profile_path,
+    }));
+  } catch (e) {
+    return [];
+  }
+}
+
+// TMDB Discover ile filtreli keşif. { type, turId, kisiId, minPuan }
+// Döndürür: TMDB arama biçiminde öğe dizisi (media_type dahil)
+async function kesfet({ type, turId, kisiId, minPuan }) {
+  try {
+    let url = "https://api.themoviedb.org/3/discover/" + type
+      + "?api_key=" + API_KEY + "&language=tr-TR"
+      + "&sort_by=vote_count.desc"
+      + "&vote_count.gte=200"
+      + "&include_adult=false";
+    if (minPuan) url += "&vote_average.gte=" + minPuan;
+    if (turId) url += "&with_genres=" + turId;
+    // with_people hem oyuncuyu hem yönetmeni/ekibi kapsar (film ve dizide)
+    if (kisiId) url += "&with_people=" + kisiId;
+
+    const veri = await (await fetch(url)).json();
+    return (veri.results || []).map((x) => ({
+      media_type: type,
+      id: x.id,
+      name: x.name,
+      title: x.title,
+      poster_path: x.poster_path,
+      first_air_date: x.first_air_date,
+      release_date: x.release_date,
+      vote_average: x.vote_average,
+    }));
+  } catch (e) {
+    return [];
+  }
+}

@@ -1,7 +1,7 @@
 /* Uygulama kabuğunu (HTML/CSS/JS/ikonlar) önbelleğe alır.
    TMDB API isteklerine ve poster görsellerine hiç dokunmaz — onlar her zaman ağdan gelir. */
 
-const ONBELLEK_ADI = "izleme-defteri-v10";
+const ONBELLEK_ADI = "izleme-defteri-v11";
 
 const KABUK_DOSYALARI = [
   "./",
@@ -15,6 +15,7 @@ const KABUK_DOSYALARI = [
   "./js/liste.js",
   "./js/detay.js",
   "./js/ortak.js",
+  "./js/surpriz.js",
   "./js/arayuz.js",
   "./js/uygulama.js",
   "./icons/icon-192.png",

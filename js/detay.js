@@ -73,6 +73,7 @@ async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
   detayOneriler.innerHTML = "";
   detayEkleAlani.style.display = "none";
   detaySezonAlani.style.display = "none";
+  if (typeof anilariGoster === "function") anilariGoster(null); // yükleme sırasında eski anıları gizle
   detayModal.style.display = "flex";
   const mKutu = detayModal.querySelector(".modal-kutu");
   if (mKutu) mKutu.scrollTop = 0;
@@ -116,6 +117,9 @@ async function detayAc(key, kok = true) {
 
   const detay = await detayGovdeCiz(o.type, o.tmdbId, o.ad, o.yil, o.poster, key);
   if (detay === null) return;
+
+  // Anılar: yalnızca ortak listedeki öğeler için (foto/ses senkronu gerektirir)
+  if (typeof anilariGoster === "function") anilariGoster(detayOrtakMi ? key : null);
 
   if (diziMi && o.bolumSayilari) {
     detaySezonAlani.style.display = "block";
@@ -208,6 +212,7 @@ function detayKapat() {
   detayGecmis = [];
   detaySurprizHavuz = null;
   detayDonusFn = null;
+  if (typeof anilariGoster === "function") anilariGoster(null); // varsa süren kaydı temizle
   detayGeriGuncelle();
 }
 

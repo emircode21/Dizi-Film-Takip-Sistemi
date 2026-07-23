@@ -1038,3 +1038,107 @@ body {
 
   #sonuclar { grid-template-columns: 1fr; }
 }
+
+/* ---------------- ANILAR ---------------- */
+#detayAnilar { margin-top: 22px; }
+
+.ani-baslik-satiri {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+}
+.ani-ekle-ac-btn {
+  border: none; cursor: pointer;
+  background: var(--vurgu); color: #fff;
+  padding: 7px 12px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600;
+  transition: transform .12s ease, filter .12s ease;
+}
+.ani-ekle-ac-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
+
+/* Ekleme formu */
+.ani-form {
+  background: var(--kart-2); border: 1px solid var(--kenar);
+  border-radius: 16px; padding: 14px; margin-bottom: 14px;
+  display: flex; flex-direction: column;
+}
+.ani-etiket { font-size: 12px; color: var(--soluk); margin: 8px 0 4px; }
+.ani-etiket:first-child { margin-top: 0; }
+.ani-input, .ani-textarea {
+  width: 100%; box-sizing: border-box;
+  background: var(--kart); border: 1px solid var(--kenar);
+  color: var(--yazi); border-radius: 10px; padding: 9px 10px;
+  font-size: 14px; font-family: inherit;
+}
+.ani-textarea { resize: vertical; min-height: 60px; }
+.ani-input[type="file"] { padding: 7px; font-size: 12.5px; }
+
+.ani-foto-onizleme:not(:empty) { margin-top: 8px; }
+.ani-foto-onizleme-img {
+  max-width: 100%; max-height: 220px; border-radius: 12px;
+  border: 1px solid var(--kenar); display: block;
+}
+
+.ani-ses-kayit { display: flex; align-items: center; gap: 10px; }
+.ani-kayit-btn {
+  border: 1px solid var(--kenar); cursor: pointer;
+  background: var(--kart); color: var(--yazi);
+  padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+}
+.ani-kayit-btn:hover { border-color: var(--vurgu); }
+.ani-kayit-sure { font-size: 12.5px; color: var(--soluk); font-variant-numeric: tabular-nums; }
+.ani-ses-onizleme:not(:empty) { margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ani-ses { max-width: 100%; height: 38px; }
+.ani-ses-sil-btn, .ani-vazgec-btn {
+  border: 1px solid var(--kenar); cursor: pointer;
+  background: transparent; color: var(--soluk);
+  padding: 6px 12px; border-radius: 999px; font-size: 12.5px;
+}
+.ani-not-bilgi { font-size: 12.5px; color: var(--soluk); margin: 8px 0; }
+
+.ani-form-alt { display: flex; gap: 10px; margin-top: 14px; }
+.ani-kaydet-btn {
+  border: none; cursor: pointer; flex: 1;
+  background: var(--vurgu); color: #fff;
+  padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 700;
+}
+.ani-kaydet-btn:disabled { opacity: .6; cursor: default; }
+.ani-form-durum { font-size: 12.5px; color: var(--vurgu); margin-top: 8px; min-height: 1em; }
+
+/* Anı listesi */
+.ani-liste { display: flex; flex-direction: column; gap: 12px; }
+.ani-bos {
+  font-size: 13px; color: var(--soluk); text-align: center;
+  padding: 16px; background: var(--kart-2);
+  border: 1px dashed var(--kenar); border-radius: 14px;
+}
+.ani-kart {
+  background: var(--kart-2); border: 1px solid var(--kenar);
+  border-radius: 14px; padding: 12px;
+}
+.ani-kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ani-tarih { font-size: 12.5px; color: var(--vurgu); font-weight: 700; }
+.ani-sil-btn {
+  border: none; background: transparent; cursor: pointer;
+  font-size: 15px; opacity: .55; padding: 2px 4px; border-radius: 8px;
+}
+.ani-sil-btn:hover { opacity: 1; }
+.ani-not { font-size: 14px; line-height: 1.5; margin-top: 8px; white-space: pre-wrap; }
+.ani-kart .ani-foto {
+  display: block; margin-top: 10px; max-width: 100%; max-height: 300px;
+  border-radius: 12px; border: 1px solid var(--kenar); cursor: zoom-in;
+}
+.ani-kart .ani-ses { display: block; margin-top: 10px; width: 100%; }
+
+/* Fotoğrafı tam ekran büyütme */
+.ani-foto-buyuk-kat {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, .85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px; cursor: zoom-out;
+}
+.ani-foto-buyuk-kat img { max-width: 100%; max-height: 100%; border-radius: 10px; }
+.ani-foto-buyuk-kapat {
+  position: absolute; top: calc(14px + env(safe-area-inset-top, 0px)); right: 16px;
+  border: none; background: rgba(255, 255, 255, .15); color: #fff;
+  width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer;
+}

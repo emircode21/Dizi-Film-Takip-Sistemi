@@ -18,10 +18,12 @@ const AY_ADLARI = ["Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"];
 
 let aniAcikKey = null;      // anıları gösterilen ortak öğe (yoksa null)
+let aniMevcutListe = [];    // o an listelenen anılar (düzenleme için id ile bulma)
 let aniSecilenFoto = null;  // formda hazır bekleyen foto (base64)
-let aniSecilenSes = null;   // formda hazır bekleyen ses (base64)
-let aniSecilenSesTur = "";  // sesin MIME türü
+let aniSecilenSesler = [];  // formda hazır bekleyen ses kayıtları (base64 data URL listesi)
 let aniKayitState = null;   // { recorder, stream, timer } — aktif kayıt
+let aniDuzenlenenId = null; // düzenleme modundaysa güncellenen anının id'si (yoksa yeni ekleme)
+let aniDuzenlenenOlusturma = null; // düzenlemede orijinal oluşturma zamanını koru
 
 // Bu öğenin anılar alt-koleksiyonu
 function aniKoleksiyon(key) {
@@ -34,8 +36,9 @@ function aniKoleksiyon(key) {
 async function anilariGoster(key) {
   aniKayitTemizle();
   aniSecilenFoto = null;
-  aniSecilenSes = null;
-  aniSecilenSesTur = "";
+  aniSecilenSesler = [];
+  aniDuzenlenenId = null;
+  aniDuzenlenenOlusturma = null;
 
   if (!key || !db || !ortakKod || !detayAnilar) {
     aniAcikKey = null;
@@ -73,6 +76,7 @@ async function anilariYenile(key) {
 }
 
 function aniListeCiz(anilar) {
+  aniMevcutListe = anilar; // düzenleme için id → anı bulunabilsin
   const liste = document.getElementById("aniListe");
   if (!liste) return;
   if (!anilar.length) {
@@ -86,15 +90,19 @@ function aniKartHTML(a) {
   const foto = a.foto
     ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" data-ani-foto="${a.id}">`
     : "";
-  const ses = a.ses
-    ? `<audio class="ani-ses" controls preload="none" src="${a.ses}"></audio>`
-    : "";
+  // Yeni anılar sesler[] dizisi tutar; eski anılarda tek ses alanı olabilir
+  const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
+  const ses = sesListe.map((s) =>
+    `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
   const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
   return `
     <div class="ani-kart" data-ani-kart="${a.id}">
       <div class="ani-kart-ust">
         <span class="ani-tarih">📅 ${aniTarihBicim(a.tarih)}</span>
-        <button class="ani-sil-btn" data-ani-sil="${a.id}" aria-label="Anıyı sil">🗑</button>
+        <div class="ani-kart-islem">
+          <button class="ani-duzenle-btn" data-ani-duzenle="${a.id}" aria-label="Anıyı düzenle">✏️</button>
+          <button class="ani-sil-btn" data-ani-sil="${a.id}" aria-label="Anıyı sil">🗑</button>
+        </div>
       </div>
       ${not}
       ${foto}
@@ -102,14 +110,23 @@ function aniKartHTML(a) {
     </div>`;
 }
 
-/* ---- Ekleme formu ---- */
-function aniFormAc() {
+/* ---- Ekleme / düzenleme formu ----
+   mevcut verilmezse yeni anı; verilirse o anının verileriyle düzenleme modu. */
+function aniFormAc(mevcut) {
   const sarmal = document.getElementById("aniFormSarmal");
-  if (!sarmal || sarmal.querySelector(".ani-form")) return; // zaten açık
+  if (!sarmal) return;
 
-  aniSecilenFoto = null;
-  aniSecilenSes = null;
-  aniSecilenSesTur = "";
+  aniKayitTemizle();
+  aniDuzenlenenId = mevcut ? mevcut.id : null;
+  aniDuzenlenenOlusturma = mevcut ? (mevcut.olusturma || Date.now()) : null;
+  aniSecilenFoto = mevcut ? (mevcut.foto || null) : null;
+  aniSecilenSesler = mevcut
+    ? ((mevcut.sesler && mevcut.sesler.length) ? mevcut.sesler.slice() : (mevcut.ses ? [mevcut.ses] : []))
+    : [];
+
+  const tarihDeger = (mevcut && mevcut.tarih) || bugunISO();
+  const notDeger = aniOznitelikKacis((mevcut && mevcut.not) || "");
+  const duzenleMi = !!mevcut;
 
   const sesDestek = aniDesteklenenSesTuru() !== null;
   const sesBolumu = sesDestek
@@ -123,11 +140,12 @@ function aniFormAc() {
 
   sarmal.innerHTML = `
     <div class="ani-form">
+      ${duzenleMi ? `<div class="ani-form-baslik">✏️ Anıyı düzenle</div>` : ""}
       <label class="ani-etiket">Tarih</label>
-      <input id="aniTarih" class="ani-input" type="date" value="${bugunISO()}">
+      <input id="aniTarih" class="ani-input" type="date" value="${tarihDeger}">
 
       <label class="ani-etiket">Notunuz (opsiyonel)</label>
-      <textarea id="aniNot" class="ani-textarea" rows="3" placeholder="Bu yapım hakkında düşünceleriniz, o anki hisleriniz..."></textarea>
+      <textarea id="aniNot" class="ani-textarea" rows="3" placeholder="Bu yapım hakkında düşünceleriniz, o anki hisleriniz...">${notDeger}</textarea>
 
       <label class="ani-etiket">Fotoğraf (opsiyonel)</label>
       <input id="aniFoto" class="ani-input" type="file" accept="image/*">
@@ -136,7 +154,7 @@ function aniFormAc() {
       ${sesBolumu}
 
       <div class="ani-form-alt">
-        <button id="aniKaydetBtn" class="ani-kaydet-btn" type="button">💾 Kaydet</button>
+        <button id="aniKaydetBtn" class="ani-kaydet-btn" type="button">${duzenleMi ? "💾 Güncelle" : "💾 Kaydet"}</button>
         <button id="aniVazgecBtn" class="ani-vazgec-btn" type="button">Vazgeç</button>
       </div>
       <div id="aniFormDurum" class="ani-form-durum"></div>
@@ -147,13 +165,18 @@ function aniFormAc() {
   document.getElementById("aniVazgecBtn").addEventListener("click", aniFormKapat);
   const kayitBtn = document.getElementById("aniKayitBtn");
   if (kayitBtn) kayitBtn.addEventListener("click", aniKayitTus);
+
+  // Düzenlemede mevcut foto/ses önizlemelerini göster
+  aniFotoOnizlemeCiz();
+  aniSesOnizlemeCiz();
 }
 
 function aniFormKapat() {
   aniKayitTemizle();
   aniSecilenFoto = null;
-  aniSecilenSes = null;
-  aniSecilenSesTur = "";
+  aniSecilenSesler = [];
+  aniDuzenlenenId = null;
+  aniDuzenlenenOlusturma = null;
   const sarmal = document.getElementById("aniFormSarmal");
   if (sarmal) sarmal.innerHTML = "";
 }
@@ -162,16 +185,32 @@ function aniFormKapat() {
 async function aniFotoSecildi(e) {
   const dosya = e.target.files && e.target.files[0];
   const onizle = document.getElementById("aniFotoOnizleme");
-  if (!dosya) { aniSecilenFoto = null; if (onizle) onizle.innerHTML = ""; return; }
+  if (!dosya) return; // dosya seçici iptal edildi → mevcut fotoyu koru
   if (onizle) onizle.innerHTML = "<div class='bilgi'>Fotoğraf hazırlanıyor...</div>";
   try {
     aniSecilenFoto = await fotoKucult(dosya, ANI_FOTO_MAX_KENAR, ANI_FOTO_HEDEF_BAYT);
-    if (onizle) onizle.innerHTML = `<img class="ani-foto-onizleme-img" src="${aniSecilenFoto}" alt="önizleme">`;
+    aniFotoOnizlemeCiz();
   } catch (err) {
     console.warn("Fotoğraf işlenemedi:", err);
     aniSecilenFoto = null;
     if (onizle) onizle.innerHTML = "<div class='bilgi'>Fotoğraf yüklenemedi.</div>";
   }
+}
+
+// Formdaki foto önizlemesini (varsa kaldırma butonuyla) çizer
+function aniFotoOnizlemeCiz() {
+  const onizle = document.getElementById("aniFotoOnizleme");
+  if (!onizle) return;
+  if (!aniSecilenFoto) { onizle.innerHTML = ""; return; }
+  onizle.innerHTML = `
+    <img class="ani-foto-onizleme-img" src="${aniSecilenFoto}" alt="önizleme">
+    <button id="aniFotoSilBtn" class="ani-ses-sil-btn" type="button">✕ Fotoğrafı kaldır</button>`;
+  document.getElementById("aniFotoSilBtn").addEventListener("click", () => {
+    aniSecilenFoto = null;
+    const inp = document.getElementById("aniFoto");
+    if (inp) inp.value = "";
+    aniFotoOnizlemeCiz();
+  });
 }
 
 // Dosyayı canvas ile küçültüp JPEG base64 döndürür; hedef boyuta inene dek kaliteyi düşürür.
@@ -253,12 +292,10 @@ async function aniKayitTus() {
     stream.getTracks().forEach((t) => t.stop());
     aniKayitState = null;
 
-    const tur = (recorder.mimeType || mime || "audio/webm").split(";")[0];
     const blob = new Blob(chunks, { type: recorder.mimeType || mime || "audio/webm" });
     const okuyucu = new FileReader();
     okuyucu.onload = () => {
-      aniSecilenSes = okuyucu.result;
-      aniSecilenSesTur = tur;
+      aniSecilenSesler.push(okuyucu.result); // data URL — MIME içinde gömülü, eskiyi silmeden ekle
       aniSesOnizlemeCiz();
     };
     okuyucu.readAsDataURL(blob);
@@ -285,18 +322,21 @@ async function aniKayitTus() {
 function aniSesOnizlemeCiz() {
   const el = document.getElementById("aniSesOnizleme");
   const btn = document.getElementById("aniKayitBtn");
-  if (btn) btn.textContent = aniSecilenSes ? "🎙 Yeniden kaydet" : "🎙 Kaydı başlat";
+  if (btn) btn.textContent = aniSecilenSesler.length ? "🎙 Başka ses ekle" : "🎙 Kaydı başlat";
   const sureEl = document.getElementById("aniKayitSure");
   if (sureEl) sureEl.textContent = "";
   if (!el) return;
-  if (!aniSecilenSes) { el.innerHTML = ""; return; }
-  el.innerHTML = `
-    <audio class="ani-ses" controls src="${aniSecilenSes}"></audio>
-    <button id="aniSesSilBtn" class="ani-ses-sil-btn" type="button">✕ Sesi sil</button>`;
-  document.getElementById("aniSesSilBtn").addEventListener("click", () => {
-    aniSecilenSes = null;
-    aniSecilenSesTur = "";
-    aniSesOnizlemeCiz();
+  if (!aniSecilenSesler.length) { el.innerHTML = ""; return; }
+  el.innerHTML = aniSecilenSesler.map((src, i) => `
+    <div class="ani-ses-satir">
+      <audio class="ani-ses" controls src="${src}"></audio>
+      <button class="ani-ses-sil-btn" type="button" data-ses-sil="${i}" aria-label="Bu kaydı sil">✕</button>
+    </div>`).join("");
+  el.querySelectorAll("[data-ses-sil]").forEach((b) => {
+    b.addEventListener("click", () => {
+      aniSecilenSesler.splice(Number(b.dataset.sesSil), 1);
+      aniSesOnizlemeCiz();
+    });
   });
 }
 
@@ -327,7 +367,7 @@ async function aniKaydet() {
   const tarih = (tarihEl && tarihEl.value) || bugunISO();
   const not = (notEl && notEl.value || "").trim();
 
-  if (!not && !aniSecilenFoto && !aniSecilenSes) {
+  if (!not && !aniSecilenFoto && !aniSecilenSesler.length) {
     aniDurumYaz("En az bir not, fotoğraf veya sesli not ekleyin.");
     return;
   }
@@ -336,26 +376,32 @@ async function aniKaydet() {
     tarih: tarih,
     not: not,
     foto: aniSecilenFoto || "",
-    ses: aniSecilenSes || "",
-    sesTur: aniSecilenSesTur || "",
+    sesler: aniSecilenSesler.slice(),
     olusturma: Date.now(),
   };
 
-  if (oge.foto.length + oge.ses.length > ANI_DOKUMAN_SINIR) {
+  const sesToplam = oge.sesler.reduce((t, s) => t + s.length, 0);
+  if (oge.foto.length + sesToplam > ANI_DOKUMAN_SINIR) {
     aniDurumYaz("Fotoğraf + ses çok büyük. Daha kısa bir ses ya da daha küçük bir foto deneyin.");
     return;
   }
 
+  const duzenleMi = !!aniDuzenlenenId;
+  if (duzenleMi) oge.olusturma = aniDuzenlenenOlusturma || Date.now();
+
   const kaydetBtn = document.getElementById("aniKaydetBtn");
+  const eskiMetin = duzenleMi ? "💾 Güncelle" : "💾 Kaydet";
   if (kaydetBtn) { kaydetBtn.disabled = true; kaydetBtn.textContent = "Kaydediliyor..."; }
 
   const anahtar = aniAcikKey;
+  const duzId = aniDuzenlenenId;
   try {
-    await aniKoleksiyon(anahtar).add(oge);
+    if (duzenleMi) await aniKoleksiyon(anahtar).doc(duzId).set(oge);
+    else await aniKoleksiyon(anahtar).add(oge);
   } catch (e) {
     console.warn("Anı kaydedilemedi:", e);
     aniDurumYaz("Kaydedilemedi. (İnternet ve Firestore kuralları güncel mi?)");
-    if (kaydetBtn) { kaydetBtn.disabled = false; kaydetBtn.textContent = "💾 Kaydet"; }
+    if (kaydetBtn) { kaydetBtn.disabled = false; kaydetBtn.textContent = eskiMetin; }
     return;
   }
 
@@ -390,6 +436,16 @@ function aniFotoBuyut(src) {
 if (detayAnilar) {
   detayAnilar.addEventListener("click", (e) => {
     if (e.target.closest("#aniEkleAcBtn")) { aniFormAc(); return; }
+    const duzBtn = e.target.closest("[data-ani-duzenle]");
+    if (duzBtn) {
+      const a = aniMevcutListe.find((x) => x.id === duzBtn.dataset.aniDuzenle);
+      if (a) {
+        aniFormAc(a);
+        const sarmal = document.getElementById("aniFormSarmal");
+        if (sarmal) sarmal.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      return;
+    }
     const silBtn = e.target.closest("[data-ani-sil]");
     if (silBtn) { aniSil(silBtn.dataset.aniSil); return; }
     const foto = e.target.closest("[data-ani-foto]");
@@ -426,4 +482,10 @@ function aniKacis(s) {
   return String(s)
     .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
     .replace(/\n/g, "<br>");
+}
+
+// Textarea içeriği / öznitelik için (satır sonlarını koru)
+function aniOznitelikKacis(s) {
+  return String(s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

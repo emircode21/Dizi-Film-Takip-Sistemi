@@ -1086,7 +1086,9 @@ body {
 }
 .ani-kayit-btn:hover { border-color: var(--vurgu); }
 .ani-kayit-sure { font-size: 12.5px; color: var(--soluk); font-variant-numeric: tabular-nums; }
-.ani-ses-onizleme:not(:empty) { margin-top: 8px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ani-ses-onizleme:not(:empty) { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.ani-ses-satir { display: flex; align-items: center; gap: 8px; }
+.ani-ses-satir .ani-ses { flex: 1; min-width: 0; }
 .ani-ses { max-width: 100%; height: 38px; }
 .ani-ses-sil-btn, .ani-vazgec-btn {
   border: 1px solid var(--kenar); cursor: pointer;
@@ -1117,11 +1119,13 @@ body {
 }
 .ani-kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ani-tarih { font-size: 12.5px; color: var(--vurgu); font-weight: 700; }
-.ani-sil-btn {
+.ani-kart-islem { display: flex; align-items: center; gap: 2px; }
+.ani-sil-btn, .ani-duzenle-btn {
   border: none; background: transparent; cursor: pointer;
-  font-size: 15px; opacity: .55; padding: 2px 4px; border-radius: 8px;
+  font-size: 15px; opacity: .55; padding: 2px 5px; border-radius: 8px;
 }
-.ani-sil-btn:hover { opacity: 1; }
+.ani-sil-btn:hover, .ani-duzenle-btn:hover { opacity: 1; }
+.ani-form-baslik { font-size: 13.5px; font-weight: 700; color: var(--vurgu); margin-bottom: 6px; }
 .ani-not { font-size: 14px; line-height: 1.5; margin-top: 8px; white-space: pre-wrap; }
 .ani-kart .ani-foto {
   display: block; margin-top: 10px; max-width: 100%; max-height: 300px;

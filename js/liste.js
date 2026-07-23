@@ -314,9 +314,9 @@ function kartHTML(o) {
       </div>
       <div class="kart-aksiyonlar">
         <select class="durum-secici" data-durum-sec="${o.key}">
-          <option value="izliyor" ${o.durum === "izliyor" ? "selected" : ""}>İzliyorum</option>
-          <option value="bitirdi" ${o.durum === "bitirdi" ? "selected" : ""}>Bitirdim</option>
-          <option value="izlemek_istiyor" ${o.durum === "izlemek_istiyor" ? "selected" : ""}>İzlemek İstiyorum</option>
+          <option value="izliyor" ${o.durum === "izliyor" ? "selected" : ""}>Devam Edenler</option>
+          <option value="bitirdi" ${o.durum === "bitirdi" ? "selected" : ""}>Bitenler</option>
+          <option value="izlemek_istiyor" ${o.durum === "izlemek_istiyor" ? "selected" : ""}>İstek Listesi</option>
         </select>
         ${aksiyonHTML}
         <button class="sil-btn ikon-btn" data-sil="${o.key}" aria-label="Kaldır" title="Kaldır">${SVG_SIL}</button>

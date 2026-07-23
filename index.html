@@ -75,7 +75,7 @@
 
       <div class="arac-satiri">
         <div class="arama-kutusu-sarmalayici">
-          <input id="arama" type="text" placeholder="Dizi veya film ara..." autocomplete="off" />
+          <input id="arama" type="text" placeholder="Dizi, film, oyuncu veya yönetmen ara..." autocomplete="off" />
           <button id="aramaTemizle" class="arama-temizle" style="display:none" aria-label="Aramayı temizle">✕</button>
         </div>
         <select id="siralamaSecici" class="siralama-secici">
@@ -171,7 +171,14 @@
           <div id="kisiRol" class="alt"></div>
         </div>
       </div>
-      <div class="detay-baslik-kucuk">Yapımları</div>
+      <div class="kisi-yapim-baslik-satiri">
+        <div class="detay-baslik-kucuk">Yapımları</div>
+        <div class="kisi-sirala" id="kisiSirala">
+          <button class="kisi-sirala-btn aktif" data-sira="bilinirlik">Bilinirlik</button>
+          <button class="kisi-sirala-btn" data-sira="yeni">Yeni</button>
+          <button class="kisi-sirala-btn" data-sira="puan">Puan</button>
+        </div>
+      </div>
       <div id="kisiYapimlar" class="kisi-yapim-grid"></div>
     </div>
   </div>

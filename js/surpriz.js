@@ -251,7 +251,7 @@ function sonucKartiCiz(oge, mod) {
       detayAcTmdb(oge, true, mod === "kesfet" ? surprizSonSonuclar : null);
       // "Geri" ile sürpriz ekranına (filtreler duruyor) dönebilelim
       if (mod === "kesfet") {
-        detaySurprizDonAyarla(() => { surprizModal.style.display = "flex"; });
+        detayDonusAyarla(() => { surprizModal.style.display = "flex"; });
       }
     } else if (a === "ekle") {
       surprizKapat();

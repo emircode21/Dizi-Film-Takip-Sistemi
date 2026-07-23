@@ -761,6 +761,18 @@ body {
   width: 82px; height: 82px; border-radius: 50%;
   object-fit: cover; background: var(--kart-2); flex-shrink: 0;
 }
+.kisi-yapim-baslik-satiri {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+}
+.kisi-sirala { display: flex; gap: 4px; background: var(--kart-2); border-radius: 10px; padding: 3px; }
+.kisi-sirala-btn {
+  border: none; background: none; color: var(--soluk);
+  font-size: 12px; font-weight: 600; padding: 6px 10px;
+  border-radius: 8px; cursor: pointer;
+}
+.kisi-sirala-btn.aktif { background: var(--arka); color: var(--vurgu); box-shadow: var(--golge); }
+
 .kisi-yapim-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));

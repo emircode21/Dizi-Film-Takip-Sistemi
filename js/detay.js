@@ -45,16 +45,16 @@ const detayGeriBtn = document.getElementById("detayGeriBtn");
 let detayGecmis = [];          // her biri önceki görünümü yeniden açan fonksiyon
 let detaySuAnkiAcici = null;   // şu an görüneni yeniden açan fonksiyon
 let detaySurprizHavuz = null;  // sürprizden geldiyse "başka öneri" için aday havuzu
-let detaySurprizeDon = null;   // sürprizden gelindiyse sürpriz ekranına dönüş fonksiyonu
+let detayDonusFn = null;   // dış bir ekrandan (sürpriz/oyuncu) gelindiyse oraya dönüş fonksiyonu
 
 function detayGeriGuncelle() {
-  const goster = detayGecmis.length > 0 || !!detaySurprizeDon;
+  const goster = detayGecmis.length > 0 || !!detayDonusFn;
   if (detayGeriBtn) detayGeriBtn.style.display = goster ? "inline-flex" : "none";
 }
 
-// Sürprizden gelindiğinde "geri" ile sürpriz ekranına (filtrelerle) dönüşü ayarla
-function detaySurprizDonAyarla(fn) {
-  detaySurprizeDon = fn;
+// Dış bir ekrandan (sürpriz filtreleri / oyuncu sayfası) gelindiğinde "geri" ile oraya dönüşü ayarla
+function detayDonusAyarla(fn) {
+  detayDonusFn = fn;
   detayGeriGuncelle();
 }
 
@@ -106,7 +106,7 @@ async function detayAc(key, kok = true) {
   const o = detayOgeBul(key);
   if (!o) return;
 
-  if (kok) { detayGecmis = []; detaySurprizHavuz = null; detaySurprizeDon = null; }
+  if (kok) { detayGecmis = []; detaySurprizHavuz = null; detayDonusFn = null; }
   detaySuAnkiAcici = () => detayAc(key, false);
   detayGeriGuncelle();
 
@@ -131,7 +131,7 @@ async function detayAc(key, kok = true) {
 // Kayıtlı OLMAYAN bir TMDB öğesinin (arama sonucu / öneri) detay önizlemesi.
 // x: TMDB arama biçimi { media_type, id, poster_path, name/title, first_air_date/release_date }
 async function detayAcTmdb(x, kok = true, surprizHavuz = null) {
-  if (kok) { detayGecmis = []; detaySurprizHavuz = surprizHavuz; detaySurprizeDon = null; }
+  if (kok) { detayGecmis = []; detaySurprizHavuz = surprizHavuz; detayDonusFn = null; }
   else if (surprizHavuz) { detaySurprizHavuz = surprizHavuz; }
   const buHavuz = detaySurprizHavuz; // bu görünümdeki "başka öneri" havuzu
   detaySuAnkiAcici = () => detayAcTmdb(x, false, buHavuz);
@@ -175,10 +175,10 @@ detayEkleAlani.addEventListener("click", (e) => {
   }
   if (e.target.closest("#detayBaskaOneriBtn") && detaySurprizHavuz && detaySurprizHavuz.length) {
     const havuz = detaySurprizHavuz;
-    const don = detaySurprizeDon; // sürprize dönüşü koru
+    const don = detayDonusFn; // sürprize dönüşü koru
     const yeni = havuz[Math.floor(Math.random() * havuz.length)];
     detayAcTmdb(yeni, true, havuz); // yeni kök açılış, havuz korunur
-    detaySurprizeDon = don;
+    detayDonusFn = don;
     detayGeriGuncelle();
   }
 });
@@ -190,11 +190,11 @@ if (detayGeriBtn) {
       const acici = detayGecmis.pop();
       detayGeriGuncelle();
       if (acici) acici();
-    } else if (detaySurprizeDon) {
-      const don = detaySurprizeDon;
+    } else if (detayDonusFn) {
+      const don = detayDonusFn;
       detayModal.style.display = "none";
       acikOgeKey = null;
-      detaySurprizeDon = null;
+      detayDonusFn = null;
       detaySurprizHavuz = null;
       detayGeriGuncelle();
       don();
@@ -207,7 +207,7 @@ function detayKapat() {
   acikOgeKey = null;
   detayGecmis = [];
   detaySurprizHavuz = null;
-  detaySurprizeDon = null;
+  detayDonusFn = null;
   detayGeriGuncelle();
 }
 

@@ -72,6 +72,15 @@ const OSCAR_TMDB_BICIMI = OSCAR_KAZANANLARI.map((f) => ({
   vote_average: null,
 })).reverse(); // en yeni önce
 
+// Kategori kodu → başlık (şerit + "tümü" penceresi ikisi de kullanır)
+const KESFET_KATEGORI_BASLIK = {
+  trend: "🔥 Bu Hafta Trend",
+  vizyon: "🎬 Vizyondaki Filmler",
+  oscar: "🏆 Oscar Kazananları — En İyi Film",
+  begenilen: "⭐ En Beğenilenler",
+  dizi: "📺 Popüler Diziler",
+};
+
 /* ---- Vizyondaki filmler bölge durumu ---- */
 let kesfetVizyonBolge = "TR"; // "TR" | "GLOBAL"
 
@@ -79,11 +88,11 @@ let kesfetVizyonBolge = "TR"; // "TR" | "GLOBAL"
 async function kesfetEkraniCiz() {
   listeAlani.innerHTML = `
     <div class="kesfet-sarmal" id="kesfetSarmal">
-      ${kesfetBolumIskelet("kesfet-serit-trend", "🔥 Bu Hafta Trend")}
-      ${kesfetBolumIskelet("kesfet-serit-vizyon", "🎬 Vizyondaki Filmler", true)}
-      ${kesfetBolumIskelet("kesfet-serit-oscar", "🏆 Oscar Kazananları — En İyi Film")}
-      ${kesfetBolumIskelet("kesfet-serit-begenilen", "⭐ En Beğenilenler")}
-      ${kesfetBolumIskelet("kesfet-serit-dizi", "📺 Popüler Diziler")}
+      ${kesfetBolumIskelet("trend")}
+      ${kesfetBolumIskelet("vizyon", true)}
+      ${kesfetBolumIskelet("oscar")}
+      ${kesfetBolumIskelet("begenilen")}
+      ${kesfetBolumIskelet("dizi")}
     </div>`;
 
   // Oscar listesi zaten elde hazır (ağ isteği yok), hemen çiz
@@ -96,7 +105,7 @@ async function kesfetEkraniCiz() {
   populerGetir("tv").then((liste) => kesfetSeritDoldur("kesfet-serit-dizi", liste));
 }
 
-function kesfetBolumIskelet(seritId, baslik, vizyonToggleMi = false) {
+function kesfetBolumIskelet(kategori, vizyonToggleMi = false) {
   const toggleHTML = vizyonToggleMi
     ? `<div class="kesfet-vizyon-toggle" data-grup="vizyon">
          <button class="tur-toggle-btn ${kesfetVizyonBolge === "TR" ? "aktif" : ""}" data-bolge="TR">Türkiye</button>
@@ -106,10 +115,12 @@ function kesfetBolumIskelet(seritId, baslik, vizyonToggleMi = false) {
   return `
     <div class="kesfet-bolum">
       <div class="kesfet-bolum-ust">
-        <div class="detay-baslik-kucuk">${baslik}</div>
+        <div class="detay-baslik-kucuk kesfet-baslik-tiklanabilir" data-kesfet-baslik="${kategori}">
+          ${KESFET_KATEGORI_BASLIK[kategori]} <span class="kesfet-tumunu-gor">Tümünü gör →</span>
+        </div>
         ${toggleHTML}
       </div>
-      <div class="kesfet-serit" id="${seritId}"><div class="bilgi">Yükleniyor...</div></div>
+      <div class="kesfet-serit" id="kesfet-serit-${kategori}"><div class="bilgi">Yükleniyor...</div></div>
     </div>`;
 }
 
@@ -176,5 +187,169 @@ document.addEventListener("click", (e) => {
     const el = document.getElementById("kesfet-serit-vizyon");
     if (el) el.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
     vizyondakiler(kesfetVizyonBolge).then((liste) => kesfetSeritDoldur("kesfet-serit-vizyon", liste));
+    return;
+  }
+
+  const baslikEl = e.target.closest("[data-kesfet-baslik]");
+  if (baslikEl) {
+    const sarmal = document.getElementById("kesfetSarmal");
+    if (!sarmal || !sarmal.contains(baslikEl)) return;
+    kesfetTumAc(baslikEl.dataset.kesfetBaslik);
   }
 });
+
+/* ================================================================
+   "TÜMÜNÜ GÖR" PENCERESİ — bir bölüm başlığına tıklanınca o kategorinin
+   daha geniş bir listesi (birkaç TMDB sayfası birleştirilmiş) + sıralama.
+   ================================================================ */
+const kesfetTumModal = document.getElementById("kesfetTumModal");
+const kesfetTumKapatBtn = document.getElementById("kesfetTumKapatBtn");
+const kesfetTumBaslik = document.getElementById("kesfetTumBaslik");
+const kesfetTumSiralaSecici = document.getElementById("kesfetTumSiralaSecici");
+const kesfetTumGrid = document.getElementById("kesfetTumGrid");
+
+let kesfetTumKategori = null;
+let kesfetTumVeri = [];      // o an açık kategorinin ham (normalize) listesi
+let kesfetTumSiraMod = null;
+
+// Oscar filmlerinin ödül kazanma sayısı (filmId → sayı); "en çok ödül" sıralaması için lazy hesaplanır
+const kesfetOscarOdulOnbellek = {};
+let kesfetOscarOdulHesaplaniyor = false;
+
+async function kesfetTumAc(kategori) {
+  kesfetTumKategori = kategori;
+  kesfetTumBaslik.textContent = KESFET_KATEGORI_BASLIK[kategori] || "";
+  kesfetTumSiraSeciciDoldur(kategori);
+  kesfetTumGrid.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
+  kesfetTumModal.style.display = "flex";
+  const mk = kesfetTumModal.querySelector(".modal-kutu");
+  if (mk) mk.scrollTop = 0;
+
+  const veri = await kesfetTumVeriGetir(kategori);
+  if (kesfetTumKategori !== kategori) return; // kullanıcı beklerken başka kategori açtı
+  kesfetTumVeri = veri;
+  kesfetTumCiz();
+}
+
+function kesfetTumSiraSeciciDoldur(kategori) {
+  if (kategori === "oscar") {
+    kesfetTumSiraMod = "tarih-yeni";
+    kesfetTumSiralaSecici.innerHTML = `
+      <option value="tarih-yeni">Tarihsel (Yeni → Eski)</option>
+      <option value="tarih-eski">Tarihsel (Eski → Yeni)</option>
+      <option value="odul">En çok ödül alandan aza</option>`;
+  } else {
+    kesfetTumSiraMod = "puan";
+    kesfetTumSiralaSecici.innerHTML = `
+      <option value="puan">Puana göre (Yüksek → Düşük)</option>
+      <option value="yeni">Yıla göre (Yeni → Eski)</option>
+      <option value="eski">Yıla göre (Eski → Yeni)</option>`;
+  }
+  kesfetTumSiralaSecici.value = kesfetTumSiraMod;
+}
+
+async function kesfetTumVeriGetir(kategori) {
+  if (kategori === "oscar") return OSCAR_TMDB_BICIMI.slice();
+  if (kategori === "trend") return trendTumGetir();
+  if (kategori === "vizyon") return vizyondakilerTum(kesfetVizyonBolge);
+  if (kategori === "begenilen") return topRatedTumGetir("movie");
+  if (kategori === "dizi") return populerTumGetir("tv");
+  return [];
+}
+
+function _kesfetYil(x) {
+  const t = x.media_type === "tv" ? x.first_air_date : x.release_date;
+  return t ? Number(t.slice(0, 4)) : 0;
+}
+
+function kesfetTumCiz() {
+  let liste = kesfetTumVeri.slice();
+
+  if (kesfetTumKategori === "oscar") {
+    if (kesfetTumSiraMod === "tarih-yeni") liste.sort((a, b) => _kesfetYil(b) - _kesfetYil(a));
+    else if (kesfetTumSiraMod === "tarih-eski") liste.sort((a, b) => _kesfetYil(a) - _kesfetYil(b));
+    else if (kesfetTumSiraMod === "odul") liste.sort((a, b) => (kesfetOscarOdulOnbellek[b.id] || 0) - (kesfetOscarOdulOnbellek[a.id] || 0));
+  } else {
+    if (kesfetTumSiraMod === "puan") liste.sort((a, b) => (b.vote_average || 0) - (a.vote_average || 0));
+    else if (kesfetTumSiraMod === "yeni") liste.sort((a, b) => _kesfetYil(b) - _kesfetYil(a));
+    else if (kesfetTumSiraMod === "eski") liste.sort((a, b) => _kesfetYil(a) - _kesfetYil(b));
+  }
+
+  if (!liste.length) {
+    kesfetTumGrid.innerHTML = "<div class='bilgi'>Gösterilecek bir şey yok.</div>";
+    return;
+  }
+  kesfetTumGrid.innerHTML = liste.map(kesfetTumKartHTML).join("");
+}
+
+function kesfetTumKartHTML(x) {
+  const diziMi = x.media_type === "tv";
+  const ad = diziMi ? x.name : x.title;
+  const tarih = diziMi ? x.first_air_date : x.release_date;
+  const yil = tarih ? tarih.slice(0, 4) : "—";
+  const puan = x.vote_average ? Number(x.vote_average.toFixed(1)) : null;
+  const odulSayisi = kesfetTumKategori === "oscar" ? kesfetOscarOdulOnbellek[x.id] : undefined;
+  const altMetin = (kesfetTumSiraMod === "odul" && odulSayisi !== undefined)
+    ? `${yil} · 🏆 ${odulSayisi} ödül`
+    : `${yil}${puan ? " · ★ " + puan : ""}`;
+  return `
+    <button class="kisi-yapim"
+            data-kesfet-tumkart
+            data-kesfet-tmdb="${x.id}"
+            data-kesfet-type="${x.media_type || "movie"}"
+            data-kesfet-poster="${x.poster_path || ""}"
+            data-kesfet-yil="${yil !== "—" ? yil : ""}"
+            data-kesfet-ad="${ad.replace(/"/g, "&quot;")}">
+      <img class="kisi-yapim-poster" src="${posterUrl(x.poster_path)}" alt="${ad}">
+      <div class="kisi-yapim-ad">${ad}</div>
+      <div class="kisi-yapim-alt">${altMetin}</div>
+    </button>`;
+}
+
+// "En çok ödül alandan aza" seçilince gereken 54 OMDb sorgusu (tek seferlik, sonra önbellekten)
+async function kesfetOscarOdulleriHazirla() {
+  if (kesfetOscarOdulHesaplaniyor) return;
+  const eksikler = OSCAR_KAZANANLARI.filter((f) => kesfetOscarOdulOnbellek[f.id] === undefined);
+  if (!eksikler.length) return;
+  kesfetOscarOdulHesaplaniyor = true;
+  kesfetTumGrid.innerHTML = "<div class='bilgi'>Ödül sayıları hesaplanıyor (yalnızca ilk seferde)...</div>";
+  await Promise.all(eksikler.map(async (f) => {
+    kesfetOscarOdulOnbellek[f.id] = await oscarFilmOdulSayisiGetir(f.id);
+  }));
+  kesfetOscarOdulHesaplaniyor = false;
+}
+
+kesfetTumSiralaSecici.addEventListener("change", async () => {
+  kesfetTumSiraMod = kesfetTumSiralaSecici.value;
+  if (kesfetTumKategori === "oscar" && kesfetTumSiraMod === "odul") {
+    await kesfetOscarOdulleriHazirla();
+  }
+  kesfetTumCiz();
+});
+
+kesfetTumGrid.addEventListener("click", (e) => {
+  const kart = e.target.closest("[data-kesfet-tumkart]");
+  if (!kart) return;
+  const type = kart.dataset.kesfetType;
+  const ad = kart.dataset.kesfetAd;
+  const yil = kart.dataset.kesfetYil;
+  const tarih = yil ? yil + "-01-01" : "";
+  kesfetTumModal.style.display = "none";
+  detayAcTmdb({
+    media_type: type,
+    id: Number(kart.dataset.kesfetTmdb),
+    poster_path: kart.dataset.kesfetPoster || null,
+    name: ad, title: ad,
+    first_air_date: type === "tv" ? tarih : "",
+    release_date: type === "movie" ? tarih : "",
+  });
+  detayDonusAyarla(() => { kesfetTumModal.style.display = "flex"; });
+});
+
+function kesfetTumKapat() {
+  kesfetTumModal.style.display = "none";
+  kesfetTumKategori = null;
+}
+
+kesfetTumKapatBtn.addEventListener("click", kesfetTumKapat);
+kesfetTumModal.addEventListener("click", (e) => { if (e.target === kesfetTumModal) kesfetTumKapat(); });

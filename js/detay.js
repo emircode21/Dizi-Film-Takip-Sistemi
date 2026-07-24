@@ -96,8 +96,9 @@ async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
         if (yer) yer.innerHTML = `<span class="puan-rozet imdb"><b>IMDb</b> ${r.imdbRating}</span>`;
       }
       if (r.awards) {
+        const ay = odulAyristir(r.awards);
         const odulYeri = document.getElementById("odulYeri");
-        if (odulYeri) odulYeri.innerHTML = `<div class="detay-odul">🏆 ${r.awards}</div>`;
+        if (odulYeri && ay) odulYeri.innerHTML = `<div class="detay-odul">🏆 ${ay.metin}</div>`;
       }
     });
   }

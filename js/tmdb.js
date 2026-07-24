@@ -226,6 +226,84 @@ async function imdbPuanGetir(imdbId) {
   return r.imdbRating;
 }
 
+// Bilinen büyük ödüllerin Türkçe adı; eşleşmeyen ödüller olduğu gibi bırakılır.
+const _ODUL_ISIM_TR = {
+  "oscar": "Oscar", "oscars": "Oscar",
+  "golden globe": "Altın Küre", "golden globes": "Altın Küre",
+  "primetime emmy": "Emmy", "primetime emmys": "Emmy",
+  "emmy": "Emmy", "emmys": "Emmy",
+  "bafta": "BAFTA", "baftas": "BAFTA",
+  "bafta award": "BAFTA", "bafta awards": "BAFTA",
+  "grammy": "Grammy", "grammys": "Grammy",
+  "golden lion": "Altın Aslan", "golden lions": "Altın Aslan",
+};
+
+function _odulIsimCevir(isim) {
+  const anahtar = isim.trim().toLowerCase();
+  return _ODUL_ISIM_TR[anahtar] || isim.trim();
+}
+
+// OMDb'nin İngilizce "Awards" metnini anlaşılır Türkçeye çevirir.
+// Döndürür: { metin, kazanmaSayisi } — kazanmaSayisi sıralama için (bulunamazsa 0).
+function odulAyristir(ham) {
+  if (!ham) return null;
+  const cumleler = [];
+  let toplamKazanma = 0;
+  let majorKazanma = 0;
+
+  // Baştaki "Won N <Ödül Adı>(s)." veya "Nominated for N <Ödül Adı>(s)."
+  const majorEslesme = ham.match(/^(Won|Nominated for)\s+(\d+)\s+([A-Za-z][A-Za-z' ]*?)s?\.\s*/);
+  let kalan = ham;
+  if (majorEslesme) {
+    const [tamEslesme, fiil, sayiStr, odulAdiHam] = majorEslesme;
+    const sayi = Number(sayiStr);
+    const odulAdi = _odulIsimCevir(odulAdiHam);
+    if (fiil === "Won") {
+      cumleler.push(`${sayi} ${odulAdi} kazandı`);
+      majorKazanma = sayi;
+    } else {
+      cumleler.push(`${sayi} ${odulAdi} adayı oldu`);
+    }
+    kalan = ham.slice(tamEslesme.length);
+  }
+
+  // "N wins & M nominations total" / "Another N wins & M nominations."
+  const toplamEslesme = kalan.match(/(\d+)\s+wins?\s*(?:&|and)\s*(\d+)\s+nominations?/i);
+  if (toplamEslesme) {
+    const kazanma = Number(toplamEslesme[1]);
+    const aday = Number(toplamEslesme[2]);
+    cumleler.push(`toplam ${kazanma} ödül, ${aday} aday gösterme`);
+    toplamKazanma = kazanma;
+  } else {
+    // Sadece "N win(s)." ya da "N nomination(s)."
+    const tekKazanma = kalan.match(/(\d+)\s+wins?\b/i);
+    const tekAday = kalan.match(/(\d+)\s+nominations?\b/i);
+    if (tekKazanma) { cumleler.push(`${tekKazanma[1]} ödül kazandı`); toplamKazanma = Number(tekKazanma[1]); }
+    if (tekAday) cumleler.push(`${tekAday[1]} kez aday gösterildi`);
+  }
+
+  if (!cumleler.length) return { metin: ham, kazanmaSayisi: 0 };
+  return { metin: cumleler.join(" · "), kazanmaSayisi: toplamKazanma || majorKazanma };
+}
+
+// Bir Oscar filminin toplam ödül kazanma sayısını getirir (sıralama için).
+// TMDB'den imdb_id çekip OMDb ödül metnini ayrıştırır; bulunamazsa 0.
+async function oscarFilmOdulSayisiGetir(filmId) {
+  try {
+    const url = "https://api.themoviedb.org/3/movie/" + filmId
+      + "?api_key=" + API_KEY + "&append_to_response=external_ids";
+    const veri = await (await fetch(url)).json();
+    const imdbId = (veri.external_ids && veri.external_ids.imdb_id) || veri.imdb_id;
+    if (!imdbId) return 0;
+    const r = await omdbGetir(imdbId);
+    if (!r.awards) return 0;
+    const ay = odulAyristir(r.awards);
+    return ay ? ay.kazanmaSayisi : 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
 /* ---------------- KEŞİF / SÜRPRİZ (Faz 2) ---------------- */
 
 // Tür listesini getirir (önbellekli). type: "movie" | "tv" → [{id, ad}]
@@ -374,4 +452,48 @@ async function topRatedGetir(type) {
 async function populerGetir(type) {
   const url = "https://api.themoviedb.org/3/" + type + "/popular?api_key=" + API_KEY + "&language=tr-TR";
   return _kesfetFetch("populer-" + type, url, type);
+}
+
+/* ---- "Tümünü gör" pencereleri için çok sayfalı veri çekme ----
+   Şerit(20 öğe) yerine birkaç TMDB sayfasını birleştirip daha geniş bir liste sunar. */
+async function _kesfetCokSayfaGetir(urlOnEk, type, sayfaSayisi) {
+  const istekler = [];
+  for (let s = 1; s <= sayfaSayisi; s++) {
+    istekler.push(fetch(urlOnEk + s).then((r) => r.json()).catch(() => ({ results: [] })));
+  }
+  const sayfalar = await Promise.all(istekler);
+  const hepsi = [];
+  const gorulen = new Set();
+  sayfalar.forEach((veri) => {
+    (veri.results || []).forEach((x) => {
+      if (!x.poster_path) return;
+      if (!type && x.media_type === "person") return;
+      if (gorulen.has(x.id)) return;
+      gorulen.add(x.id);
+      hepsi.push(_kesfetNormalize(x, type));
+    });
+  });
+  return hepsi;
+}
+
+async function trendTumGetir() {
+  const url = "https://api.themoviedb.org/3/trending/all/week?api_key=" + API_KEY + "&language=tr-TR&page=";
+  return _kesfetCokSayfaGetir(url, null, 5);
+}
+
+async function vizyondakilerTum(bolge) {
+  const region = bolge === "GLOBAL" ? "US" : "TR";
+  const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY
+    + "&language=tr-TR&region=" + region + "&page=";
+  return _kesfetCokSayfaGetir(url, "movie", 5);
+}
+
+async function topRatedTumGetir(type) {
+  const url = "https://api.themoviedb.org/3/" + type + "/top_rated?api_key=" + API_KEY + "&language=tr-TR&page=";
+  return _kesfetCokSayfaGetir(url, type, 5);
+}
+
+async function populerTumGetir(type) {
+  const url = "https://api.themoviedb.org/3/" + type + "/popular?api_key=" + API_KEY + "&language=tr-TR&page=";
+  return _kesfetCokSayfaGetir(url, type, 5);
 }

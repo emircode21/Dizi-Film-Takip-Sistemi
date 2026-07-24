@@ -179,7 +179,7 @@ body {
 /* ---------- İçerik ---------- */
 .icerik {
   padding: 30px 26px 56px;
-  min-width: 0;
+  min-width: 0; /* grid item'ın içerik genişliğine göre büyümesini engeller (taşma yerine iç kaydırma) */
 }
 
 /* ---------- Hero başlık ---------- */
@@ -1148,13 +1148,23 @@ body {
 }
 
 /* ---------------- KEŞFET ANA EKRANI ---------------- */
-.kesfet-sarmal { display: flex; flex-direction: column; gap: 26px; }
+/* min-width:0 şart: #listem bir grid, bu yüzden bu flex kutusu bir grid item —
+   grid item'ların varsayılan min-width:auto'su içindeki yatay şeridin taşan
+   min-content genişliğini grid track'ine yansıtıp sayfayı sağa genişletiyordu. */
+.kesfet-sarmal { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
 
 .kesfet-bolum-ust {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
 }
 .kesfet-bolum-ust .detay-baslik-kucuk { margin: 0; }
+.kesfet-baslik-tiklanabilir { cursor: pointer; }
+.kesfet-baslik-tiklanabilir:hover { color: var(--vurgu); }
+.kesfet-tumunu-gor {
+  font-size: 11px; font-weight: 500; color: var(--soluk);
+  margin-left: 4px; white-space: nowrap;
+}
+.kesfet-baslik-tiklanabilir:hover .kesfet-tumunu-gor { color: var(--vurgu); }
 
 .kesfet-vizyon-toggle { display: flex; gap: 6px; }
 .kesfet-vizyon-toggle .tur-toggle-btn { flex: none; padding: 5px 12px; font-size: 12px; }

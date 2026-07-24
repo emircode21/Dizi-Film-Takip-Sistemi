@@ -338,6 +338,10 @@ select {
 #listem { display: grid; gap: 12px; }
 @media (min-width: 820px) {
   #listem { grid-template-columns: 1fr 1fr; }
+
+  /* Masaüstünde geniş içerik alanında arama çubuğu ve sürpriz butonu tüm
+     genişliğe yayılıp orantısız durmasın diye makul bir üst sınır koy. */
+  .arac-satiri, .surpriz-btn { max-width: 640px; }
 }
 
 @keyframes kartGir { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }

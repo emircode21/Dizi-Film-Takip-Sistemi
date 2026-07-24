@@ -1193,7 +1193,8 @@ select {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
 }
-.kesfet-bolum-ust .detay-baslik-kucuk { margin: 0; }
+.kesfet-bolum-ust .detay-baslik-kucuk { margin: 0; font-size: 15px; }
+#kesfetTumBaslik { font-size: 15px; } /* "Tümünü gör" penceresinin başlığı — ana ekrandaki başlıkla aynı boyut */
 .kesfet-baslik-tiklanabilir { cursor: pointer; }
 .kesfet-baslik-tiklanabilir:hover { color: var(--vurgu); }
 .kesfet-tumunu-gor {

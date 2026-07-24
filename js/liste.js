@@ -11,7 +11,7 @@ const snackbarAlani = document.getElementById("snackbar");
 
 let sonSonuclar = [];
 let zamanlayici;
-let aktifSekme = "izliyor";
+let aktifSekme = "kesfet";
 let aktifSiralama = "eklenme";
 let silinenYedek = null;
 let silmeZamanlayici = null;
@@ -285,16 +285,25 @@ function gorunecekListe() {
 function sekmeSayilariniGuncelle() {
   sekmeAlani.querySelectorAll("[data-sekme]").forEach((btn) => {
     const s = btn.dataset.sekme;
-    const sayi = s === "birlikte"
+    btn.classList.toggle("aktif", s === aktifSekme);
+    const sayiEl = btn.querySelector(".sekme-sayi");
+    if (!sayiEl) return; // Keşfet sekmesinde sayaç yok
+    sayiEl.textContent = s === "birlikte"
       ? (typeof ortakListem !== "undefined" ? ortakListem.length : 0)
       : listem.filter((o) => o.durum === s).length;
-    btn.classList.toggle("aktif", s === aktifSekme);
-    btn.querySelector(".sekme-sayi").textContent = sayi;
   });
 }
 
 function listeyiCiz() {
   sekmeSayilariniGuncelle();
+
+  // Keşfet sekmesi: arama/liste değil, TMDB öneri şeritleri
+  if (aktifSekme === "kesfet") {
+    if (siralamaSecici) siralamaSecici.style.display = "none";
+    kesfetEkraniCiz();
+    return;
+  }
+  if (siralamaSecici) siralamaSecici.style.display = "";
 
   // "Birlikte İzlenenler" sekmesi tamamen ayrı bir kaynaktan (Firestore) çizilir
   if (aktifSekme === "birlikte") {

@@ -204,19 +204,26 @@ async function detayGetir(type, id) {
   return sonuc;
 }
 
-// OMDb ile gerçek IMDb puanı (anahtar yoksa null döner)
-async function imdbPuanGetir(imdbId) {
-  if (!OMDB_KEY || !imdbId) return null;
+// OMDb ile gerçek IMDb puanı + ödül metni (anahtar yoksa ikisi de null döner)
+// Döndürür: { imdbRating, awards } — awards "N/A" ise null.
+async function omdbGetir(imdbId) {
+  if (!OMDB_KEY || !imdbId) return { imdbRating: null, awards: null };
   try {
     const url = "https://www.omdbapi.com/?apikey=" + OMDB_KEY + "&i=" + imdbId;
     const veri = await (await fetch(url)).json();
-    if (veri && veri.imdbRating && veri.imdbRating !== "N/A") {
-      return veri.imdbRating; // "8.4" gibi string
-    }
-    return null;
+    return {
+      imdbRating: (veri && veri.imdbRating && veri.imdbRating !== "N/A") ? veri.imdbRating : null,
+      awards: (veri && veri.Awards && veri.Awards !== "N/A") ? veri.Awards : null,
+    };
   } catch (e) {
-    return null;
+    return { imdbRating: null, awards: null };
   }
+}
+
+// Geriye dönük uyumluluk: sadece IMDb puanı isteyen eski çağrılar için
+async function imdbPuanGetir(imdbId) {
+  const r = await omdbGetir(imdbId);
+  return r.imdbRating;
 }
 
 /* ---------------- KEŞİF / SÜRPRİZ (Faz 2) ---------------- */
@@ -307,4 +314,64 @@ async function kesfet({ type, turId, kisiId, minPuan }) {
   } catch (e) {
     return [];
   }
+}
+
+/* ---------------- KEŞFET ANA EKRANI (Faz 4) ---------------- */
+// Bu bölümdeki fonksiyonlar hep TMDB arama biçiminde (media_type dahil) normalize
+// dizi döndürür → detayAcTmdb ile birebir uyumlu. Sonuçlar oturum boyunca
+// bellekte tutulur; Keşfet sekmesine her girişte yeniden istek atılmaz.
+const _kesfetOnbellek = {};
+
+function _kesfetNormalize(x, type) {
+  return {
+    media_type: x.media_type || type,
+    id: x.id,
+    name: x.name,
+    title: x.title,
+    poster_path: x.poster_path,
+    first_air_date: x.first_air_date,
+    release_date: x.release_date,
+    vote_average: x.vote_average,
+  };
+}
+
+async function _kesfetFetch(anahtar, url, type) {
+  if (_kesfetOnbellek[anahtar]) return _kesfetOnbellek[anahtar];
+  try {
+    const veri = await (await fetch(url)).json();
+    const liste = (veri.results || [])
+      .filter((x) => x.poster_path && (type || x.media_type !== "person"))
+      .map((x) => _kesfetNormalize(x, type))
+      .slice(0, 20);
+    _kesfetOnbellek[anahtar] = liste;
+    return liste;
+  } catch (e) {
+    return [];
+  }
+}
+
+// Bu hafta trend olan film+dizi karışık
+async function trendGetir() {
+  const url = "https://api.themoviedb.org/3/trending/all/week?api_key=" + API_KEY + "&language=tr-TR";
+  return _kesfetFetch("trend", url, null);
+}
+
+// Vizyondaki filmler. bolge: "TR" | "GLOBAL"
+async function vizyondakiler(bolge) {
+  const region = bolge === "GLOBAL" ? "US" : "TR";
+  const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY
+    + "&language=tr-TR&region=" + region;
+  return _kesfetFetch("vizyon-" + region, url, "movie");
+}
+
+// En yüksek puanlı film/diziler. type: "movie" | "tv"
+async function topRatedGetir(type) {
+  const url = "https://api.themoviedb.org/3/" + type + "/top_rated?api_key=" + API_KEY + "&language=tr-TR";
+  return _kesfetFetch("topRated-" + type, url, type);
+}
+
+// Popüler film/diziler. type: "movie" | "tv"
+async function populerGetir(type) {
+  const url = "https://api.themoviedb.org/3/" + type + "/popular?api_key=" + API_KEY + "&language=tr-TR";
+  return _kesfetFetch("populer-" + type, url, type);
 }

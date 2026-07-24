@@ -87,13 +87,17 @@ async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
   detayEkstraCiz(detay, diziMi);
   detayOnerileriCiz(detay.oneriler);
 
-  // IMDb puanını (varsa) arka planda çek ve rozeti güncelle
+  // IMDb puanı + gerçek ödül metni (varsa) arka planda çek ve ilgili yerleri güncelle
   if (detay.imdbId) {
-    imdbPuanGetir(detay.imdbId).then((puan) => {
-      if (acikOgeKey !== gecerliKey || !puan) return;
-      const yer = document.getElementById("imdbPuanYeri");
-      if (yer) {
-        yer.innerHTML = `<span class="puan-rozet imdb"><b>IMDb</b> ${puan}</span>`;
+    omdbGetir(detay.imdbId).then((r) => {
+      if (acikOgeKey !== gecerliKey) return;
+      if (r.imdbRating) {
+        const yer = document.getElementById("imdbPuanYeri");
+        if (yer) yer.innerHTML = `<span class="puan-rozet imdb"><b>IMDb</b> ${r.imdbRating}</span>`;
+      }
+      if (r.awards) {
+        const odulYeri = document.getElementById("odulYeri");
+        if (odulYeri) odulYeri.innerHTML = `<div class="detay-odul">🏆 ${r.awards}</div>`;
       }
     });
   }
@@ -236,6 +240,9 @@ function detayEkstraCiz(d, diziMi) {
     turSure.push(`<span class="tur-cip sure-cip">⏱ ${etiket}</span>`);
   }
   if (turSure.length) parcalar.push(`<div class="detay-turler">${turSure.join("")}</div>`);
+
+  // Gerçek ödül metni (OMDb'den arka planda gelir; gelene kadar boş/gizli)
+  parcalar.push(`<div id="odulYeri"></div>`);
 
   // Yönetmen / yaratıcı
   if (d.yonetmen) {

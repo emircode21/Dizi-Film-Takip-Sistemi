@@ -266,16 +266,33 @@ body {
 }
 .arama-temizle:hover { background: var(--kart-2); }
 
+/* ---------- Tüm <select> kutularının ortak temeli ----------
+   Tarayıcının varsayılan (temayla uyumsuz, kalın) ok ikonunu kaldırıp
+   yerine ince, temaya uygun renkli bir ok koyar. Her select bunu miras alır. */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  background-size: 10px 7px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23a99fba' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+:root[data-tema="acik"] select {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%2394867f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
 .siralama-secici {
-  background: var(--kart);
+  background-color: var(--kart);
   color: var(--yazi);
   border: 1px solid var(--kenar);
   border-radius: 10px;
-  padding: 11px 12px;
+  padding: 11px 30px 11px 14px;
   font-size: 13px;
   cursor: pointer;
   flex-shrink: 0;
 }
+.siralama-secici:focus { border-color: var(--vurgu); }
 
 .bolum-baslik {
   font-size: 13px;
@@ -426,15 +443,16 @@ body {
 .sonraki-btn:disabled { opacity: 0.5; cursor: default; background: var(--vurgu-yumusak); color: var(--vurgu); }
 
 .durum-secici {
-  background: var(--kart-2);
+  background-color: var(--kart-2);
   color: var(--yazi);
   border: 1px solid var(--kenar);
   border-radius: 9px;
-  padding: 7px 8px;
+  padding: 7px 26px 7px 10px;
   font-size: 12px;
-  max-width: 148px;
+  max-width: 158px;
   cursor: pointer;
 }
+.durum-secici:focus { border-color: var(--vurgu); }
 
 /* ---------- Bölüm ilerlemesi ---------- */
 .ilerleme-cubuk {
@@ -605,13 +623,15 @@ body {
 
 .modal-secim-satiri { display: flex; gap: 8px; align-items: center; margin-top: 18px; flex-wrap: wrap; }
 .modal-secim-satiri select {
-  background: var(--kart-2);
+  background-color: var(--kart-2);
   color: var(--yazi);
   border: 1px solid var(--kenar);
   border-radius: 9px;
-  padding: 8px 10px;
+  padding: 8px 26px 8px 10px;
   font-size: 13px;
+  cursor: pointer;
 }
+.modal-secim-satiri select:focus { border-color: var(--vurgu); }
 .modal-ilerleme-metni { color: var(--soluk); font-size: 13px; margin-top: 10px; }
 
 .bolum-listesi { margin-top: 12px; display: grid; gap: 8px; max-height: 300px; overflow-y: auto; padding-right: 2px; }
@@ -765,17 +785,28 @@ body {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; flex-wrap: wrap;
 }
+/* İnce sıralama "çipi" — sekmelerdeki/tur-toggle'lardaki aktif-filtre renk
+   dilini (yumuşak vurgu zemin + vurgu yazı) ödünç alır, native select'in
+   kalın/kutulu haline göre çok daha az yer kaplar. */
 .kisi-sirala-secici {
-  background: var(--kart-2);
-  color: var(--yazi);
-  border: 1px solid var(--kenar);
-  border-radius: 9px;
-  padding: 7px 10px;
-  font-size: 13px;
+  background-color: var(--vurgu-yumusak);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23e79aa8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 9px 6px;
+  color: var(--vurgu);
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 6px 26px 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
   outline: none;
 }
-.kisi-sirala-secici:focus { border-color: var(--vurgu); }
+:root[data-tema="acik"] .kisi-sirala-secici {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23c67689' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+.kisi-sirala-secici:hover, .kisi-sirala-secici:focus { border-color: var(--vurgu); }
 
 .kisi-yapim-grid {
   display: grid;
@@ -871,11 +902,12 @@ body {
   padding: 11px 12px;
   border: 1px solid var(--kenar);
   border-radius: 11px;
-  background: var(--kart-2);
+  background-color: var(--kart-2);
   color: var(--yazi);
   font-size: 14px;
   outline: none;
 }
+.surpriz-select { padding-right: 32px; cursor: pointer; }
 .surpriz-select:focus, .surpriz-input:focus { border-color: var(--vurgu); }
 
 .surpriz-kisi-sonuc { display: grid; gap: 4px; margin-top: 6px; }

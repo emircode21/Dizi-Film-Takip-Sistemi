@@ -235,15 +235,15 @@ function kesfetTumSiraSeciciDoldur(kategori) {
   if (kategori === "oscar") {
     kesfetTumSiraMod = "tarih-yeni";
     kesfetTumSiralaSecici.innerHTML = `
-      <option value="tarih-yeni">Tarihsel (Yeni → Eski)</option>
-      <option value="tarih-eski">Tarihsel (Eski → Yeni)</option>
-      <option value="odul">En çok ödül alandan aza</option>`;
+      <option value="tarih-yeni">Tarih ↓</option>
+      <option value="tarih-eski">Tarih ↑</option>
+      <option value="odul">Ödül ↓</option>`;
   } else {
     kesfetTumSiraMod = "puan";
     kesfetTumSiralaSecici.innerHTML = `
-      <option value="puan">Puana göre (Yüksek → Düşük)</option>
-      <option value="yeni">Yıla göre (Yeni → Eski)</option>
-      <option value="eski">Yıla göre (Eski → Yeni)</option>`;
+      <option value="puan">Puan ↓</option>
+      <option value="yeni">Yıl ↓</option>
+      <option value="eski">Yıl ↑</option>`;
   }
   kesfetTumSiralaSecici.value = kesfetTumSiraMod;
 }

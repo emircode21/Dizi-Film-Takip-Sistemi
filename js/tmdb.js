@@ -426,6 +426,7 @@ function _kesfetNormalize(x, type) {
     first_air_date: x.first_air_date,
     release_date: x.release_date,
     vote_average: x.vote_average,
+    genre_ids: x.genre_ids || [],
   };
 }
 
@@ -450,12 +451,47 @@ async function trendGetir() {
   return _kesfetFetch("trend", url, null);
 }
 
+// TMDB'nin now_playing?region=TR sonucu, bölgesel yayın tarihi eksik olan yerli
+// filmleri bazen atlıyor. Türkiye kökenli, son 45 günde vizyona girmiş filmleri
+// ayrıca çekip listeye ekliyoruz.
+async function _vizyonTRYerliGetir() {
+  const bugun = new Date();
+  const gecmis = new Date(Date.now() - 45 * 86400000);
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const url = "https://api.themoviedb.org/3/discover/movie?api_key=" + API_KEY + "&language=tr-TR"
+    + "&with_origin_country=TR&sort_by=popularity.desc&include_adult=false"
+    + "&primary_release_date.gte=" + iso(gecmis) + "&primary_release_date.lte=" + iso(bugun);
+  try {
+    const veri = await (await fetch(url)).json();
+    return (veri.results || []).filter((x) => x.poster_path);
+  } catch (e) {
+    return [];
+  }
+}
+
 // Vizyondaki filmler. bolge: "TR" | "GLOBAL"
 async function vizyondakiler(bolge) {
-  const region = bolge === "GLOBAL" ? "US" : "TR";
-  const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY
-    + "&language=tr-TR&region=" + region;
-  return _kesfetFetch("vizyon-" + region, url, "movie");
+  if (bolge === "GLOBAL") {
+    const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY + "&language=tr-TR&region=US";
+    return _kesfetFetch("vizyon-US", url, "movie");
+  }
+  const anahtar = "vizyon-TR";
+  if (_kesfetOnbellek[anahtar]) return _kesfetOnbellek[anahtar];
+
+  const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY + "&language=tr-TR&region=TR";
+  const [genelSonuc, yerli] = await Promise.all([
+    fetch(url).then((r) => r.json()).catch(() => ({ results: [] })),
+    _vizyonTRYerliGetir(),
+  ]);
+  const gorulen = new Set();
+  const birlesik = [];
+  yerli.forEach((x) => { if (!gorulen.has(x.id)) { gorulen.add(x.id); birlesik.push(x); } });
+  (genelSonuc.results || []).filter((x) => x.poster_path).forEach((x) => {
+    if (!gorulen.has(x.id)) { gorulen.add(x.id); birlesik.push(x); }
+  });
+  const liste = birlesik.slice(0, 20).map((x) => _kesfetNormalize(x, "movie"));
+  _kesfetOnbellek[anahtar] = liste;
+  return liste;
 }
 
 // En yüksek puanlı film/diziler. type: "movie" | "tv"
@@ -498,10 +534,20 @@ async function trendTumGetir() {
 }
 
 async function vizyondakilerTum(bolge) {
-  const region = bolge === "GLOBAL" ? "US" : "TR";
+  if (bolge === "GLOBAL") {
+    const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY
+      + "&language=tr-TR&region=US&page=";
+    return _kesfetCokSayfaGetir(url, "movie", 5);
+  }
   const url = "https://api.themoviedb.org/3/movie/now_playing?api_key=" + API_KEY
-    + "&language=tr-TR&region=" + region + "&page=";
-  return _kesfetCokSayfaGetir(url, "movie", 5);
+    + "&language=tr-TR&region=TR&page=";
+  const [genel, yerli] = await Promise.all([
+    _kesfetCokSayfaGetir(url, "movie", 5),
+    _vizyonTRYerliGetir(),
+  ]);
+  const gorulen = new Set(genel.map((x) => x.id));
+  const ekstra = yerli.filter((x) => !gorulen.has(x.id)).map((x) => _kesfetNormalize(x, "movie"));
+  return ekstra.concat(genel); // yerli filmler öne alınır
 }
 
 async function topRatedTumGetir(type) {

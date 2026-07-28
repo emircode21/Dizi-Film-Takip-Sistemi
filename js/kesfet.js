@@ -206,11 +206,47 @@ const kesfetTumModal = document.getElementById("kesfetTumModal");
 const kesfetTumKapatBtn = document.getElementById("kesfetTumKapatBtn");
 const kesfetTumBaslik = document.getElementById("kesfetTumBaslik");
 const kesfetTumSiralaSecici = document.getElementById("kesfetTumSiralaSecici");
+const kesfetTumTurSecici = document.getElementById("kesfetTumTurSecici");
 const kesfetTumGrid = document.getElementById("kesfetTumGrid");
 
 let kesfetTumKategori = null;
 let kesfetTumVeri = [];      // o an açık kategorinin ham (normalize) listesi
 let kesfetTumSiraMod = null;
+let kesfetTumTurFiltre = null; // seçili tür id'si (yoksa null = tümü)
+
+// Kategoriye göre hangi tür listesinin (movie/tv) kullanılacağını belirler;
+// "trend" film+dizi karışık olduğu için ikisinin birleşimi alınır.
+async function kesfetTumTurSeciciDoldur(kategori) {
+  kesfetTumTurFiltre = null;
+  if (!kesfetTumTurSecici) return;
+
+  // Oscar listesi elle derlenmiş sabit bir dizi, tür verisi taşımıyor — filtre gösterilmez
+  if (kategori === "oscar") {
+    kesfetTumTurSecici.style.display = "none";
+    kesfetTumTurSecici.innerHTML = "";
+    return;
+  }
+  kesfetTumTurSecici.style.display = "";
+
+  let turler;
+  if (kategori === "dizi") turler = await turleriGetir("tv");
+  else if (kategori === "trend") {
+    const [film, dizi] = await Promise.all([turleriGetir("movie"), turleriGetir("tv")]);
+    const gorulen = new Set();
+    turler = [].concat(film, dizi).filter((t) => {
+      if (gorulen.has(t.id)) return false;
+      gorulen.add(t.id);
+      return true;
+    });
+  } else {
+    turler = await turleriGetir("movie");
+  }
+
+  turler = turler.slice().sort((a, b) => a.ad.localeCompare(b.ad, "tr"));
+  kesfetTumTurSecici.innerHTML = `<option value="">Tüm türler</option>`
+    + turler.map((t) => `<option value="${t.id}">${t.ad}</option>`).join("");
+  kesfetTumTurSecici.value = "";
+}
 
 // Oscar filmlerinin ödül kazanma sayısı (filmId → sayı); "en çok ödül" sıralaması için lazy hesaplanır
 const kesfetOscarOdulOnbellek = {};
@@ -220,6 +256,7 @@ async function kesfetTumAc(kategori) {
   kesfetTumKategori = kategori;
   kesfetTumBaslik.textContent = KESFET_KATEGORI_BASLIK[kategori] || "";
   kesfetTumSiraSeciciDoldur(kategori);
+  kesfetTumTurSeciciDoldur(kategori);
   kesfetTumGrid.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
   kesfetTumModal.style.display = "flex";
   const mk = kesfetTumModal.querySelector(".modal-kutu");
@@ -264,6 +301,10 @@ function _kesfetYil(x) {
 
 function kesfetTumCiz() {
   let liste = kesfetTumVeri.slice();
+
+  if (kesfetTumTurFiltre) {
+    liste = liste.filter((x) => (x.genre_ids || []).includes(kesfetTumTurFiltre));
+  }
 
   if (kesfetTumKategori === "oscar") {
     if (kesfetTumSiraMod === "tarih-yeni") liste.sort((a, b) => _kesfetYil(b) - _kesfetYil(a));
@@ -317,6 +358,13 @@ async function kesfetOscarOdulleriHazirla() {
     kesfetOscarOdulOnbellek[f.id] = await oscarFilmOdulSayisiGetir(f.id);
   }));
   kesfetOscarOdulHesaplaniyor = false;
+}
+
+if (kesfetTumTurSecici) {
+  kesfetTumTurSecici.addEventListener("change", () => {
+    kesfetTumTurFiltre = kesfetTumTurSecici.value ? Number(kesfetTumTurSecici.value) : null;
+    kesfetTumCiz();
+  });
 }
 
 kesfetTumSiralaSecici.addEventListener("change", async () => {

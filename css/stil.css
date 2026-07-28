@@ -75,6 +75,7 @@ body {
   box-shadow: var(--golge);
 }
 .tema-btn:active { transform: scale(0.94); }
+.tema-btn-istatistik { right: 60px; font-size: 15px; }
 
 /* ---------- Karşılama (ilk açılış) ---------- */
 .karsilama {
@@ -1216,6 +1217,8 @@ select {
 .ani-akis-poster { width: 28px; height: 40px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
 
 /* ---------- İstatistikler ---------- */
+.istatistik-kaynak-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+.istatistik-kaynak-toggle .tur-toggle-btn { flex: 1; }
 .istatistik-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
 .istatistik-kutu {
   background: var(--kart-2); border: 1px solid var(--kenar); border-radius: 14px;

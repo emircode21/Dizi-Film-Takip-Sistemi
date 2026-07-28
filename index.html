@@ -35,8 +35,9 @@
   <!-- İlk açılış karşılama ekranı (arayuz.js doldurur) -->
   <div class="karsilama" id="karsilama"></div>
 
-  <!-- Tema değiştirme (her ekranda sağ üstte) -->
+  <!-- Tema değiştirme + istatistikler (her ekranda sağ üstte, sekmeden bağımsız) -->
   <button id="temaBtn" class="tema-btn" aria-label="Tema değiştir">🌙</button>
+  <button id="istatistikBtn" class="tema-btn tema-btn-istatistik" aria-label="İstatistikler">📊</button>
 
   <div class="uygulama">
     <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
@@ -196,6 +197,7 @@
       <button id="kesfetTumKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
       <div class="kisi-yapim-baslik-satiri">
         <div class="detay-baslik-kucuk" id="kesfetTumBaslik"></div>
+        <select id="kesfetTumTurSecici" class="kisi-sirala-secici"></select>
         <select id="kesfetTumSiralaSecici" class="kisi-sirala-secici"></select>
       </div>
       <div id="kesfetTumGrid" class="kisi-yapim-grid"></div>

@@ -118,6 +118,7 @@ async function detayAc(key, kok = true) {
 
   acikOgeKey = key;
   detayOnizlemeHam = null;
+  detayYorumDuzenleniyor = false;
   const diziMi = o.type === "tv";
 
   const detay = await detayGovdeCiz(o.type, o.tmdbId, o.ad, o.yil, o.poster, key);
@@ -293,6 +294,7 @@ function detayEkstraCiz(d, diziMi) {
 /* ---------------- İKİLİ PUAN & YORUM (yalnızca Birlikte İzlenenler, bitmiş yapımda) ---------------- */
 const BEN_KIM_ANAHTARI = "benKim";
 function benKim() { return localStorage.getItem(BEN_KIM_ANAHTARI); }
+let detayYorumDuzenleniyor = false; // yorum kutusu açık mı? (kaydedince veya yeni öğe açılınca kapanır)
 
 function detayDegerlendirmeCiz(o) {
   const yer = document.getElementById("degerlendirmeYeri");
@@ -326,14 +328,20 @@ function detayDegerlendirmeCiz(o) {
       ).join("")}
     </div>`;
 
+  const duzenleModunda = detayYorumDuzenleniyor || !benim.yorum;
+  const benimYorumHTML = duzenleModunda
+    ? `<textarea class="degerlendirme-yorum ani-textarea" data-degerlendirme-yorum placeholder="Yorumun...">${benim.yorum || ""}</textarea>
+       <button class="degerlendirme-kaydet-btn" data-degerlendirme-kaydet>Yorumu kaydet</button>`
+    : `<div class="degerlendirme-yorum-salt">${benim.yorum}</div>
+       <button class="degerlendirme-kaydet-btn" data-degerlendirme-duzenle>Yorumu düzenle</button>`;
+
   yer.innerHTML = `
     <div class="detay-baslik-kucuk">İkili Değerlendirme <button class="ben-kim-degistir" data-ben-kim-degistir title="Kimliği değiştir">(${benimAd} — değiştir)</button></div>
     <div class="degerlendirme-kutu">
       <div class="degerlendirme-kisi">
         <div class="degerlendirme-ad">${benimAd}</div>
         ${yildizSatiri(benim, true)}
-        <textarea class="degerlendirme-yorum ani-textarea" data-degerlendirme-yorum placeholder="Yorumun...">${benim.yorum || ""}</textarea>
-        <button class="degerlendirme-kaydet-btn" data-degerlendirme-kaydet>Yorumu kaydet</button>
+        ${benimYorumHTML}
       </div>
       <div class="degerlendirme-kisi">
         <div class="degerlendirme-ad">${digeriAd}</div>
@@ -347,6 +355,7 @@ detayEkstra.addEventListener("click", async (e) => {
   const benKimBtn = e.target.closest("[data-ben-kim]");
   if (benKimBtn) {
     localStorage.setItem(BEN_KIM_ANAHTARI, benKimBtn.dataset.benKim);
+    detayYorumDuzenleniyor = false;
     const o = ortakListem.find((x) => x.key === acikOgeKey);
     detayDegerlendirmeCiz(o);
     return;
@@ -354,6 +363,14 @@ detayEkstra.addEventListener("click", async (e) => {
 
   if (e.target.closest("[data-ben-kim-degistir]")) {
     localStorage.removeItem(BEN_KIM_ANAHTARI);
+    detayYorumDuzenleniyor = false;
+    const o = ortakListem.find((x) => x.key === acikOgeKey);
+    detayDegerlendirmeCiz(o);
+    return;
+  }
+
+  if (e.target.closest("[data-degerlendirme-duzenle]")) {
+    detayYorumDuzenleniyor = true;
     const o = ortakListem.find((x) => x.key === acikOgeKey);
     detayDegerlendirmeCiz(o);
     return;
@@ -386,6 +403,7 @@ detayEkstra.addEventListener("click", async (e) => {
       o.degerlendirmeler[kim].yorum = textarea.value.trim();
       o.degerlendirmeler[kim].zaman = Date.now();
       await ortakGuncelle(o);
+      detayYorumDuzenleniyor = false;
       detayDegerlendirmeCiz(o);
     }
     return;

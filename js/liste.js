@@ -152,6 +152,13 @@ const eklemeSecenekler = document.getElementById("eklemeSecenekler");
 let eklenecekOge = null;
 
 function eklemeSecimiAc(x) {
+  // Keşfet ve Birlikte hariç bir sekmedeyken arayıp eklersek, doğrudan o sekmeye ekle
+  // (kullanıcı zaten hangi listeye eklemek istediğini sekmede belirtmiş oluyor)
+  if (aktifSekme !== "kesfet" && aktifSekme !== "birlikte") {
+    ekle(x, aktifSekme).then(aramayiSifirla);
+    return;
+  }
+
   const diziMi = x.media_type === "tv";
   const tarih = diziMi ? x.first_air_date : x.release_date;
 
@@ -190,11 +197,13 @@ eklemeSecenekler.addEventListener("click", async (e) => {
     const oge = eklenecekOge;
     eklemeKapat();
     ortakEkleAkisi(oge);
+    aramayiSifirla();
     return;
   }
 
   await ekle(eklenecekOge, btn.dataset.durumEkle);
   eklemeKapat();
+  aramayiSifirla();
 });
 
 

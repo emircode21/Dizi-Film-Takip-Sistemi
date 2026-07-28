@@ -66,6 +66,22 @@ async function sezonSayisiGetir(tvId) {
   }
 }
 
+// Devam eden bir dizinin bir sonraki bölümünün yayın tarihini döner (yoksa null)
+const _siradakiBolumOnbellek = {};
+async function siradakiBolum(tvId) {
+  if (tvId in _siradakiBolumOnbellek) return _siradakiBolumOnbellek[tvId];
+  try {
+    const url = "https://api.themoviedb.org/3/tv/" + tvId + "?api_key=" + API_KEY + "&language=tr-TR";
+    const veri = await (await fetch(url)).json();
+    const n = veri.next_episode_to_air;
+    const sonuc = n ? { tarih: n.air_date, sezon: n.season_number, bolum: n.episode_number, ad: n.name } : null;
+    _siradakiBolumOnbellek[tvId] = sonuc;
+    return sonuc;
+  } catch (e) {
+    return null;
+  }
+}
+
 // Bir sezonun bölüm sayısını VE her bölümün adı/yayın tarihini döner
 async function bolumSayisiGetir(tvId, sezonNo) {
   try {

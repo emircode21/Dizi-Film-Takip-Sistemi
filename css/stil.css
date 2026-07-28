@@ -473,6 +473,7 @@ select {
   transition: width 0.4s ease;
 }
 .bolum-etiket { display: block; font-size: 12px; color: var(--soluk); margin-top: 4px; }
+.siradaki-bolum-etiket { display: block; font-size: 12px; color: var(--vurgu); margin-top: 4px; font-weight: 600; }
 
 .bilgi { color: var(--soluk); font-size: 14px; margin-top: 12px; }
 .bos {
@@ -691,6 +692,40 @@ select {
 .fragman-btn:hover { filter: brightness(1.05); }
 
 .detay-baslik-kucuk { font-size: 13px; font-weight: 700; color: var(--yazi); margin: 16px 0 10px; }
+
+/* ---------- İkili değerlendirme (Birlikte İzlenenler) ---------- */
+.ben-kim-degistir {
+  background: none; border: none; cursor: pointer;
+  color: var(--soluk); font-size: 11px; font-weight: 500;
+  margin-left: 6px; padding: 0;
+}
+.ben-kim-degistir:hover { color: var(--vurgu); }
+.ben-kim-soru { font-size: 13px; color: var(--soluk); margin: 0 0 10px; }
+.ben-kim-satiri { display: flex; gap: 10px; }
+.ben-kim-btn {
+  flex: 1; padding: 10px; border: 1px solid var(--kenar); border-radius: 11px;
+  background: var(--kart-2); color: var(--yazi); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+.ben-kim-btn:hover { background: var(--vurgu-yumusak); color: var(--vurgu); border-color: var(--vurgu); }
+
+.degerlendirme-kutu { display: flex; gap: 14px; flex-wrap: wrap; }
+.degerlendirme-kisi {
+  flex: 1; min-width: 180px; background: var(--kart-2); border: 1px solid var(--kenar);
+  border-radius: 14px; padding: 12px;
+}
+.degerlendirme-ad { font-size: 13px; font-weight: 700; color: var(--yazi); margin-bottom: 4px; }
+.degerlendirme-yildiz-satiri { margin-bottom: 6px; }
+.yildiz-salt { font-size: 19px; line-height: 1; padding: 2px; color: #f5c542; }
+.degerlendirme-yorum { min-height: 50px; margin-top: 4px; }
+.degerlendirme-yorum-salt { font-size: 13px; color: var(--yazi); line-height: 1.45; white-space: pre-wrap; }
+.bilgi-soluk { color: var(--soluk); }
+.degerlendirme-kaydet-btn {
+  margin-top: 8px; width: 100%; border: 1px solid var(--kenar); cursor: pointer;
+  background: var(--kart); color: var(--yazi); padding: 7px 10px;
+  border-radius: 999px; font-size: 12.5px; font-weight: 600;
+}
+.degerlendirme-kaydet-btn:hover { border-color: var(--vurgu); color: var(--vurgu); }
 
 .oyuncu-serit, .oneri-serit {
   display: flex; gap: 10px; overflow-x: auto;

@@ -135,6 +135,8 @@ async function detayAc(key, kok = true) {
   } else {
     detaySezonAlani.style.display = "none";
   }
+
+  detayDegerlendirmeCiz(o);
 }
 
 // Kayıtlı OLMAYAN bir TMDB öğesinin (arama sonucu / öneri) detay önizlemesi.
@@ -245,6 +247,9 @@ function detayEkstraCiz(d, diziMi) {
   // Gerçek ödül metni (OMDb'den arka planda gelir; gelene kadar boş/gizli)
   parcalar.push(`<div id="odulYeri"></div>`);
 
+  // İkili puan & yorum (yalnızca Birlikte İzlenenler'de, bitmiş yapımda dolar)
+  parcalar.push(`<div id="degerlendirmeYeri"></div>`);
+
   // Yönetmen / yaratıcı
   if (d.yonetmen) {
     const etiket = diziMi ? "Yaratıcı" : "Yönetmen";
@@ -284,6 +289,108 @@ function detayEkstraCiz(d, diziMi) {
 
   detayEkstra.innerHTML = parcalar.join("");
 }
+
+/* ---------------- İKİLİ PUAN & YORUM (yalnızca Birlikte İzlenenler, bitmiş yapımda) ---------------- */
+const BEN_KIM_ANAHTARI = "benKim";
+function benKim() { return localStorage.getItem(BEN_KIM_ANAHTARI); }
+
+function detayDegerlendirmeCiz(o) {
+  const yer = document.getElementById("degerlendirmeYeri");
+  if (!yer) return;
+  if (!detayOrtakMi || !o || o.durum !== "bitirdi") { yer.innerHTML = ""; return; }
+
+  const kim = benKim();
+  if (!kim) {
+    yer.innerHTML = `
+      <div class="detay-baslik-kucuk">İkili Değerlendirme</div>
+      <p class="ben-kim-soru">Değerlendirmeni kaydedebilmemiz için önce sen kimsin söyle:</p>
+      <div class="ben-kim-satiri">
+        <button class="ben-kim-btn" data-ben-kim="kisi1">${AYARLAR.isim1}</button>
+        <button class="ben-kim-btn" data-ben-kim="kisi2">${AYARLAR.isim2}</button>
+      </div>`;
+    return;
+  }
+
+  const digeri = kim === "kisi1" ? "kisi2" : "kisi1";
+  const benimAd = kim === "kisi1" ? AYARLAR.isim1 : AYARLAR.isim2;
+  const digeriAd = kim === "kisi1" ? AYARLAR.isim2 : AYARLAR.isim1;
+  const d = o.degerlendirmeler || {};
+  const benim = d[kim] || {};
+  const digerObj = d[digeri] || {};
+
+  const yildizSatiri = (veri, duzenlenebilir) => `
+    <div class="degerlendirme-yildiz-satiri">
+      ${[1, 2, 3, 4, 5].map((i) => duzenlenebilir
+        ? `<button class="yildiz-btn" data-degerlendirme-yildiz="${i}">${veri.puan && i <= veri.puan ? "★" : "☆"}</button>`
+        : `<span class="yildiz-salt">${veri.puan && i <= veri.puan ? "★" : "☆"}</span>`
+      ).join("")}
+    </div>`;
+
+  yer.innerHTML = `
+    <div class="detay-baslik-kucuk">İkili Değerlendirme <button class="ben-kim-degistir" data-ben-kim-degistir title="Kimliği değiştir">(${benimAd} — değiştir)</button></div>
+    <div class="degerlendirme-kutu">
+      <div class="degerlendirme-kisi">
+        <div class="degerlendirme-ad">${benimAd}</div>
+        ${yildizSatiri(benim, true)}
+        <textarea class="degerlendirme-yorum ani-textarea" data-degerlendirme-yorum placeholder="Yorumun...">${benim.yorum || ""}</textarea>
+        <button class="degerlendirme-kaydet-btn" data-degerlendirme-kaydet>Yorumu kaydet</button>
+      </div>
+      <div class="degerlendirme-kisi">
+        <div class="degerlendirme-ad">${digeriAd}</div>
+        ${yildizSatiri(digerObj, false)}
+        <div class="degerlendirme-yorum-salt">${digerObj.yorum ? digerObj.yorum : "<span class='bilgi-soluk'>Henüz yorum yok</span>"}</div>
+      </div>
+    </div>`;
+}
+
+detayEkstra.addEventListener("click", async (e) => {
+  const benKimBtn = e.target.closest("[data-ben-kim]");
+  if (benKimBtn) {
+    localStorage.setItem(BEN_KIM_ANAHTARI, benKimBtn.dataset.benKim);
+    const o = ortakListem.find((x) => x.key === acikOgeKey);
+    detayDegerlendirmeCiz(o);
+    return;
+  }
+
+  if (e.target.closest("[data-ben-kim-degistir]")) {
+    localStorage.removeItem(BEN_KIM_ANAHTARI);
+    const o = ortakListem.find((x) => x.key === acikOgeKey);
+    detayDegerlendirmeCiz(o);
+    return;
+  }
+
+  const yildizBtn = e.target.closest("[data-degerlendirme-yildiz]");
+  if (yildizBtn) {
+    const o = ortakListem.find((x) => x.key === acikOgeKey);
+    const kim = benKim();
+    if (o && kim) {
+      if (!o.degerlendirmeler) o.degerlendirmeler = {};
+      if (!o.degerlendirmeler[kim]) o.degerlendirmeler[kim] = {};
+      const secilen = Number(yildizBtn.dataset.degerlendirmeYildiz);
+      o.degerlendirmeler[kim].puan = o.degerlendirmeler[kim].puan === secilen ? 0 : secilen;
+      o.degerlendirmeler[kim].zaman = Date.now();
+      await ortakGuncelle(o);
+      detayDegerlendirmeCiz(o);
+    }
+    return;
+  }
+
+  const kaydetBtn = e.target.closest("[data-degerlendirme-kaydet]");
+  if (kaydetBtn) {
+    const o = ortakListem.find((x) => x.key === acikOgeKey);
+    const kim = benKim();
+    if (o && kim) {
+      const textarea = detayEkstra.querySelector("[data-degerlendirme-yorum]");
+      if (!o.degerlendirmeler) o.degerlendirmeler = {};
+      if (!o.degerlendirmeler[kim]) o.degerlendirmeler[kim] = {};
+      o.degerlendirmeler[kim].yorum = textarea.value.trim();
+      o.degerlendirmeler[kim].zaman = Date.now();
+      await ortakGuncelle(o);
+      detayDegerlendirmeCiz(o);
+    }
+    return;
+  }
+});
 
 /* "Benzer yapımlar" yatay poster şeridi */
 function detayOnerileriCiz(oneriler) {

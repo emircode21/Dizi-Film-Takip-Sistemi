@@ -319,6 +319,24 @@ function listeyiCiz() {
   }
 
   listeAlani.innerHTML = goruntulenecek.map(kartHTML).join("");
+  siradakiBadgeleriDoldur(goruntulenecek);
+}
+
+// Devam eden dizilerde "Sıradaki bölüm" tarihini arka planda çekip rozete yazar
+const AY_KISA = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+function siradakiTarihKisa(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? iso : d.getDate() + " " + AY_KISA[d.getMonth()];
+}
+function siradakiBadgeleriDoldur(liste) {
+  liste.forEach((o) => {
+    if (o.type !== "tv" || o.durum !== "izliyor" || !o.bolumSayilari) return;
+    siradakiBolum(o.tmdbId).then((s) => {
+      if (!s || !s.tarih) return;
+      const el = document.getElementById("siradaki-" + o.key);
+      if (el) el.textContent = "📅 Sıradaki bölüm: " + siradakiTarihKisa(s.tarih);
+    });
+  });
 }
 
 function kartHTML(o) {
@@ -342,6 +360,7 @@ function kartHTML(o) {
     } else if (o.durum === "izliyor") {
       const bitti = sonBolumMu(o);
       aksiyonHTML = `<button class="sonraki-btn ikon-btn" data-sonraki="${o.key}" ${bitti ? "disabled" : ""}>${bitti ? SVG_TIK + "Bitti" : SVG_ILERI + "Sonraki Bölüm"}</button>`;
+      if (!bitti) ilerlemeHTML += `<span class="siradaki-bolum-etiket" id="siradaki-${o.key}"></span>`;
     }
   } else if (diziMi) {
     // Bölüm takibi özelliğinden önce eklenmiş eski bir dizi

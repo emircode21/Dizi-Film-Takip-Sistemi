@@ -181,6 +181,7 @@ function ortakListeyiCiz() {
   }
 
   listeAlani.innerHTML = ustBar + liste.map(kartHTML).join("");
+  siradakiBadgeleriDoldur(liste);
 }
 
 /* ---- Ortak listedeki kartların olayları (liste.js buraya yönlendirir) ---- */

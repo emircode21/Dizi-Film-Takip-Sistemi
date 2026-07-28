@@ -453,6 +453,66 @@ if (detayAnilar) {
   });
 }
 
+/* ---------------- ANI AKIŞI (tüm Birlikte yapımların anılarının tek zaman tüneli) ---------------- */
+const aniAkisModal = document.getElementById("aniAkisModal");
+const aniAkisKapatBtn = document.getElementById("aniAkisKapatBtn");
+const aniAkisListe = document.getElementById("aniAkisListe");
+
+async function aniAkisiAc() {
+  if (!aniAkisModal || !db || !ortakKod) return;
+  aniAkisModal.style.display = "flex";
+  aniAkisListe.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
+
+  try {
+    const tumu = await Promise.all(ortakListem.map(async (o) => {
+      const snap = await aniKoleksiyon(o.key).get();
+      return snap.docs.map((d) => Object.assign({ id: d.id, oge: o }, d.data()));
+    }));
+    const birlesik = [].concat(...tumu).sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
+    aniAkisCiz(birlesik);
+  } catch (e) {
+    console.warn("Anı akışı yüklenemedi:", e);
+    aniAkisListe.innerHTML = "<div class='ani-bos'>Anılar yüklenemedi.</div>";
+  }
+}
+
+function aniAkisCiz(anilar) {
+  if (!anilar.length) {
+    aniAkisListe.innerHTML = "<div class='ani-bos'>Henüz hiçbir yapıma anı eklenmedi. İlk anınızı bir yapımın detayından ekleyebilirsiniz 💛</div>";
+    return;
+  }
+  aniAkisListe.innerHTML = anilar.map((a) => {
+    const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" data-ani-foto="${a.id}">` : "";
+    const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
+    const ses = sesListe.map((s) => `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
+    const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
+    return `
+      <div class="ani-kart">
+        <div class="ani-kart-ust">
+          <span class="ani-tarih">📅 ${aniTarihBicim(a.tarih)}</span>
+        </div>
+        <button class="ani-akis-yapim" data-ani-akis-git="${a.oge.key}">
+          <img class="ani-akis-poster" src="${posterUrl(a.oge.poster)}" alt="">
+          ${a.oge.ad}
+        </button>
+        ${not}
+        ${foto}
+        ${ses}
+      </div>`;
+  }).join("");
+}
+
+if (aniAkisKapatBtn) aniAkisKapatBtn.addEventListener("click", () => { aniAkisModal.style.display = "none"; });
+if (aniAkisModal) {
+  aniAkisModal.addEventListener("click", (e) => {
+    if (e.target === aniAkisModal) { aniAkisModal.style.display = "none"; return; }
+    const gitBtn = e.target.closest("[data-ani-akis-git]");
+    if (gitBtn) { aniAkisModal.style.display = "none"; detayAc(gitBtn.dataset.aniAkisGit); return; }
+    const foto = e.target.closest("[data-ani-foto]");
+    if (foto && foto.tagName === "IMG") aniFotoBuyut(foto.getAttribute("src"));
+  });
+}
+
 /* ---- Yardımcılar ---- */
 function aniTarihBicim(iso) {
   if (!iso) return "";

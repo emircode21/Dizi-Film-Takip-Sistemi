@@ -1044,7 +1044,9 @@ select {
 .ortak-mini-bar {
   grid-column: 1 / -1;
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
+  gap: 4px;
   margin-bottom: 4px;
 }
 .ortak-degistir-btn {
@@ -1203,6 +1205,35 @@ select {
   border-radius: 12px; border: 1px solid var(--kenar); cursor: zoom-in;
 }
 .ani-kart .ani-ses { display: block; margin-top: 10px; width: 100%; }
+
+/* Anı Akışı: hangi yapıma ait olduğunu gösteren tıklanabilir satır */
+.ani-akis-yapim {
+  display: flex; align-items: center; gap: 8px; margin-top: 6px;
+  background: none; border: none; cursor: pointer; padding: 4px 0;
+  color: var(--yazi); font-size: 13px; font-weight: 600; text-align: left;
+}
+.ani-akis-yapim:hover { color: var(--vurgu); }
+.ani-akis-poster { width: 28px; height: 40px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
+
+/* ---------- İstatistikler ---------- */
+.istatistik-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0; }
+.istatistik-kutu {
+  background: var(--kart-2); border: 1px solid var(--kenar); border-radius: 14px;
+  padding: 14px; text-align: center;
+}
+.istatistik-sayi {
+  font-size: 24px; font-weight: 800;
+  background: linear-gradient(90deg, var(--vurgu), var(--altin));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.istatistik-etiket { font-size: 12px; color: var(--soluk); margin-top: 4px; }
+.istatistik-satir { font-size: 13.5px; color: var(--yazi); margin-bottom: 14px; }
+.istatistik-puan-dagilimi { display: flex; flex-direction: column; gap: 6px; }
+.istatistik-puan-satiri { display: flex; align-items: center; gap: 8px; }
+.istatistik-puan-etiket { font-size: 11px; color: #f5c542; white-space: nowrap; width: 70px; }
+.istatistik-puan-cubuk { flex: 1; height: 8px; background: var(--kart-2); border-radius: 4px; overflow: hidden; }
+.istatistik-puan-dolu { height: 100%; background: linear-gradient(90deg, var(--vurgu), var(--altin)); }
+.istatistik-puan-sayi { font-size: 12px; color: var(--soluk); width: 18px; text-align: right; }
 
 /* Fotoğrafı tam ekran büyütme */
 .ani-foto-buyuk-kat {

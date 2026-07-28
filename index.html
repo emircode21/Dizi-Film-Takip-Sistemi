@@ -270,6 +270,24 @@
     </div>
   </div>
 
+  <!-- Anı Akışı: Birlikte İzlenenler'deki tüm yapımların anıları tek zaman tünelinde -->
+  <div id="aniAkisModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="aniAkisKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="modal-baslik">📖 Anı Akışı</div>
+      <div id="aniAkisListe" class="ani-liste"></div>
+    </div>
+  </div>
+
+  <!-- İstatistikler: kişisel + Birlikte listeden hesaplanan özet -->
+  <div id="istatistikModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="istatistikKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="modal-baslik">📊 İstatistikler</div>
+      <div id="istatistikIcerik"></div>
+    </div>
+  </div>
+
   <!-- Firebase (Firestore) — ortak liste için, kendi sitemizin dışından yüklenir -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -284,6 +302,7 @@
   <script src="js/surpriz.js"></script>
   <script src="js/kisi.js"></script>
   <script src="js/ani.js"></script>
+  <script src="js/istatistik.js"></script>
   <script src="js/kesfet.js"></script>
   <script src="js/arayuz.js"></script>
   <script src="js/uygulama.js"></script>

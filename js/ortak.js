@@ -171,6 +171,8 @@ function ortakListeyiCiz() {
 
   const ustBar = `
     <div class="ortak-mini-bar">
+      <button class="ortak-degistir-btn" data-ani-akisi-ac>📖 Anı Akışı</button>
+      <button class="ortak-degistir-btn" data-istatistik-ac>📊 İstatistikler</button>
       <button class="ortak-degistir-btn" data-ortak-degistir>🔗 kodu değiştir</button>
     </div>`;
 
@@ -188,6 +190,14 @@ function ortakListeyiCiz() {
 async function ortakListeTiklama(e) {
   if (e.target.closest("[data-ortak-baglan]") || e.target.closest("[data-ortak-degistir]")) {
     ortakKodModalAc();
+    return;
+  }
+  if (e.target.closest("[data-ani-akisi-ac]")) {
+    if (typeof aniAkisiAc === "function") aniAkisiAc();
+    return;
+  }
+  if (e.target.closest("[data-istatistik-ac]")) {
+    if (typeof istatistikAc === "function") istatistikAc();
     return;
   }
 

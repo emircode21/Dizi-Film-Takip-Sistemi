@@ -309,13 +309,12 @@
     </div>
   </div>
 
-  <!-- Bildirimler: cihazda tutulan bildirim kutusu (ör. yeni bölüm yayında uyarıları) -->
-  <div id="bildirimModal" class="modal-arkaplan" style="display:none">
-    <div class="modal-kutu">
-      <button id="bildirimKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
-      <div class="modal-baslik">🔔 Bildirimler</div>
-      <div id="bildirimListe"></div>
-    </div>
+  <!-- Bildirimler: zil ikonunun hemen altında açılan küçük popover (tam ekran
+       pencere değil, arka planı karartmaz) -->
+  <div id="bildirimModal" class="bildirim-popover" style="display:none">
+    <button id="bildirimKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+    <div class="modal-baslik">🔔 Bildirimler</div>
+    <div id="bildirimListe"></div>
   </div>
 
   <!-- Firebase (Firestore) — ortak liste için, kendi sitemizin dışından yüklenir -->

@@ -27,7 +27,12 @@ document.addEventListener("keydown", (e) => {
     const el = document.getElementById(id);
     if (el && el.style.display !== "none" && el.style.display !== "") { modalKapatById(id); return; }
   }
-  // Öncelik sırasında olmayan basit modallar (Anı Akışı, İstatistik, Bildirim)
+  // Bildirim popover'ı (arkaplansız, ayrı stil) — kendi kapatma fonksiyonu var
+  if (typeof bildirimKapat === "function" && bildirimModal && bildirimModal.style.display !== "none" && bildirimModal.style.display !== "") {
+    bildirimKapat();
+    return;
+  }
+  // Öncelik sırasında olmayan basit modallar (Anı Akışı, İstatistik)
   document.querySelectorAll(".modal-arkaplan").forEach((m) => {
     if (m.style.display !== "none" && m.style.display !== "") m.style.display = "none";
   });

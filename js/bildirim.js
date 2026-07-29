@@ -52,22 +52,38 @@ function bildirimGoster() {
   }
 }
 
+function bildirimKapat() {
+  if (bildirimModal) bildirimModal.style.display = "none";
+}
+
 function bildirimAc() {
   if (!bildirimModal) return;
-  bildirimModal.style.display = "flex";
+  bildirimModal.style.display = "block";
   bildirimGoster();
 }
 
-if (bildirimBtn) bildirimBtn.addEventListener("click", bildirimAc);
-if (bildirimKapatBtn) bildirimKapatBtn.addEventListener("click", () => { bildirimModal.style.display = "none"; });
-if (bildirimModal) {
-  bildirimModal.addEventListener("click", (e) => { if (e.target === bildirimModal) bildirimModal.style.display = "none"; });
+if (bildirimBtn) {
+  bildirimBtn.addEventListener("click", (e) => {
+    e.stopPropagation(); // dışarı tıklama dinleyicisi hemen kapatmasın
+    if (bildirimModal.style.display === "block") bildirimKapat();
+    else bildirimAc();
+  });
 }
+if (bildirimKapatBtn) bildirimKapatBtn.addEventListener("click", bildirimKapat);
+
+// Arka plan karartması yok — popover dışına tıklayınca kapanır
+document.addEventListener("click", (e) => {
+  if (bildirimModal && bildirimModal.style.display === "block"
+    && !bildirimModal.contains(e.target) && e.target !== bildirimBtn) {
+    bildirimKapat();
+  }
+});
+
 if (bildirimListe) {
   bildirimListe.addEventListener("click", (e) => {
     const satir = e.target.closest("[data-bildirim-git]");
     if (!satir) return;
-    bildirimModal.style.display = "none";
+    bildirimKapat();
     detayAc(satir.dataset.bildirimGit);
   });
 }

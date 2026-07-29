@@ -73,3 +73,44 @@ if (bildirimListe) {
 }
 
 bildirimRozetGuncelle();
+
+/* ---- Yeni bölüm kontrolü: sayfa açılışında devam eden gerçek-hayatta-süren
+   dizilerin yeni yayınlanmış bölümü varsa bildirim kutusuna ekler + kısa toast gösterir ---- */
+const bolumToast = document.getElementById("bolumToast");
+
+function bolumToastGoster(mesaj) {
+  if (!bolumToast) return;
+  bolumToast.innerHTML = `<span>${mesaj}</span><button id="bolumToastBtn">Bildirimler</button>`;
+  bolumToast.style.display = "flex";
+  document.getElementById("bolumToastBtn").onclick = () => { bolumToast.style.display = "none"; bildirimAc(); };
+  setTimeout(() => { bolumToast.style.display = "none"; }, 6000);
+}
+
+async function yeniBolumKontrolEt() {
+  const bugun = new Date().toISOString().slice(0, 10);
+  const takipEdilenler = (typeof listem !== "undefined" ? listem : [])
+    .filter((o) => o.type === "tv" && o.durum === "izliyor");
+
+  const yeniler = [];
+  for (const o of takipEdilenler) {
+    const devamMi = await diziDevamEdiyorMu(o.tmdbId);
+    if (!devamMi) continue;
+    const son = await sonYayinlananBolum(o.tmdbId);
+    if (!son || !son.tarih || son.tarih > bugun) continue;
+
+    const yeniMi = son.sezon > o.sezon || (son.sezon === o.sezon && son.bolum > o.bolum);
+    if (!yeniMi) continue;
+
+    const id = "bolum-" + o.key + "-" + son.sezon + "-" + son.bolum;
+    bildirimEkle({ id, mesaj: `📺 <b>${o.ad}</b> dizisinin ${son.sezon}. sezon ${son.bolum}. bölümü yayında!`, ogeKey: o.key });
+    yeniler.push(o);
+  }
+
+  if (yeniler.length === 1) {
+    bolumToastGoster(`📺 ${yeniler[0].ad} dizisinde yeni bölüm var`);
+  } else if (yeniler.length > 1) {
+    bolumToastGoster(`📺 ${yeniler.length} dizide yeni bölüm var`);
+  }
+}
+
+if (typeof listem !== "undefined") yeniBolumKontrolEt();

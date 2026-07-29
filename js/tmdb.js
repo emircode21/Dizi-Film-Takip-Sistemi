@@ -590,3 +590,21 @@ async function populerTumGetir(type) {
   const url = "https://api.themoviedb.org/3/" + type + "/popular?api_key=" + API_KEY + "&language=tr-TR&page=";
   return _kesfetCokSayfaGetir(url, type, 5);
 }
+
+// Gerçek hayatta hâlâ devam eden (final yapmamış) diziler. bolge: "TR" | "GLOBAL"
+// TR: köken ülkesi Türkiye olan + durumu "Returning Series" olan diziler.
+// GLOBAL: TMDB'nin haftalık "şu an yayında" listesi.
+function _aktifDiziUrl(bolge) {
+  return bolge === "TR"
+    ? "https://api.themoviedb.org/3/discover/tv?api_key=" + API_KEY + "&language=tr-TR"
+      + "&with_origin_country=TR&with_status=0&sort_by=popularity.desc"
+    : "https://api.themoviedb.org/3/tv/on_the_air?api_key=" + API_KEY + "&language=tr-TR";
+}
+
+async function aktifDiziler(bolge) {
+  return _kesfetFetch("aktif-" + bolge, _aktifDiziUrl(bolge), "tv");
+}
+
+async function aktifDizilerTum(bolge) {
+  return _kesfetCokSayfaGetir(_aktifDiziUrl(bolge) + "&page=", "tv", 5);
+}

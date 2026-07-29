@@ -79,20 +79,23 @@ const KESFET_KATEGORI_BASLIK = {
   oscar: "🏆 Oscar Kazananları — En İyi Film",
   begenilen: "⭐ En Beğenilenler",
   dizi: "📺 Popüler Diziler",
+  aktif: "🟢 Şu An Yayında — Aktif Diziler",
 };
 
-/* ---- Vizyondaki filmler bölge durumu ---- */
+/* ---- Bölge (TR/Global) toggle durumu olan bölümler ---- */
 let kesfetVizyonBolge = "TR"; // "TR" | "GLOBAL"
+let kesfetAktifBolge = "TR"; // "TR" | "GLOBAL"
 
 /* ---- Ana çizim ---- */
 async function kesfetEkraniCiz() {
   listeAlani.innerHTML = `
     <div class="kesfet-sarmal" id="kesfetSarmal">
       ${kesfetBolumIskelet("trend")}
-      ${kesfetBolumIskelet("vizyon", true)}
+      ${kesfetBolumIskelet("vizyon", "vizyon")}
       ${kesfetBolumIskelet("oscar")}
       ${kesfetBolumIskelet("begenilen")}
       ${kesfetBolumIskelet("dizi")}
+      ${kesfetBolumIskelet("aktif", "aktif")}
     </div>`;
 
   // Oscar listesi zaten elde hazır (ağ isteği yok), hemen çiz
@@ -103,13 +106,16 @@ async function kesfetEkraniCiz() {
   vizyondakiler(kesfetVizyonBolge).then((liste) => kesfetSeritDoldur("kesfet-serit-vizyon", liste));
   topRatedGetir("movie").then((liste) => kesfetSeritDoldur("kesfet-serit-begenilen", liste));
   populerGetir("tv").then((liste) => kesfetSeritDoldur("kesfet-serit-dizi", liste));
+  aktifDiziler(kesfetAktifBolge).then((liste) => kesfetSeritDoldur("kesfet-serit-aktif", liste));
 }
 
-function kesfetBolumIskelet(kategori, vizyonToggleMi = false) {
-  const toggleHTML = vizyonToggleMi
-    ? `<div class="kesfet-vizyon-toggle" data-grup="vizyon">
-         <button class="tur-toggle-btn ${kesfetVizyonBolge === "TR" ? "aktif" : ""}" data-bolge="TR">Türkiye</button>
-         <button class="tur-toggle-btn ${kesfetVizyonBolge === "GLOBAL" ? "aktif" : ""}" data-bolge="GLOBAL">Global</button>
+const KESFET_BOLGE_DURUMU = { vizyon: () => kesfetVizyonBolge, aktif: () => kesfetAktifBolge };
+
+function kesfetBolumIskelet(kategori, toggleGrup = null) {
+  const toggleHTML = toggleGrup
+    ? `<div class="kesfet-vizyon-toggle" data-grup="${toggleGrup}">
+         <button class="tur-toggle-btn ${KESFET_BOLGE_DURUMU[toggleGrup]() === "TR" ? "aktif" : ""}" data-bolge="TR">Türkiye</button>
+         <button class="tur-toggle-btn ${KESFET_BOLGE_DURUMU[toggleGrup]() === "GLOBAL" ? "aktif" : ""}" data-bolge="GLOBAL">Global</button>
        </div>`
     : "";
   return `
@@ -178,15 +184,18 @@ document.addEventListener("click", (e) => {
 
   const bolgeBtn = e.target.closest("[data-bolge]");
   if (bolgeBtn) {
+    const grup = bolgeBtn.closest("[data-grup]").dataset.grup;
     const yeni = bolgeBtn.dataset.bolge;
-    if (yeni === kesfetVizyonBolge) return;
-    kesfetVizyonBolge = yeni;
-    document.querySelectorAll("[data-grup='vizyon'] [data-bolge]").forEach((b) => {
+    if (yeni === KESFET_BOLGE_DURUMU[grup]()) return;
+    if (grup === "vizyon") kesfetVizyonBolge = yeni;
+    else if (grup === "aktif") kesfetAktifBolge = yeni;
+    document.querySelectorAll(`[data-grup='${grup}'] [data-bolge]`).forEach((b) => {
       b.classList.toggle("aktif", b.dataset.bolge === yeni);
     });
-    const el = document.getElementById("kesfet-serit-vizyon");
+    const el = document.getElementById("kesfet-serit-" + grup);
     if (el) el.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
-    vizyondakiler(kesfetVizyonBolge).then((liste) => kesfetSeritDoldur("kesfet-serit-vizyon", liste));
+    const getir = grup === "vizyon" ? vizyondakiler : aktifDiziler;
+    getir(yeni).then((liste) => kesfetSeritDoldur("kesfet-serit-" + grup, liste));
     return;
   }
 
@@ -229,7 +238,7 @@ async function kesfetTumTurSeciciDoldur(kategori) {
   kesfetTumTurSecici.style.display = "";
 
   let turler;
-  if (kategori === "dizi") turler = await turleriGetir("tv");
+  if (kategori === "dizi" || kategori === "aktif") turler = await turleriGetir("tv");
   else if (kategori === "trend") {
     const [film, dizi] = await Promise.all([turleriGetir("movie"), turleriGetir("tv")]);
     const gorulen = new Set();
@@ -291,6 +300,7 @@ async function kesfetTumVeriGetir(kategori) {
   if (kategori === "vizyon") return vizyondakilerTum(kesfetVizyonBolge);
   if (kategori === "begenilen") return topRatedTumGetir("movie");
   if (kategori === "dizi") return populerTumGetir("tv");
+  if (kategori === "aktif") return aktifDizilerTum(kesfetAktifBolge);
   return [];
 }
 

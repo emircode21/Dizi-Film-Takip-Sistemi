@@ -74,16 +74,16 @@ async function ortakGeriAl() {
 /* ---- Ekleme ---- */
 // Ekleme modalından "Birlikte İzlenenler" seçilince buraya gelinir.
 // Kod yoksa önce bağlanma kutusunu açar, öğeyi bekletir.
-function ortakEkleAkisi(x) {
+function ortakEkleAkisi(x, durum) {
   if (!ortakKod) {
-    ortakBekleyenEkleme = x;
+    ortakBekleyenEkleme = { x, durum };
     ortakKodModalAc();
     return;
   }
-  ortakEkle(x);
+  ortakEkle(x, durum);
 }
 
-async function ortakEkle(x) {
+async function ortakEkle(x, durum) {
   if (!db || !ortakKod) return;
   const diziMi = x.media_type === "tv";
   const key = x.media_type + "-" + x.id;
@@ -97,7 +97,7 @@ async function ortakEkle(x) {
     ad: diziMi ? x.name : x.title,
     yil: tarih ? tarih.slice(0, 4) : "—",
     poster: x.poster_path || "",
-    durum: "izliyor",
+    durum: durum || "izliyor",
     eklenmeZamani: Date.now(),
   };
 
@@ -163,26 +163,22 @@ function ortakListeyiCiz() {
     return;
   }
 
-  const liste = ortakListem.slice().sort((a, b) => {
-    if (aktifSiralama === "alfabetik") return a.ad.localeCompare(b.ad, "tr");
-    if (aktifSiralama === "tur") return a.type.localeCompare(b.type);
-    return b.eklenmeZamani - a.eklenmeZamani;
-  });
-
   const ustBar = `
     <div class="ortak-mini-bar">
       <button class="ortak-degistir-btn" data-ani-akisi-ac>📖 Anı Akışı</button>
       <button class="ortak-degistir-btn" data-ortak-degistir>🔗 kodu değiştir</button>
     </div>`;
 
-  if (liste.length === 0) {
+  if (ortakListem.length === 0) {
     listeAlani.innerHTML = ustBar +
       "<div class='bos'>Henüz ortak listede bir şey yok. Yukarıdan bir dizi/film arayıp “💛 Birlikte İzlenenler”i seçerek ekleyebilirsin.</div>";
     return;
   }
 
-  listeAlani.innerHTML = ustBar + liste.map(kartHTML).join("");
-  siradakiBadgeleriDoldur(liste);
+  // Kişisel sayfayla aynı üç bölüm; kart görünümü de aynı (kartHTML)
+  listeAlani.innerHTML = ustBar + bolumlerHTML(ortakListem);
+  siradakiBadgeleriDoldur(ortakListem);
+  bolumGozlemiBaslat();
 }
 
 /* ---- Ortak listedeki kartların olayları (liste.js buraya yönlendirir) ---- */
@@ -296,9 +292,9 @@ function ortakKoduUygula() {
 
   // Bağlanmadan önce eklenmek istenen bir öğe varsa şimdi ekle
   if (ortakBekleyenEkleme) {
-    const x = ortakBekleyenEkleme;
+    const bekleyen = ortakBekleyenEkleme;
     ortakBekleyenEkleme = null;
-    ortakEkle(x);
+    ortakEkle(bekleyen.x, bekleyen.durum);
   }
 }
 

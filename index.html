@@ -50,26 +50,39 @@
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-2 6-6 2 2-6 6-2z" stroke-linejoin="round"/></svg></span>
           <span class="sekme-etiket">Keşfet</span>
         </button>
-        <button class="sekme-btn" data-sekme="izliyor">
+        <button class="sekme-btn" data-sekme="kisisel">
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
-          <span class="sekme-etiket">Devam Edenler</span>
+          <span class="sekme-etiket">Senin İzlediklerin</span>
           <span class="sekme-sayi">0</span>
         </button>
-        <button class="sekme-btn" data-sekme="bitirdi">
-          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          <span class="sekme-etiket">Bitenler</span>
-          <span class="sekme-sayi">0</span>
-        </button>
-        <button class="sekme-btn" data-sekme="izlemek_istiyor">
-          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 3h12v18l-6-4-6 4V3z" stroke-linejoin="round"/></svg></span>
-          <span class="sekme-etiket">İstek Listesi</span>
-          <span class="sekme-sayi">0</span>
-        </button>
+        <div class="alt-sekmeler" data-alt="kisisel">
+          <button class="alt-sekme-btn" data-sekme="kisisel" data-bolum="izliyor">
+            <span class="alt-sekme-etiket">Devam Edenler</span><span class="sekme-sayi">0</span>
+          </button>
+          <button class="alt-sekme-btn" data-sekme="kisisel" data-bolum="bitirdi">
+            <span class="alt-sekme-etiket">Bitenler</span><span class="sekme-sayi">0</span>
+          </button>
+          <button class="alt-sekme-btn" data-sekme="kisisel" data-bolum="izlemek_istiyor">
+            <span class="alt-sekme-etiket">İstek Listesi</span><span class="sekme-sayi">0</span>
+          </button>
+        </div>
+
         <button class="sekme-btn" data-sekme="birlikte">
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg></span>
-          <span class="sekme-etiket">Birlikte</span>
+          <span class="sekme-etiket">Birlikte İzledikleriniz</span>
           <span class="sekme-sayi">0</span>
         </button>
+        <div class="alt-sekmeler" data-alt="birlikte">
+          <button class="alt-sekme-btn" data-sekme="birlikte" data-bolum="izliyor">
+            <span class="alt-sekme-etiket">Devam Edenler</span><span class="sekme-sayi">0</span>
+          </button>
+          <button class="alt-sekme-btn" data-sekme="birlikte" data-bolum="bitirdi">
+            <span class="alt-sekme-etiket">Bitenler</span><span class="sekme-sayi">0</span>
+          </button>
+          <button class="alt-sekme-btn" data-sekme="birlikte" data-bolum="izlemek_istiyor">
+            <span class="alt-sekme-etiket">İstek Listesi</span><span class="sekme-sayi">0</span>
+          </button>
+        </div>
       </nav>
     </aside>
 
@@ -94,6 +107,10 @@
       <!-- Arama sonuçları (sadece ararken görünür) -->
       <div class="bolum-baslik" id="sonuc-baslik" style="display:none">Arama sonuçları</div>
       <div id="sonuclar"></div>
+
+      <!-- Bölüm çipleri: mobilde alt gezinme çubuğu akordeon açamadığı için
+           bölümler arası geçiş buradan yapılır (masaüstünde sidebar'dan) -->
+      <div class="bolum-cipleri" id="bolumCipleri"></div>
 
       <!-- Kaydedilen liste -->
       <div id="listem"></div>

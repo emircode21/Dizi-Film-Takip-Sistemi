@@ -39,17 +39,63 @@ function bildirimGoster() {
   const liste = bildirimlerOku();
   bildirimListe.innerHTML = liste.length
     ? liste.map((b) => `
-        <div class="bildirim-satiri ${b.ogeKey ? "bildirim-tiklanabilir" : ""}" ${b.ogeKey ? `data-bildirim-git="${b.ogeKey}"` : ""}>
-          <div class="bildirim-mesaj">${b.mesaj}</div>
-          <div class="bildirim-tarih">${new Date(b.tarih).toLocaleDateString("tr-TR")}</div>
+        <div class="bildirim-satiri-sarmal" data-bildirim-id="${b.id}">
+          <div class="bildirim-arka-aksiyon bildirim-arka-sil">🗑 Sil</div>
+          <div class="bildirim-arka-aksiyon bildirim-arka-okundu">✓ Okundu</div>
+          <div class="bildirim-satiri ${b.okunduMu ? "" : "bildirim-okunmamis"} ${b.ogeKey ? "bildirim-tiklanabilir" : ""}" ${b.ogeKey ? `data-bildirim-git="${b.ogeKey}"` : ""}>
+            <div class="bildirim-mesaj">${b.mesaj}</div>
+            <div class="bildirim-tarih">${new Date(b.tarih).toLocaleDateString("tr-TR")}</div>
+          </div>
         </div>`).join("")
     : "<div class='bilgi'>Henüz bildirim yok.</div>";
+}
 
-  // Kutuyu açınca hepsini okunmuş say
-  if (liste.some((b) => !b.okunduMu)) {
-    bildirimlerYaz(liste.map((b) => ({ ...b, okunduMu: true })));
-    bildirimRozetGuncelle();
-  }
+function bildirimSil(id) {
+  bildirimlerYaz(bildirimlerOku().filter((b) => b.id !== id));
+  bildirimGoster();
+  bildirimRozetGuncelle();
+}
+
+function bildirimOkunduYap(id) {
+  bildirimlerYaz(bildirimlerOku().map((b) => (b.id === id ? { ...b, okunduMu: true } : b)));
+  bildirimGoster();
+  bildirimRozetGuncelle();
+}
+
+/* ---- Kaydırarak sil (sola) / okundu yap (sağa) ---- */
+const BILDIRIM_KAYDIRMA_ESIGI = 70;
+let bildirimKaydirma = null;
+
+if (bildirimListe) {
+  bildirimListe.addEventListener("touchstart", (e) => {
+    const sarmal = e.target.closest(".bildirim-satiri-sarmal");
+    if (!sarmal) return;
+    bildirimKaydirma = { sarmal, satir: sarmal.querySelector(".bildirim-satiri"), x: e.touches[0].clientX };
+  }, { passive: true });
+
+  bildirimListe.addEventListener("touchmove", (e) => {
+    if (!bildirimKaydirma) return;
+    const delta = e.touches[0].clientX - bildirimKaydirma.x;
+    bildirimKaydirma.satir.style.transition = "none";
+    bildirimKaydirma.satir.style.transform = `translateX(${delta}px)`;
+    bildirimKaydirma.sarmal.classList.toggle("kaydiriliyor-sol", delta < -10);
+    bildirimKaydirma.sarmal.classList.toggle("kaydiriliyor-sag", delta > 10);
+  }, { passive: true });
+
+  bildirimListe.addEventListener("touchend", (e) => {
+    if (!bildirimKaydirma) return;
+    const { sarmal, satir, x } = bildirimKaydirma;
+    bildirimKaydirma = null;
+    const delta = e.changedTouches[0].clientX - x;
+    const id = sarmal.dataset.bildirimId;
+
+    if (delta < -BILDIRIM_KAYDIRMA_ESIGI) { bildirimSil(id); return; }
+    if (delta > BILDIRIM_KAYDIRMA_ESIGI) { bildirimOkunduYap(id); return; }
+
+    satir.style.transition = "transform 0.2s ease";
+    satir.style.transform = "";
+    sarmal.classList.remove("kaydiriliyor-sol", "kaydiriliyor-sag");
+  });
 }
 
 function bildirimKapat() {

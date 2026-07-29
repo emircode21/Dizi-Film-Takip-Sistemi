@@ -94,12 +94,42 @@ body {
   align-items: center;
   justify-content: center;
 }
-.bildirim-satiri { padding: 12px 0; border-bottom: 1px solid var(--kenar); }
-.bildirim-satiri:last-child { border-bottom: none; }
+.bildirim-satiri-sarmal { position: relative; overflow: hidden; }
+.bildirim-satiri-sarmal:not(:last-child) { border-bottom: 1px solid var(--kenar); }
+.bildirim-satiri {
+  padding: 12px 2px;
+  background: var(--kart);
+  position: relative;
+  z-index: 1;
+}
 .bildirim-mesaj { font-size: 14px; color: var(--yazi); }
-.bildirim-tarih { font-size: 12px; color: var(--yazi-soluk); margin-top: 2px; }
+.bildirim-tarih { font-size: 12px; color: var(--soluk); margin-top: 2px; }
 .bildirim-tiklanabilir { cursor: pointer; }
 .bildirim-tiklanabilir:active { opacity: 0.7; }
+.bildirim-okunmamis .bildirim-mesaj { font-weight: 700; }
+.bildirim-okunmamis { padding-left: 12px; }
+.bildirim-okunmamis::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 18px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--vurgu);
+}
+
+/* Kaydırınca altta beliren "Sil" (sola kaydır) / "Okundu" (sağa kaydır) aksiyonları */
+.bildirim-arka-aksiyon {
+  position: absolute;
+  top: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+}
+.bildirim-arka-sil { right: 0; background: var(--tehlike); }
+.bildirim-arka-okundu { left: 0; background: var(--vurgu); }
 
 /* ---------- Bildirim popover (tam ekran pencere değil, zil ikonunun altında) ---------- */
 .bildirim-popover {

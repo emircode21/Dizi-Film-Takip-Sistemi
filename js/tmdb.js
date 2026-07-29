@@ -613,10 +613,14 @@ function _aktifDiziUrl(bolge) {
     : "https://api.themoviedb.org/3/tv/on_the_air?api_key=" + API_KEY + "&language=tr-TR";
 }
 
+// Discover/on_the_air de aynı şekilde talk show, haber, reality karıştırıyor
+// (ör. WWE Raw, Watch What Happens Live) — bkz. _diziKurgusalMi.
 async function aktifDiziler(bolge) {
-  return _kesfetFetch("aktif-" + bolge, _aktifDiziUrl(bolge), "tv");
+  const liste = await _kesfetFetch("aktif-" + bolge, _aktifDiziUrl(bolge), "tv");
+  return liste.filter(_diziKurgusalMi);
 }
 
 async function aktifDizilerTum(bolge) {
-  return _kesfetCokSayfaGetir(_aktifDiziUrl(bolge) + "&page=", "tv", 5);
+  const liste = await _kesfetCokSayfaGetir(_aktifDiziUrl(bolge) + "&page=", "tv", 5);
+  return liste.filter(_diziKurgusalMi);
 }

@@ -201,6 +201,84 @@ body {
 .sekme-btn.aktif { background: var(--vurgu-yumusak); color: var(--vurgu); }
 .sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: #fff; }
 
+/* ---------- Sidebar akordeon: ana sekmenin altındaki bölüm maddeleri ---------- */
+.alt-sekmeler {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  margin: 2px 0 6px 21px;
+  padding-left: 10px;
+  border-left: 2px solid var(--kenar);
+}
+.alt-sekmeler.acik { display: flex; }
+.alt-sekme-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--soluk);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.alt-sekme-etiket { flex: 1; text-align: left; white-space: nowrap; }
+.alt-sekme-btn:hover { background: var(--kart); color: var(--yazi); }
+.alt-sekme-btn.aktif { background: var(--vurgu-yumusak); color: var(--vurgu); font-weight: 600; }
+.alt-sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: #fff; }
+
+/* ---------- Bölüm çipleri (mobilde bölümler arası geçiş) ---------- */
+.bolum-cipleri { display: none; }
+.bolum-cip {
+  border: 1px solid var(--kenar);
+  background: var(--kart);
+  color: var(--soluk);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-family: inherit;
+  font-size: 12.5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.bolum-cip.aktif { background: var(--vurgu); border-color: var(--vurgu); color: #fff; font-weight: 600; }
+
+/* ---------- Liste bölümleri (tek sayfada üç bölüm) ---------- */
+/* #listem bir grid (masaüstünde 2 sütun); her bölüm kart değil, kendi içinde
+   kartları barındıran bir kap olduğu için grid'in tüm genişliğine yayılmalı
+   — yoksa bölümlerin kendisi yan yana iki sütuna bölünür. Kartların kendi
+   2 sütunlu düzeni de burada, bir seviye içeride, tekrar kurulur. */
+.liste-bolum { grid-column: 1 / -1; scroll-margin-top: 12px; }
+.liste-bolum + .liste-bolum { margin-top: 30px; }
+.liste-bolum .kart:not(:last-child) { margin-bottom: 12px; }
+@media (min-width: 820px) {
+  .liste-bolum { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .liste-bolum-baslik, .bos { grid-column: 1 / -1; }
+  .liste-bolum .kart:not(:last-child) { margin-bottom: 0; }
+}
+.liste-bolum-baslik {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--yazi);
+  padding-bottom: 9px;
+  margin-bottom: 13px;
+  border-bottom: 1px solid var(--kenar);
+}
+.liste-bolum-sayi {
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--kart-2);
+  color: var(--soluk);
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+
 /* ---------- İçerik ---------- */
 .icerik {
   padding: 30px 26px 56px;
@@ -545,6 +623,8 @@ select {
   border-color: var(--vurgu);
 }
 .ekleme-secenek-btn.ekleme-ortak { border-color: var(--vurgu); color: var(--vurgu); }
+.ekleme-adim-bilgi { font-size: 13px; color: var(--soluk); margin-bottom: 4px; text-align: center; }
+.ekleme-secenek-btn.ekleme-geri-btn { border-style: dashed; color: var(--soluk); }
 
 /* ---------- İskelet (yükleniyor) ---------- */
 .iskelet-kart { pointer-events: none; }
@@ -1135,6 +1215,24 @@ select {
   .hero-baslik { font-size: 27px; }
 
   #sonuclar { grid-template-columns: 1fr; }
+
+  /* Alt çubuk yukarı doğru akordeon açamaz: bölüm geçişi yapışkan çiplerden olur */
+  .alt-sekmeler { display: none !important; }
+  .bolum-cipleri.acik {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin: 0 -16px 16px;
+    padding: 10px 16px;
+    background: var(--arka);
+    border-bottom: 1px solid var(--kenar);
+  }
+  .bolum-cipleri.acik::-webkit-scrollbar { display: none; }
+  .liste-bolum { scroll-margin-top: 58px; }
 }
 
 /* ---------------- ANILAR ---------------- */

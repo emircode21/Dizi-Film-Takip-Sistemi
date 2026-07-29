@@ -6,15 +6,24 @@ const sonucAlani = document.getElementById("sonuclar");
 const sonucBaslik = document.getElementById("sonuc-baslik");
 const listeAlani = document.getElementById("listem");
 const sekmeAlani = document.getElementById("sekmeler");
+const bolumCipleri = document.getElementById("bolumCipleri");
 const siralamaSecici = document.getElementById("siralamaSecici");
 const snackbarAlani = document.getElementById("snackbar");
 
 let sonSonuclar = [];
 let zamanlayici;
-let aktifSekme = "kesfet";
+let aktifSekme = "kesfet"; // "kesfet" | "kisisel" | "birlikte"
+let aktifBolum = "izliyor"; // kişisel/birlikte sayfasında o an bulunulan bölüm
 let aktifSiralama = "eklenme";
 let silinenYedek = null;
 let silmeZamanlayici = null;
+
+// Kişisel ve Birlikte sayfalarının ikisi de aynı üç bölüme ayrılır
+const BOLUMLER = [
+  { kod: "izliyor", ad: "Devam Edenler", ikon: "👁" },
+  { kod: "bitirdi", ad: "Bitenler", ikon: "✅" },
+  { kod: "izlemek_istiyor", ad: "İstek Listesi", ikon: "🔖" },
+];
 
 const SVG_SIL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const SVG_ILERI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4l14 8-14 8V4z" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -151,14 +160,18 @@ const eklemeSecenekler = document.getElementById("eklemeSecenekler");
 
 let eklenecekOge = null;
 
+// "Nereye eklensin" penceresinin ilk adımı (Birlikte seçilirse ikinci adım gelir)
+const EKLEME_SECENEK_HTML = eklemeSecenekler.innerHTML;
+
 function eklemeSecimiAc(x) {
-  // Keşfet ve Birlikte hariç bir sekmedeyken arayıp eklersek, doğrudan o sekmeye ekle
-  // (kullanıcı zaten hangi listeye eklemek istediğini sekmede belirtmiş oluyor)
-  if (aktifSekme !== "kesfet" && aktifSekme !== "birlikte") {
-    ekle(x, aktifSekme).then(aramayiSifirla);
+  // Kişisel sayfadayken arayıp eklersek, o an bulunulan bölüme doğrudan ekle
+  // (kullanıcı zaten hangi listeye eklemek istediğini bölümde belirtmiş oluyor)
+  if (aktifSekme === "kisisel") {
+    ekle(x, aktifBolum).then(aramayiSifirla);
     return;
   }
 
+  eklemeSecenekler.innerHTML = EKLEME_SECENEK_HTML;
   const diziMi = x.media_type === "tv";
   const tarih = diziMi ? x.first_air_date : x.release_date;
 
@@ -188,16 +201,41 @@ eklemeDetayBtn.addEventListener("click", () => {
   detayAcTmdb(oge);
 });
 
-eklemeSecenekler.addEventListener("click", async (e) => {
-  const btn = e.target.closest("[data-durum-ekle]");
-  if (!btn || !eklenecekOge) return;
+// Birlikte seçilince: ortak listenin hangi bölümüne ekleneceğini soran ikinci adım
+function eklemeOrtakAdimiCiz() {
+  eklemeSecenekler.innerHTML = `
+    <div class="ekleme-adim-bilgi">💛 Birlikte İzlenenler'in neresine eklensin?</div>
+    ${BOLUMLER.map((b) =>
+      `<button class="ekleme-secenek-btn ekleme-ortak" data-ortak-durum-ekle="${b.kod}">${b.ikon} ${b.ad}</button>`
+    ).join("")}
+    <button class="ekleme-secenek-btn ekleme-geri-btn" data-ekleme-geri>← Geri</button>`;
+}
 
-  // "Birlikte İzlenenler" seçildiyse kişisel listeye değil, ortak (Firestore) listeye ekle
-  if (btn.dataset.durumEkle === "birlikte") {
+eklemeSecenekler.addEventListener("click", async (e) => {
+  if (!eklenecekOge) return;
+
+  if (e.target.closest("[data-ekleme-geri]")) {
+    eklemeSecenekler.innerHTML = EKLEME_SECENEK_HTML;
+    return;
+  }
+
+  // İkinci adım: ortak (Firestore) listeye seçilen bölümle ekle
+  const ortakBtn = e.target.closest("[data-ortak-durum-ekle]");
+  if (ortakBtn) {
     const oge = eklenecekOge;
+    const durum = ortakBtn.dataset.ortakDurumEkle;
     eklemeKapat();
-    ortakEkleAkisi(oge);
+    ortakEkleAkisi(oge, durum);
     aramayiSifirla();
+    return;
+  }
+
+  const btn = e.target.closest("[data-durum-ekle]");
+  if (!btn) return;
+
+  // "Birlikte İzlenenler" seçildiyse doğrudan eklemeyip önce bölümü sor
+  if (btn.dataset.durumEkle === "birlikte") {
+    eklemeOrtakAdimiCiz();
     return;
   }
 
@@ -257,18 +295,36 @@ async function ekle(x, secilenDurum) {
 }
 
 
-/* ---------------- SEKMELER / SIRALAMA ---------------- */
-sekmeAlani.addEventListener("click", (e) => {
-  const btn = e.target.closest("[data-sekme]");
-  if (!btn) return;
-  aktifSekme = btn.dataset.sekme;
+/* ---------------- SEKMELER / BÖLÜMLER / SIRALAMA ---------------- */
+// Hem sidebar (ana + alt maddeler) hem mobildeki bölüm çipleri aynı akışı kullanır
+function sekmeSecimi(btn) {
+  const yeniSekme = btn.dataset.sekme;
+  const bolum = btn.dataset.bolum;
+  const sekmeDegisti = yeniSekme !== aktifSekme;
+
+  aktifSekme = yeniSekme;
+  if (bolum) aktifBolum = bolum;
   aramayiSifirla(); // sekme değişince arama kutusu boş kalsın
-  listeyiCiz();
+
+  if (sekmeDegisti) listeyiCiz();
+  else bolumVurgusuGuncelle();
 
   // "Birlikte" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç
   if (aktifSekme === "birlikte" && typeof ortakKod !== "undefined" && !ortakKod) {
     ortakKodModalAc();
+    return;
   }
+  if (bolum) bolumeKaydir(bolum);
+}
+
+sekmeAlani.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-sekme]");
+  if (btn) sekmeSecimi(btn);
+});
+
+bolumCipleri.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-bolum]");
+  if (btn) sekmeSecimi(btn);
 });
 
 siralamaSecici.addEventListener("change", () => {
@@ -276,34 +332,117 @@ siralamaSecici.addEventListener("change", () => {
   listeyiCiz();
 });
 
-function gorunecekListe() {
-  const suzulmus = listem.filter((o) => o.durum === aktifSekme);
-
-  return suzulmus.slice().sort((a, b) => {
+function listeSirala(liste) {
+  return liste.slice().sort((a, b) => {
     if (aktifSiralama === "alfabetik") return a.ad.localeCompare(b.ad, "tr");
     if (aktifSiralama === "tur") return a.type.localeCompare(b.type);
     return b.eklenmeZamani - a.eklenmeZamani; // son eklenen
   });
 }
 
+// Bir listeyi (kişisel ya da ortak) üç bölümlük tek sayfa olarak basar
+function bolumlerHTML(liste) {
+  return BOLUMLER.map((b) => {
+    const grup = listeSirala(liste.filter((o) => o.durum === b.kod));
+    return `
+      <section class="liste-bolum" id="bolum-${b.kod}">
+        <div class="liste-bolum-baslik">
+          ${b.ikon} ${b.ad}<span class="liste-bolum-sayi">${grup.length}</span>
+        </div>
+        ${grup.length
+          ? grup.map(kartHTML).join("")
+          : "<div class='bos'>Bu bölümde henüz bir şey yok.</div>"}
+      </section>`;
+  }).join("");
+}
+
+function bolumeKaydir(kod) {
+  const el = document.getElementById("bolum-" + kod);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 
 /* ---------------- KART ÇİZİMİ ---------------- */
 
-// Sekme başlıklarındaki sayaçları ve aktif vurguyu günceller.
+// Sekme/bölüm sayaçlarını doldurur.
 // "birlikte" sekmesi kişisel listeden değil, ortak (Firestore) listeden sayılır.
 function sekmeSayilariniGuncelle() {
-  sekmeAlani.querySelectorAll("[data-sekme]").forEach((btn) => {
-    const s = btn.dataset.sekme;
-    btn.classList.toggle("aktif", s === aktifSekme);
+  const ortak = typeof ortakListem !== "undefined" ? ortakListem : [];
+
+  sekmeAlani.querySelectorAll(".sekme-btn[data-sekme]").forEach((btn) => {
     const sayiEl = btn.querySelector(".sekme-sayi");
     if (!sayiEl) return; // Keşfet sekmesinde sayaç yok
-    sayiEl.textContent = s === "birlikte"
-      ? (typeof ortakListem !== "undefined" ? ortakListem.length : 0)
-      : listem.filter((o) => o.durum === s).length;
+    sayiEl.textContent = btn.dataset.sekme === "birlikte" ? ortak.length : listem.length;
+  });
+
+  sekmeAlani.querySelectorAll(".alt-sekme-btn[data-bolum]").forEach((btn) => {
+    const kaynak = btn.dataset.sekme === "birlikte" ? ortak : listem;
+    btn.querySelector(".sekme-sayi").textContent =
+      kaynak.filter((o) => o.durum === btn.dataset.bolum).length;
+  });
+
+  bolumVurgusuGuncelle();
+}
+
+// Hangi sekmedeyiz + hangi bölümdeyiz: sidebar akordeonu ve mobil çipler
+function bolumVurgusuGuncelle() {
+  sekmeAlani.querySelectorAll(".sekme-btn[data-sekme]").forEach((btn) => {
+    btn.classList.toggle("aktif", btn.dataset.sekme === aktifSekme);
+  });
+  sekmeAlani.querySelectorAll(".alt-sekmeler").forEach((kutu) => {
+    kutu.classList.toggle("acik", kutu.dataset.alt === aktifSekme);
+  });
+  sekmeAlani.querySelectorAll(".alt-sekme-btn[data-bolum]").forEach((btn) => {
+    btn.classList.toggle("aktif", btn.dataset.sekme === aktifSekme && btn.dataset.bolum === aktifBolum);
+  });
+  bolumCipleri.querySelectorAll("[data-bolum]").forEach((btn) => {
+    btn.classList.toggle("aktif", btn.dataset.bolum === aktifBolum);
   });
 }
 
+function bolumCipleriniCiz() {
+  if (aktifSekme === "kesfet") {
+    bolumCipleri.classList.remove("acik");
+    bolumCipleri.innerHTML = "";
+    return;
+  }
+  bolumCipleri.classList.add("acik");
+  bolumCipleri.innerHTML = BOLUMLER.map((b) =>
+    `<button class="bolum-cip" data-sekme="${aktifSekme}" data-bolum="${b.kod}">${b.ikon} ${b.ad}</button>`
+  ).join("");
+}
+
+/* Sayfa kaydırılırken sidebar/çiplerdeki vurguyu o an görünen bölüme taşır.
+   IntersectionObserver kullanılıyor — scroll dinleyip elle hesap yapmaya gerek yok. */
+// Görünen bölümlerden sayfada en üstte olanı seçer (DOM sırası = bölüm sırası)
+function aktifBolumuSec(bolumler, gorunurluk) {
+  const ilk = [...bolumler].find((el) => gorunurluk[el.id]);
+  return ilk ? ilk.id.replace("bolum-", "") : null;
+}
+
+let bolumGozlemci = null;
+let bolumGorunurluk = {};
+function bolumGozlemiBaslat() {
+  if (bolumGozlemci) bolumGozlemci.disconnect();
+  bolumGorunurluk = {};
+  const bolumler = document.querySelectorAll(".liste-bolum");
+  if (!bolumler.length) return;
+
+  bolumGozlemci = new IntersectionObserver((girisler) => {
+    // Gözlemci yalnızca durumu DEĞİŞEN bölümleri bildirir; hâlâ görünenleri
+    // kaçırmamak için görünürlüğü ayrıca haritada tutuyoruz.
+    girisler.forEach((g) => { bolumGorunurluk[g.target.id] = g.isIntersecting; });
+    const secilen = aktifBolumuSec(bolumler, bolumGorunurluk);
+    if (!secilen) return;
+    aktifBolum = secilen;
+    bolumVurgusuGuncelle();
+  }, { rootMargin: "-80px 0px 0px 0px" }); // üstteki yapışkan çip şeridi kadar tampon
+
+  bolumler.forEach((el) => bolumGozlemci.observe(el));
+}
+
 function listeyiCiz() {
+  bolumCipleriniCiz();
   sekmeSayilariniGuncelle();
 
   // Keşfet sekmesi: arama/liste değil, TMDB öneri şeritleri
@@ -320,15 +459,9 @@ function listeyiCiz() {
     return;
   }
 
-  const goruntulenecek = gorunecekListe();
-
-  if (goruntulenecek.length === 0) {
-    listeAlani.innerHTML = "<div class='bos'>Bu bölümde henüz bir şey yok.</div>";
-    return;
-  }
-
-  listeAlani.innerHTML = goruntulenecek.map(kartHTML).join("");
-  siradakiBadgeleriDoldur(goruntulenecek);
+  listeAlani.innerHTML = bolumlerHTML(listem);
+  siradakiBadgeleriDoldur(listem);
+  bolumGozlemiBaslat();
 }
 
 // Devam eden dizilerde "Sıradaki bölüm" tarihini arka planda çekip rozete yazar

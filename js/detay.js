@@ -510,8 +510,11 @@ detayKaydetBtn.addEventListener("click", async () => {
   o.sezon = Number(detaySezonSecici.value);
   o.bolum = Number(detayBolumSecici.value);
 
-  if (sonBolumMu(o)) o.durum = "bitirdi";
-  else if (o.durum === "izlemek_istiyor") o.durum = "izliyor";
+  if (sonBolumMu(o)) {
+    // Gerçek hayatta hâlâ devam eden (final yapmamış) diziler otomatik "Bitenler"e taşınmasın
+    const halaDevamEdiyor = o.type === "tv" && await diziDevamEdiyorMu(o.tmdbId);
+    if (!halaDevamEdiyor) o.durum = "bitirdi";
+  } else if (o.durum === "izlemek_istiyor") o.durum = "izliyor";
 
   detayKaydet(o);
   listeyiCiz();

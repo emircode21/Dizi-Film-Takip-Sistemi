@@ -82,6 +82,21 @@ async function siradakiBolum(tvId) {
   }
 }
 
+// Dizi gerçek hayatta hâlâ devam ediyor mu? (final yapmamış / iptal olmamış)
+const _diziDevamOnbellek = {};
+async function diziDevamEdiyorMu(tvId) {
+  if (tvId in _diziDevamOnbellek) return _diziDevamOnbellek[tvId];
+  try {
+    const url = "https://api.themoviedb.org/3/tv/" + tvId + "?api_key=" + API_KEY + "&language=tr-TR";
+    const veri = await (await fetch(url)).json();
+    const sonuc = veri.in_production === true;
+    _diziDevamOnbellek[tvId] = sonuc;
+    return sonuc;
+  } catch (e) {
+    return false;
+  }
+}
+
 // Bir sezonun bölüm sayısını VE her bölümün adı/yayın tarihini döner
 async function bolumSayisiGetir(tvId, sezonNo) {
   try {

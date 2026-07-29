@@ -447,6 +447,14 @@ select {
   .arac-satiri, .surpriz-btn { max-width: 640px; }
 }
 
+/* Geniş masaüstü ekranlarda (>1400px) sağda solda büyük boşluk kalmasın diye
+   kabuk biraz genişler, liste 3 sütuna çıkar (poster boyutu aşağıda, .kart
+   img'in temel tanımından SONRA override ediliyor — cascade sırası önemli). */
+@media (min-width: 1400px) {
+  .uygulama { max-width: 1400px; }
+  #listem, .liste-bolum { grid-template-columns: repeat(3, 1fr); }
+}
+
 @keyframes kartGir { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
 .kart {
@@ -474,6 +482,9 @@ select {
 .kart .orta { flex: 1; min-width: 0; }
 .kart .baslik { font-weight: 600; font-size: 15px; }
 .kart .alt { color: var(--soluk); font-size: 13px; margin-top: 4px; }
+@media (min-width: 1400px) {
+  .kart img { width: 72px; height: 108px; }
+}
 
 .kart-aksiyonlar {
   display: flex;

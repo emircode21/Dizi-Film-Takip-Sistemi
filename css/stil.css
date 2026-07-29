@@ -247,8 +247,18 @@ body {
 .bolum-cip.aktif { background: var(--vurgu); border-color: var(--vurgu); color: #fff; font-weight: 600; }
 
 /* ---------- Liste bölümleri (tek sayfada üç bölüm) ---------- */
-.liste-bolum { scroll-margin-top: 12px; }
+/* #listem bir grid (masaüstünde 2 sütun); her bölüm kart değil, kendi içinde
+   kartları barındıran bir kap olduğu için grid'in tüm genişliğine yayılmalı
+   — yoksa bölümlerin kendisi yan yana iki sütuna bölünür. Kartların kendi
+   2 sütunlu düzeni de burada, bir seviye içeride, tekrar kurulur. */
+.liste-bolum { grid-column: 1 / -1; scroll-margin-top: 12px; }
 .liste-bolum + .liste-bolum { margin-top: 30px; }
+.liste-bolum .kart:not(:last-child) { margin-bottom: 12px; }
+@media (min-width: 820px) {
+  .liste-bolum { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .liste-bolum-baslik, .bos { grid-column: 1 / -1; }
+  .liste-bolum .kart:not(:last-child) { margin-bottom: 0; }
+}
 .liste-bolum-baslik {
   display: flex;
   align-items: center;

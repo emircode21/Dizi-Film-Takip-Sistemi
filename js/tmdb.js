@@ -532,9 +532,20 @@ async function topRatedGetir(type) {
 }
 
 // Popüler film/diziler. type: "movie" | "tv"
+// TMDB'nin /tv/popular'ı popülerliğe göre sıralarken haber bülteni, talk show,
+// reality ve belgesel gibi kurgusal olmayan içerikleri de karıştırıyor
+// (ör. 1952'den beri yayınlanan bir Alman haber bülteni "popüler dizi" diye
+// çıkabiliyor). "Popüler Diziler" kullanıcı beklentisiyle (senaryolu dizi)
+// örtüşsün diye bu türler filtrelenir.
+const KURGUSAL_OLMAYAN_TV_TURLERI = new Set([10763, 10767, 10764, 99]); // Haber, Talk Show, Reality, Belgesel
+function _diziKurgusalMi(x) {
+  return !(x.genre_ids || []).some((id) => KURGUSAL_OLMAYAN_TV_TURLERI.has(id));
+}
+
 async function populerGetir(type) {
   const url = "https://api.themoviedb.org/3/" + type + "/popular?api_key=" + API_KEY + "&language=tr-TR";
-  return _kesfetFetch("populer-" + type, url, type);
+  const liste = await _kesfetFetch("populer-" + type, url, type);
+  return type === "tv" ? liste.filter(_diziKurgusalMi) : liste;
 }
 
 /* ---- "Tümünü gör" pencereleri için çok sayfalı veri çekme ----
@@ -588,7 +599,8 @@ async function topRatedTumGetir(type) {
 
 async function populerTumGetir(type) {
   const url = "https://api.themoviedb.org/3/" + type + "/popular?api_key=" + API_KEY + "&language=tr-TR&page=";
-  return _kesfetCokSayfaGetir(url, type, 5);
+  const liste = await _kesfetCokSayfaGetir(url, type, 5);
+  return type === "tv" ? liste.filter(_diziKurgusalMi) : liste;
 }
 
 // Gerçek hayatta hâlâ devam eden (final yapmamış) diziler. bolge: "TR" | "GLOBAL"

@@ -38,6 +38,7 @@
   <!-- Tema değiştirme + istatistikler (her ekranda sağ üstte, sekmeden bağımsız) -->
   <button id="temaBtn" class="tema-btn" aria-label="Tema değiştir">🌙</button>
   <button id="istatistikBtn" class="tema-btn tema-btn-istatistik" aria-label="İstatistikler">📊</button>
+  <button id="bildirimBtn" class="tema-btn tema-btn-bildirim" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
 
   <div class="uygulama">
     <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
@@ -290,6 +291,15 @@
     </div>
   </div>
 
+  <!-- Bildirimler: cihazda tutulan bildirim kutusu (ör. yeni bölüm yayında uyarıları) -->
+  <div id="bildirimModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="bildirimKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="modal-baslik">🔔 Bildirimler</div>
+      <div id="bildirimListe"></div>
+    </div>
+  </div>
+
   <!-- Firebase (Firestore) — ortak liste için, kendi sitemizin dışından yüklenir -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
@@ -305,6 +315,7 @@
   <script src="js/kisi.js"></script>
   <script src="js/ani.js"></script>
   <script src="js/istatistik.js"></script>
+  <script src="js/bildirim.js"></script>
   <script src="js/kesfet.js"></script>
   <script src="js/arayuz.js"></script>
   <script src="js/uygulama.js"></script>

@@ -675,7 +675,9 @@ select {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  z-index: 100;
+  /* Sağ üstteki sabit tema/istatistik/bildirim ikonlarından (z-index 120)
+     yüksek olmalı — yoksa açık bir pencerenin İÇİNE biniyorlar (bkz. #20) */
+  z-index: 130;
 }
 .modal-kutu {
   background: var(--arka);
@@ -928,6 +930,8 @@ select {
 .kisi-yapim-baslik-satiri {
   display: flex; align-items: center; justify-content: space-between;
   gap: 10px; flex-wrap: wrap;
+  /* Sağ üstteki ✕ (position:absolute) ile üst üste binmesin diye yer ayrılır */
+  padding-right: 44px;
 }
 /* İnce sıralama "çipi" — sekmelerdeki/tur-toggle'lardaki aktif-filtre renk
    dilini (yumuşak vurgu zemin + vurgu yazı) ödünç alır, native select'in

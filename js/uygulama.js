@@ -52,10 +52,11 @@ document.addEventListener("touchmove", (e) => {
   if (!kaydirmaBaslangic || !kaydirmaBaslangic.enUstteydi) return;
   const delta = e.touches[0].clientY - kaydirmaBaslangic.y;
   if (delta > 0) {
+    e.preventDefault(); // arkadaki ana ekranın birlikte kaymasını engeller
     kaydirmaBaslangic.kutu.style.transition = "none";
     kaydirmaBaslangic.kutu.style.transform = `translateY(${Math.min(delta, 200)}px)`;
   }
-}, { passive: true });
+}, { passive: false });
 
 document.addEventListener("touchend", (e) => {
   if (!kaydirmaBaslangic) return;

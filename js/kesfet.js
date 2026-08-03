@@ -80,11 +80,13 @@ const KESFET_KATEGORI_BASLIK = {
   begenilen: "⭐ En Beğenilenler",
   dizi: "📺 Popüler Diziler",
   aktif: "🟢 Şu An Yayında — Aktif Diziler",
+  yarisma: "🎪 Reality & Yarışma Programları",
 };
 
 /* ---- Bölge (TR/Global) toggle durumu olan bölümler ---- */
 let kesfetVizyonBolge = "TR"; // "TR" | "GLOBAL"
 let kesfetAktifBolge = "TR"; // "TR" | "GLOBAL"
+let kesfetYarismaBolge = "TR"; // "TR" | "GLOBAL"
 
 /* ---- Ana çizim ---- */
 async function kesfetEkraniCiz() {
@@ -96,6 +98,7 @@ async function kesfetEkraniCiz() {
       ${kesfetBolumIskelet("begenilen")}
       ${kesfetBolumIskelet("dizi")}
       ${kesfetBolumIskelet("aktif", "aktif")}
+      ${kesfetBolumIskelet("yarisma", "yarisma")}
     </div>`;
 
   // Oscar listesi zaten elde hazır (ağ isteği yok), hemen çiz
@@ -107,9 +110,11 @@ async function kesfetEkraniCiz() {
   topRatedGetir("movie").then((liste) => kesfetSeritDoldur("kesfet-serit-begenilen", liste));
   populerGetir("tv").then((liste) => kesfetSeritDoldur("kesfet-serit-dizi", liste));
   aktifDiziler(kesfetAktifBolge).then((liste) => kesfetSeritDoldur("kesfet-serit-aktif", liste));
+  yarismaGetir(kesfetYarismaBolge).then((liste) => kesfetSeritDoldur("kesfet-serit-yarisma", liste));
 }
 
-const KESFET_BOLGE_DURUMU = { vizyon: () => kesfetVizyonBolge, aktif: () => kesfetAktifBolge };
+const KESFET_BOLGE_DURUMU = { vizyon: () => kesfetVizyonBolge, aktif: () => kesfetAktifBolge, yarisma: () => kesfetYarismaBolge };
+const KESFET_BOLGE_GETIR = { vizyon: vizyondakiler, aktif: aktifDiziler, yarisma: yarismaGetir };
 
 function kesfetBolumIskelet(kategori, toggleGrup = null) {
   const toggleHTML = toggleGrup
@@ -189,13 +194,13 @@ document.addEventListener("click", (e) => {
     if (yeni === KESFET_BOLGE_DURUMU[grup]()) return;
     if (grup === "vizyon") kesfetVizyonBolge = yeni;
     else if (grup === "aktif") kesfetAktifBolge = yeni;
+    else if (grup === "yarisma") kesfetYarismaBolge = yeni;
     document.querySelectorAll(`[data-grup='${grup}'] [data-bolge]`).forEach((b) => {
       b.classList.toggle("aktif", b.dataset.bolge === yeni);
     });
     const el = document.getElementById("kesfet-serit-" + grup);
     if (el) el.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
-    const getir = grup === "vizyon" ? vizyondakiler : aktifDiziler;
-    getir(yeni).then((liste) => kesfetSeritDoldur("kesfet-serit-" + grup, liste));
+    KESFET_BOLGE_GETIR[grup](yeni).then((liste) => kesfetSeritDoldur("kesfet-serit-" + grup, liste));
     return;
   }
 
@@ -238,7 +243,7 @@ async function kesfetTumTurSeciciDoldur(kategori) {
   kesfetTumTurSecici.style.display = "";
 
   let turler;
-  if (kategori === "dizi" || kategori === "aktif") turler = await turleriGetir("tv");
+  if (kategori === "dizi" || kategori === "aktif" || kategori === "yarisma") turler = await turleriGetir("tv");
   else if (kategori === "trend") {
     const [film, dizi] = await Promise.all([turleriGetir("movie"), turleriGetir("tv")]);
     const gorulen = new Set();
@@ -301,6 +306,7 @@ async function kesfetTumVeriGetir(kategori) {
   if (kategori === "begenilen") return topRatedTumGetir("movie");
   if (kategori === "dizi") return populerTumGetir("tv");
   if (kategori === "aktif") return aktifDizilerTum(kesfetAktifBolge);
+  if (kategori === "yarisma") return yarismaTumGetir(kesfetYarismaBolge);
   return [];
 }
 

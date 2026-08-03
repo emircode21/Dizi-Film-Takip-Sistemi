@@ -624,3 +624,19 @@ async function aktifDizilerTum(bolge) {
   const liste = await _kesfetCokSayfaGetir(_aktifDiziUrl(bolge) + "&page=", "tv", 5);
   return liste.filter(_diziKurgusalMi);
 }
+
+// Reality/yarışma programları (Popüler Diziler'den kasıtlı olarak filtrelenen
+// tür, burada kendi şeridinde gösterilir). bolge: "TR" | "GLOBAL"
+function _yarismaUrl(bolge) {
+  const ortak = "https://api.themoviedb.org/3/discover/tv?api_key=" + API_KEY + "&language=tr-TR"
+    + "&with_genres=10764&sort_by=popularity.desc";
+  return bolge === "TR" ? ortak + "&with_origin_country=TR" : ortak;
+}
+
+async function yarismaGetir(bolge) {
+  return _kesfetFetch("yarisma-" + bolge, _yarismaUrl(bolge), "tv");
+}
+
+async function yarismaTumGetir(bolge) {
+  return _kesfetCokSayfaGetir(_yarismaUrl(bolge) + "&page=", "tv", 5);
+}

@@ -103,7 +103,7 @@ button, input, select, textarea {
 }
 .tema-btn:active { transform: scale(0.94); }
 .tema-btn-istatistik { right: 60px; font-size: 15px; }
-.tema-btn-bildirim { right: 108px; font-size: 15px; position: fixed; }
+.tema-btn-bildirim { right: 108px; font-size: 15px; }
 .bildirim-rozet {
   position: absolute;
   top: -4px;
@@ -115,8 +115,6 @@ button, input, select, textarea {
   background: var(--vurgu);
   color: #fff;
   font-size: 10px;
-  line-height: 16px;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -327,7 +325,7 @@ button, input, select, textarea {
 .liste-bolum .kart:not(:last-child) { margin-bottom: 12px; }
 @media (min-width: 820px) {
   .liste-bolum { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .liste-bolum-baslik, .bos { grid-column: 1 / -1; }
+  .liste-bolum-baslik { grid-column: 1 / -1; }
   .liste-bolum .kart:not(:last-child) { margin-bottom: 0; }
 }
 .liste-bolum-baslik {
@@ -618,7 +616,7 @@ select {
   transition: background 0.15s ease;
 }
 .sonraki-btn:hover { background: var(--vurgu); color: #fff; }
-.sonraki-btn:disabled { opacity: 0.5; cursor: default; background: var(--vurgu-yumusak); color: var(--vurgu); }
+.sonraki-btn:disabled { opacity: 0.5; cursor: default; }
 
 .durum-secici {
   background-color: var(--kart-2);
@@ -1338,7 +1336,7 @@ select {
 .ani-etiket { font-size: 12px; color: var(--soluk); margin: 8px 0 4px; }
 .ani-etiket:first-child { margin-top: 0; }
 .ani-input, .ani-textarea {
-  width: 100%; box-sizing: border-box;
+  width: 100%;
   background: var(--kart); border: 1px solid var(--kenar);
   color: var(--yazi); border-radius: 10px; padding: 9px 10px;
   font-size: 14px;

@@ -1262,7 +1262,9 @@ select {
   .sekme-sayi { font-size: 9.5px; padding: 0 6px; min-width: 0; }
 
   .icerik { padding: calc(20px + env(safe-area-inset-top, 0px)) 16px 92px; }
-  .hero { text-align: center; }
+  /* Sağ üstteki sabit tema/istatistik/bildirim ikonları (toplam ~136px) ile
+     çakışmasın diye başlık bloğu o kadar sağ boşluk bırakıp ortalanır */
+  .hero { text-align: center; padding-right: 136px; }
   .hero-baslik { font-size: 27px; }
 
   #sonuclar { grid-template-columns: 1fr; }

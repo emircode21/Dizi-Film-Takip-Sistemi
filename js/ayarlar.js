@@ -9,7 +9,7 @@ const AYARLAR = {
   kisiselMod: true,
 
   // kisiselMod false iken kullanılacak nötr uygulama adı
-  appAdi: "İzleme Defteri",
+  appAdi: "CineMory",
 
   // Çiftin isimleri (başlıkta "Emir & Özge" gibi görünür)
   isim1: "Emir",

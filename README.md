@@ -1,4 +1,6 @@
-# İzleme Defteri
+# CineMory
+
+*cinema + memory* — izlediklerini takip et, her birinin anısını sakla.
 
 Dizi ve film takibi için kişisel + ortak liste, TMDB destekli keşif ekranı, anılar ve bildirimler sunan bir PWA (Progressive Web App). Build adımı yok — düz HTML/CSS/JS, herhangi bir statik sunucudan çalışır.
 

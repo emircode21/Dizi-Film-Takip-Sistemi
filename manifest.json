@@ -1,6 +1,6 @@
 {
-  "name": "İzleme Defteri",
-  "short_name": "İzleme Defteri",
+  "name": "CineMory",
+  "short_name": "CineMory",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

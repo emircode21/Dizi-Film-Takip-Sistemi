@@ -37,7 +37,7 @@ function temaBaslat() {
 /* ---- Marka / Hero ---- */
 function markayiCiz() {
   // <title> ve ana ekran adı
-  document.title = AYARLAR.kisiselMod ? `${markaBasligi()} · İzleme Defteri` : AYARLAR.appAdi;
+  document.title = AYARLAR.kisiselMod ? `${markaBasligi()} · ${AYARLAR.appAdi}` : AYARLAR.appAdi;
 
   const kalp = AYARLAR.kalp || "";
 

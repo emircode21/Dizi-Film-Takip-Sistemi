@@ -72,6 +72,18 @@ button, input, select, textarea {
   outline-offset: 2px;
 }
 
+/* Hareket hassasiyeti tercih edilince tüm animasyon/geçişleri neredeyse
+   anında bitir. Özellikle .surpriz-cark img saniyede ~11 kez titriyordu
+   (carkTitre 0.09s infinite) — hiçbir koşula bağlı değildi. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------- Tema değiştirme butonu ---------- */
 .tema-btn {
   position: fixed;

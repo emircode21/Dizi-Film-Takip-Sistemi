@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a2d4e"/>
+      <stop offset="1" stop-color="#16111d"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+  <rect x="96" y="80" width="320" height="352" rx="20" fill="#f2ecf5"/>
+  <rect x="120" y="104" width="272" height="248" rx="8" fill="#2a1f33"/>
+  <path d="M50 88 C14 62 6 40 20 26 C31 15 45 18 50 30 C55 18 69 15 80 26 C94 40 86 62 50 88 Z"
+        fill="#e8709e" transform="translate(153.5,122.4) scale(2.05)"/>
+  <text x="256" y="240" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif"
+        font-size="62" fill="#ffffff">E&amp;Ö</text>
+</svg>

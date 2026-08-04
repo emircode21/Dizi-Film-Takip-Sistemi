@@ -1,7 +1,7 @@
 /* Uygulama kabuğunu (HTML/CSS/JS/ikonlar) önbelleğe alır.
    TMDB API isteklerine ve poster görsellerine hiç dokunmaz — onlar her zaman ağdan gelir. */
 
-const ONBELLEK_ADI = "cinemory-v46";
+const ONBELLEK_ADI = "cinemory-v47";
 
 const KABUK_DOSYALARI = [
   "./",
@@ -27,6 +27,9 @@ const KABUK_DOSYALARI = [
   "./icons/icon-512.png",
   "./icons/icon-maskable-512.png",
   "./icons/apple-touch-icon.png",
+  "./icons/favicon-32.png",
+  "./icons/favicon-16.png",
+  "./favicon.svg",
 ];
 
 self.addEventListener("install", (event) => {

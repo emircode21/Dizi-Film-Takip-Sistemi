@@ -739,6 +739,7 @@ select {
   padding: 24px 20px 32px;
   position: relative;
   animation: modalGir 0.25s ease;
+  box-shadow: var(--golge);
 }
 @media (min-width: 620px) {
   .modal-arkaplan { align-items: center; }

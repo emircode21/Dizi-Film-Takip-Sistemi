@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cinemory-dev",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "8071"],
+      "port": 8071
+    }
+  ]
+}

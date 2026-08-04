@@ -42,6 +42,35 @@
   --golge: 0 8px 24px rgba(180, 140, 130, 0.18);
 }
 
+/* ---------- ÖLÇEK TOKEN'LARI (boşluk/köşe/punto/geçiş) ----------
+   Renk paletinden bağımsız; her iki temada aynı. Yeni değer eklemeden
+   önce burada en yakın basamağın olup olmadığına bak. */
+:root {
+  --bo-1: 4px;
+  --bo-2: 8px;
+  --bo-3: 12px;
+  --bo-4: 16px;
+  --bo-5: 24px;
+  --bo-6: 32px;
+  --bo-7: 48px;
+
+  --yari-1: 8px;   /* rozet, çip, select */
+  --yari-2: 12px;  /* buton, input */
+  --yari-3: 16px;  /* kart yüzeyleri */
+  --yari-4: 22px;  /* modal üst köşeleri */
+
+  --punto-1: 11px;
+  --punto-2: 12px;
+  --punto-3: 13px;
+  --punto-4: 14px;
+  --punto-5: 16px;
+  --punto-6: 20px;
+  --punto-7: 24px;
+  --punto-8: 30px;
+
+  --gecis: 0.15s ease;
+}
+
 * { box-sizing: border-box; }
 
 body {

@@ -57,6 +57,33 @@ body {
   font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
 }
 
+/* Form/buton elemanları tarayıcı varsayılan fontuna (genelde Arial) değil,
+   gövdenin sistem font yığınına düşsün diye */
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Klavyeyle gezinen kullanıcı için görünür odak halkası — fare tıklamasında
+   çıkmaz, yalnızca Tab ile odaklanınca. Bazı input/select'ler kendi
+   :focus'unda outline:none yazıp border rengiyle telafi ediyordu; bu daha
+   güçlü ve tutarlı bir sinyal ekler. */
+:focus-visible {
+  outline: 2px solid var(--vurgu);
+  outline-offset: 2px;
+}
+
+/* Hareket hassasiyeti tercih edilince tüm animasyon/geçişleri neredeyse
+   anında bitir. Özellikle .surpriz-cark img saniyede ~11 kez titriyordu
+   (carkTitre 0.09s infinite) — hiçbir koşula bağlı değildi. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ---------- Tema değiştirme butonu ---------- */
 .tema-btn {
   position: fixed;
@@ -76,7 +103,7 @@ body {
 }
 .tema-btn:active { transform: scale(0.94); }
 .tema-btn-istatistik { right: 60px; font-size: 15px; }
-.tema-btn-bildirim { right: 108px; font-size: 15px; position: fixed; }
+.tema-btn-bildirim { right: 108px; font-size: 15px; }
 .bildirim-rozet {
   position: absolute;
   top: -4px;
@@ -88,8 +115,6 @@ body {
   background: var(--vurgu);
   color: #fff;
   font-size: 10px;
-  line-height: 16px;
-  text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,6 +155,13 @@ body {
 }
 .bildirim-arka-sil { right: 0; background: var(--tehlike); }
 .bildirim-arka-okundu { left: 0; background: var(--vurgu); }
+/* Bir yöne kaydırma başlayınca (js/bildirim.js) o taraftaki aksiyon
+   simgesi hafifçe büyür — hangi yöne gittiğini netleştirir */
+.kaydiriliyor-sol .bildirim-arka-sil,
+.kaydiriliyor-sag .bildirim-arka-okundu {
+  font-size: 14px;
+  transform: scale(1.06);
+}
 
 /* ---------- Bildirim popover (tam ekran pencere değil, zil ikonunun altında) ---------- */
 .bildirim-popover {
@@ -227,7 +259,6 @@ body {
   border-radius: 11px;
   background: transparent;
   color: var(--soluk);
-  font-family: inherit;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -268,7 +299,6 @@ body {
   border-radius: 9px;
   background: transparent;
   color: var(--soluk);
-  font-family: inherit;
   font-size: 13px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -286,7 +316,6 @@ body {
   color: var(--soluk);
   border-radius: 999px;
   padding: 7px 13px;
-  font-family: inherit;
   font-size: 12.5px;
   white-space: nowrap;
   cursor: pointer;
@@ -303,7 +332,7 @@ body {
 .liste-bolum .kart:not(:last-child) { margin-bottom: 12px; }
 @media (min-width: 820px) {
   .liste-bolum { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .liste-bolum-baslik, .bos { grid-column: 1 / -1; }
+  .liste-bolum-baslik { grid-column: 1 / -1; }
   .liste-bolum .kart:not(:last-child) { margin-bottom: 0; }
 }
 .liste-bolum-baslik {
@@ -594,7 +623,7 @@ select {
   transition: background 0.15s ease;
 }
 .sonraki-btn:hover { background: var(--vurgu); color: #fff; }
-.sonraki-btn:disabled { opacity: 0.5; cursor: default; background: var(--vurgu-yumusak); color: var(--vurgu); }
+.sonraki-btn:disabled { opacity: 0.5; cursor: default; }
 
 .durum-secici {
   background-color: var(--kart-2);
@@ -736,6 +765,7 @@ select {
   padding: 24px 20px 32px;
   position: relative;
   animation: modalGir 0.25s ease;
+  box-shadow: var(--golge);
 }
 @media (min-width: 620px) {
   .modal-arkaplan { align-items: center; }
@@ -1313,10 +1343,10 @@ select {
 .ani-etiket { font-size: 12px; color: var(--soluk); margin: 8px 0 4px; }
 .ani-etiket:first-child { margin-top: 0; }
 .ani-input, .ani-textarea {
-  width: 100%; box-sizing: border-box;
+  width: 100%;
   background: var(--kart); border: 1px solid var(--kenar);
   color: var(--yazi); border-radius: 10px; padding: 9px 10px;
-  font-size: 14px; font-family: inherit;
+  font-size: 14px;
 }
 .ani-textarea { resize: vertical; min-height: 60px; }
 .ani-input[type="file"] { padding: 7px; font-size: 12.5px; }

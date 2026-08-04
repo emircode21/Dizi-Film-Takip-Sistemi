@@ -285,7 +285,7 @@ button, input, select, textarea {
   width: 100%;
   padding: 11px 12px;
   border: none;
-  border-radius: 11px;
+  border-radius: var(--yari-2);
   background: transparent;
   color: var(--soluk);
   font-size: 14px;
@@ -411,7 +411,7 @@ button, input, select, textarea {
   min-width: 62px;
   background: var(--kart);
   border: 1px solid var(--kenar);
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   padding: 10px 8px;
   display: flex;
   flex-direction: column;
@@ -446,7 +446,7 @@ button, input, select, textarea {
   padding: 14px 44px 14px 16px;
   font-size: 16px;
   border: 1px solid var(--kenar);
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   background: var(--kart);
   color: var(--yazi);
   outline: none;
@@ -714,7 +714,7 @@ select {
   width: 100%;
   padding: 14px;
   border: 1px solid var(--kenar);
-  border-radius: 11px;
+  border-radius: var(--yari-2);
   background: var(--kart-2);
   color: var(--yazi);
   font-size: 15px;
@@ -751,7 +751,7 @@ select {
   border: 1px solid var(--kenar);
   color: var(--yazi);
   padding: 12px 18px;
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   display: flex;
   gap: 16px;
   align-items: center;
@@ -899,7 +899,7 @@ select {
   margin: 4px 0 12px;
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
   color: #fff; font-weight: 600; font-size: 13px;
-  padding: 9px 16px; border-radius: 11px;
+  padding: 9px 16px; border-radius: var(--yari-2);
   text-decoration: none; border: none; cursor: pointer;
 }
 .fragman-btn:hover { filter: brightness(1.05); }
@@ -916,7 +916,7 @@ select {
 .ben-kim-soru { font-size: 13px; color: var(--soluk); margin: 0 0 10px; }
 .ben-kim-satiri { display: flex; gap: 10px; }
 .ben-kim-btn {
-  flex: 1; padding: 10px; border: 1px solid var(--kenar); border-radius: 11px;
+  flex: 1; padding: 10px; border: 1px solid var(--kenar); border-radius: var(--yari-2);
   background: var(--kart-2); color: var(--yazi); font-size: 14px; font-weight: 600;
   cursor: pointer; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
@@ -976,7 +976,7 @@ select {
   width: 100%;
   margin-top: 16px;
   padding: 11px;
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   border: 1px solid var(--kenar);
   background: var(--kart-2);
   color: var(--yazi);
@@ -991,7 +991,7 @@ select {
   width: 100%;
   margin-top: 6px;
   padding: 13px;
-  border-radius: 13px;
+  border-radius: var(--yari-2);
   border: none;
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
   color: #fff;
@@ -1006,7 +1006,7 @@ select {
   width: 100%;
   margin-top: 8px;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   border: 1px solid var(--kenar);
   background: var(--kart-2);
   color: var(--yazi);
@@ -1084,7 +1084,7 @@ select {
 .detay-ekli-not {
   margin-top: 6px;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   background: var(--vurgu-yumusak);
   color: var(--vurgu);
   font-size: 14px;
@@ -1099,7 +1099,7 @@ select {
   margin: 0 0 18px;
   padding: 14px;
   border: none;
-  border-radius: 15px;
+  border-radius: var(--yari-2);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
   color: #fff;
   font-size: 15.5px;
@@ -1119,7 +1119,7 @@ select {
   display: flex;
   gap: 6px;
   background: var(--kart-2);
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   padding: 5px;
   margin-bottom: 18px;
 }
@@ -1155,7 +1155,7 @@ select {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid var(--kenar);
-  border-radius: 11px;
+  border-radius: var(--yari-2);
   background-color: var(--kart-2);
   color: var(--yazi);
   font-size: 14px;
@@ -1189,7 +1189,7 @@ select {
   margin-top: 18px;
   padding: 14px;
   border: none;
-  border-radius: 13px;
+  border-radius: var(--yari-2);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
   color: #fff;
   font-size: 15px;
@@ -1284,7 +1284,7 @@ select {
   padding: 14px 16px;
   font-size: 16px;
   border: 1px solid var(--kenar);
-  border-radius: 12px;
+  border-radius: var(--yari-2);
   background: var(--kart-2);
   color: var(--yazi);
   outline: none;
@@ -1315,7 +1315,7 @@ select {
   .marka { display: none; }
 
   .sekmeler { flex-direction: row; width: 100%; gap: 4px; }
-  .sekme-btn { flex: 1; flex-direction: column; gap: 3px; padding: 7px 3px; border-radius: 12px; }
+  .sekme-btn { flex: 1; flex-direction: column; gap: 3px; padding: 7px 3px; border-radius: var(--yari-2); }
   .sekme-ikon svg { width: 22px; height: 22px; }
   .sekme-etiket { flex: none; text-align: center; white-space: normal; line-height: 1.1; font-size: 10.5px; }
   .sekme-sayi { font-size: 9.5px; padding: 0 6px; min-width: 0; }
@@ -1409,7 +1409,7 @@ select {
 .ani-kaydet-btn {
   border: none; cursor: pointer; flex: 1;
   background: var(--vurgu); color: #fff;
-  padding: 10px; border-radius: 12px; font-size: 14px; font-weight: 700;
+  padding: 10px; border-radius: var(--yari-2); font-size: 14px; font-weight: 700;
 }
 .ani-kaydet-btn:disabled { opacity: .6; cursor: default; }
 .ani-form-durum { font-size: 12.5px; color: var(--vurgu); margin-top: 8px; min-height: 1em; }

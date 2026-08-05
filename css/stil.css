@@ -21,6 +21,7 @@
   --mavi-yumusak: rgba(140, 180, 255, 0.16);
   --tehlike: #ff8fa3;
   --golge: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --gradyan-yazi: #fff; /* pembe/altın gradyan üzerindeki büyük CTA butonları için */
 }
 
 /* ---------- AÇIK TEMA ---------- */
@@ -40,6 +41,7 @@
   --mavi-yumusak: rgba(91, 127, 199, 0.13);
   --tehlike: #d05a72;
   --golge: 0 8px 24px rgba(180, 140, 130, 0.18);
+  --gradyan-yazi: var(--vurgu-yazi); /* açık temada gradyan daha pastel; beyaz yerine koyu mürekkep okunur */
 }
 
 /* ---------- ÖLÇEK TOKEN'LARI (boşluk/köşe/punto/geçiş) ----------
@@ -926,7 +928,7 @@ select {
   display: inline-flex; align-items: center; gap: 6px;
   margin: 4px 0 12px;
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: var(--vurgu-yazi); font-weight: 600; font-size: 13px;
+  color: var(--gradyan-yazi); font-weight: 600; font-size: 13px;
   padding: 9px 16px; border-radius: var(--yari-2);
   text-decoration: none; border: none; cursor: pointer;
 }
@@ -1022,7 +1024,7 @@ select {
   border-radius: var(--yari-2);
   border: none;
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: var(--vurgu-yazi);
+  color: var(--gradyan-yazi);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -1129,7 +1131,7 @@ select {
   border: none;
   border-radius: var(--yari-2);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: var(--vurgu-yazi);
+  color: var(--gradyan-yazi);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -1223,7 +1225,7 @@ select {
   border: none;
   border-radius: var(--yari-2);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: var(--vurgu-yazi);
+  color: var(--gradyan-yazi);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -1270,10 +1272,10 @@ select {
 }
 .surpriz-aksiyon:hover { border-color: var(--vurgu); color: var(--vurgu); }
 .surpriz-aksiyon.birincil {
-  border: none; color: var(--vurgu-yazi);
+  border: none; color: var(--gradyan-yazi);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
 }
-.surpriz-aksiyon.birincil:hover { filter: brightness(1.05); color: var(--vurgu-yazi); }
+.surpriz-aksiyon.birincil:hover { filter: brightness(1.05); color: var(--gradyan-yazi); }
 
 /* ---------- Birlikte İzlenenler (ortak liste) ---------- */
 .ortak-bilgi-kutu {

@@ -290,7 +290,7 @@ button, input, select, textarea {
   color: var(--soluk);
   font-size: 14px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background var(--gecis), color var(--gecis);
 }
 .sekme-ikon { display: inline-flex; flex-shrink: 0; }
 .sekme-ikon svg { width: 20px; height: 20px; display: block; }
@@ -330,7 +330,7 @@ button, input, select, textarea {
   color: var(--soluk);
   font-size: 13px;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background var(--gecis), color var(--gecis);
 }
 .alt-sekme-etiket { flex: 1; text-align: left; white-space: nowrap; }
 .alt-sekme-btn:hover { background: var(--kart); color: var(--yazi); }
@@ -455,7 +455,7 @@ button, input, select, textarea {
   background: var(--kart);
   color: var(--yazi);
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--gecis);
 }
 #arama:focus { border-color: var(--vurgu); }
 #arama::placeholder { color: var(--soluk); }
@@ -615,7 +615,7 @@ select {
   cursor: pointer;
   line-height: 1;
   box-shadow: 0 4px 12px var(--vurgu-yumusak);
-  transition: transform 0.12s ease, background 0.15s ease;
+  transition: transform 0.12s ease, background var(--gecis);
 }
 .ekle-btn:hover { background: var(--vurgu-koyu); }
 .ekle-btn:active { transform: scale(0.9); }
@@ -641,7 +641,7 @@ select {
   border-radius: 9px;
   cursor: pointer;
   font-size: 13px;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color var(--gecis), border-color var(--gecis);
 }
 .sil-btn:hover { color: var(--tehlike); border-color: var(--tehlike); }
 
@@ -655,7 +655,7 @@ select {
   font-size: 13px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s ease;
+  transition: background var(--gecis);
 }
 .sonraki-btn:hover { background: var(--vurgu); color: #fff; }
 .sonraki-btn:disabled { opacity: 0.5; cursor: default; }
@@ -731,7 +731,7 @@ select {
   font-size: 15px;
   cursor: pointer;
   text-align: center;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
 }
 .ekleme-secenek-btn:hover {
   background: var(--vurgu-yumusak);
@@ -932,7 +932,7 @@ select {
 .ben-kim-btn {
   flex: 1; padding: 10px; border: 1px solid var(--kenar); border-radius: var(--yari-2);
   background: var(--kart-2); color: var(--yazi); font-size: 14px; font-weight: 600;
-  cursor: pointer; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  cursor: pointer; transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
 }
 .ben-kim-btn:hover { background: var(--vurgu-yumusak); color: var(--vurgu); border-color: var(--vurgu); }
 
@@ -1373,7 +1373,7 @@ select {
   background: var(--vurgu); color: #fff;
   padding: 7px 12px; border-radius: 999px;
   font-size: 12px; font-weight: 600;
-  transition: transform .12s ease, filter .12s ease;
+  transition: transform 0.12s ease, filter 0.12s ease;
 }
 .ani-ekle-ac-btn:hover { filter: brightness(1.06); transform: translateY(-1px); }
 

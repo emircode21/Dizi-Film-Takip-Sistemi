@@ -21,6 +21,7 @@
   --mavi-yumusak: rgba(140, 180, 255, 0.16);
   --tehlike: #ff8fa3;
   --golge: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --golge-alt: 0 -6px 20px rgba(0, 0, 0, 0.12); /* mobil alt gezinme çubuğu */
   --gradyan-yazi: #fff; /* pembe/altın gradyan üzerindeki büyük CTA butonları için */
 }
 
@@ -41,6 +42,7 @@
   --mavi-yumusak: rgba(91, 127, 199, 0.13);
   --tehlike: #d05a72;
   --golge: 0 8px 24px rgba(180, 140, 130, 0.18);
+  --golge-alt: 0 -6px 20px rgba(180, 140, 130, 0.15); /* mobil alt gezinme çubuğu — eskiden temadan bağımsız hep siyahtı */
   --gradyan-yazi: var(--vurgu-yazi); /* açık temada gradyan daha pastel; beyaz yerine koyu mürekkep okunur */
 }
 
@@ -71,6 +73,19 @@
   --punto-8: 30px;
 
   --gecis: 0.15s ease;
+  --yildiz-altin: #f5c542; /* puan yıldızları — evrensel yıldız sarısı, temayla değişmez */
+
+  /* Katman (z-index) ölçeği. Rastgele sayılar iki çakışmaya yol açmıştı
+     (popover/modal-arkaplan ikisi de 130, karşılama/foto-büyütme ikisi
+     de 200) — artık her katmanın kendi basamağı var. */
+  --z-1: 20;   /* içerik içi sticky başlıklar (bölüm çipleri) */
+  --z-2: 50;   /* sabit alt gezinme çubuğu */
+  --z-3: 120;  /* sağ üst sabit ikonlar */
+  --z-4: 130;  /* popover/dropdown */
+  --z-5: 140;  /* modal arkaplanı */
+  --z-6: 150;  /* toast/snackbar — modalın da üzerinde görünmeli */
+  --z-7: 160;  /* modal içinden açılan tam ekran görsel */
+  --z-8: 200;  /* ilk açılış karşılama ekranı — her zaman en üstte */
 
   /* --vurgu her iki temada da orta tonlu bir pembe olduğundan üzerine
      beyaz yazı AA kontrastını (4.5:1) geçemiyor (~2.1-3.3:1). Koyu bir
@@ -125,7 +140,7 @@ button, input, select, textarea {
   position: fixed;
   top: calc(12px + env(safe-area-inset-top, 0px));
   right: 12px;
-  z-index: 120;
+  z-index: var(--z-3);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -206,7 +221,7 @@ button, input, select, textarea {
   position: fixed;
   top: calc(58px + env(safe-area-inset-top, 0px));
   right: 12px;
-  z-index: 130;
+  z-index: var(--z-4);
   width: min(340px, calc(100vw - 24px));
   max-height: min(420px, 70vh);
   overflow-y: auto;
@@ -222,7 +237,7 @@ button, input, select, textarea {
 .karsilama {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-8);
   display: none;
   align-items: center;
   justify-content: center;
@@ -493,7 +508,11 @@ button, input, select, textarea {
 
 /* ---------- Tüm <select> kutularının ortak temeli ----------
    Tarayıcının varsayılan (temayla uyumsuz, kalın) ok ikonunu kaldırıp
-   yerine ince, temaya uygun renkli bir ok koyar. Her select bunu miras alır. */
+   yerine ince, temaya uygun renkli bir ok koyar. Her select bunu miras alır.
+   NOT: data-URI SVG içinde CSS değişkeni (var()) çalışmıyor, bu yüzden
+   --soluk'un hex karşılığı burada elle kopyalanmış (%23a99fba = koyu,
+   %236f635c = açık tema). --soluk paleti değişirse bu iki satır da
+   elle güncellenmeli, yoksa ok rengi sessizce eskide kalır. */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -504,7 +523,7 @@ select {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23a99fba' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 :root[data-tema="acik"] select {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%2394867f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%236f635c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 
 .siralama-secici {
@@ -722,7 +741,7 @@ select {
   line-height: 1;
   padding: 2px;
   cursor: pointer;
-  color: #f5c542;
+  color: var(--yildiz-altin);
   transition: transform 0.12s ease;
 }
 .yildiz-btn:hover { transform: scale(1.15); }
@@ -781,7 +800,7 @@ select {
   align-items: center;
   box-shadow: var(--golge);
   font-size: 14px;
-  z-index: 160;
+  z-index: var(--z-6);
   animation: snackbarGir 0.25s ease;
   max-width: calc(100% - 32px);
 }
@@ -808,7 +827,7 @@ select {
   justify-content: center;
   /* Sağ üstteki sabit tema/istatistik/bildirim ikonlarından (z-index 120)
      yüksek olmalı — yoksa açık bir pencerenin İÇİNE biniyorlar (bkz. #20) */
-  z-index: 130;
+  z-index: var(--z-5);
 }
 .modal-kutu {
   background: var(--arka);
@@ -828,6 +847,8 @@ select {
 }
 @keyframes modalGir { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 .modal-geri {
+  display: inline-flex; /* align-items/gap sessizce etkisiz kalmasın diye;
+    gösterme/gizleme hâlâ js/detay.js:52'deki inline style ile yapılıyor */
   align-items: center;
   gap: 3px;
   margin: 0 0 14px;
@@ -959,7 +980,7 @@ select {
 }
 .degerlendirme-ad { font-size: 13px; font-weight: 700; color: var(--yazi); margin-bottom: 4px; }
 .degerlendirme-yildiz-satiri { margin-bottom: 6px; }
-.yildiz-salt { font-size: 19px; line-height: 1; padding: 2px; color: #f5c542; }
+.yildiz-salt { font-size: 19px; line-height: 1; padding: 2px; color: var(--yildiz-altin); }
 .degerlendirme-yorum { min-height: 50px; margin-top: 4px; }
 .degerlendirme-yorum-salt { font-size: 13px; color: var(--yazi); line-height: 1.45; white-space: pre-wrap; }
 .bilgi-soluk { color: var(--soluk); }
@@ -1071,7 +1092,10 @@ select {
 }
 /* İnce sıralama "çipi" — sekmelerdeki/tur-toggle'lardaki aktif-filtre renk
    dilini (yumuşak vurgu zemin + vurgu yazı) ödünç alır, native select'in
-   kalın/kutulu haline göre çok daha az yer kaplar. */
+   kalın/kutulu haline göre çok daha az yer kaplar.
+   NOT: ok ikonundaki %23e79aa8/%23c67689 --vurgu'nun elle kopyalanmış hex
+   karşılığı (yukarıdaki <select> notuna bkz.) — --vurgu değişirse burası
+   da elle güncellenmeli. */
 .kisi-sirala-secici {
   background-color: var(--vurgu-yumusak);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23e79aa8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
@@ -1343,8 +1367,8 @@ select {
     border-top: 1px solid var(--kenar);
     background: var(--arka-2);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
-    z-index: 50;
-    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.12);
+    z-index: var(--z-2);
+    box-shadow: var(--golge-alt);
   }
   .marka { display: none; }
 
@@ -1371,7 +1395,7 @@ select {
     scrollbar-width: none;
     position: sticky;
     top: 0;
-    z-index: 20;
+    z-index: var(--z-1);
     margin: 0 -16px 16px;
     padding: 10px 16px;
     background: var(--arka);
@@ -1505,14 +1529,14 @@ select {
 .istatistik-satir { font-size: 13px; color: var(--yazi); margin-bottom: 14px; }
 .istatistik-puan-dagilimi { display: flex; flex-direction: column; gap: 6px; }
 .istatistik-puan-satiri { display: flex; align-items: center; gap: 8px; }
-.istatistik-puan-etiket { font-size: 11px; color: #f5c542; white-space: nowrap; width: 70px; }
+.istatistik-puan-etiket { font-size: 11px; color: var(--yildiz-altin); white-space: nowrap; width: 70px; }
 .istatistik-puan-cubuk { flex: 1; height: 8px; background: var(--kart-2); border-radius: 4px; overflow: hidden; }
 .istatistik-puan-dolu { height: 100%; background: linear-gradient(90deg, var(--vurgu), var(--altin)); }
 .istatistik-puan-sayi { font-size: 12px; color: var(--soluk); width: 18px; text-align: right; }
 
 /* Fotoğrafı tam ekran büyütme */
 .ani-foto-buyuk-kat {
-  position: fixed; inset: 0; z-index: 200;
+  position: fixed; inset: 0; z-index: var(--z-7);
   background: rgba(0, 0, 0, .85);
   display: flex; align-items: center; justify-content: center;
   padding: 20px; cursor: zoom-out;
@@ -1528,7 +1552,13 @@ select {
 /* min-width:0 şart: #listem bir grid, bu yüzden bu flex kutusu bir grid item —
    grid item'ların varsayılan min-width:auto'su içindeki yatay şeridin taşan
    min-content genişliğini grid track'ine yansıtıp sayfayı sağa genişletiyordu. */
-.kesfet-sarmal { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+/* #listem masaüstünde kişisel liste kartları için 2 sütuna bölünüyor
+   (bkz. "@media (min-width: 820px) { #listem {...} }"). Keşfet ekranı
+   #listem'in içine kart yerine TEK bir sarmalayıcı koyduğu için o kural
+   sarmalayıcıyı ilk sütuna sıkıştırıp ikinci sütunu boş bırakıyordu —
+   sağda göze batan büyük boşluğun sebebi buydu. Sarmalayıcı her iki
+   sütunu da kaplasın. */
+.kesfet-sarmal { display: flex; flex-direction: column; gap: 26px; min-width: 0; grid-column: 1 / -1; }
 
 .kesfet-bolum-ust {
   display: flex; align-items: center; justify-content: space-between;
@@ -1555,6 +1585,15 @@ select {
 .kesfet-serit::-webkit-scrollbar { height: 6px; }
 .kesfet-serit::-webkit-scrollbar-thumb { background: var(--kenar); border-radius: 3px; }
 .kesfet-serit .bilgi { padding: 0; align-self: center; }
+
+/* Masaüstünde posterler mobil boyutunda (96px) kalınca üstteki 640px'lik
+   arama/buton satırıyla aynı sırada yarım kartla kesilip sağda büyük boş
+   alan bırakıyordu (bkz. .arac-satiri max-width kuralı) — büyüt. */
+@media (min-width: 820px) {
+  .oneri-kart { flex-basis: 128px; width: 128px; }
+  .oneri-poster { width: 128px; height: 192px; }
+  .kesfet-serit { gap: 14px; min-height: 192px; }
+}
 
 .oneri-alt { font-size: 11px; color: var(--soluk); margin-top: 2px; }
 

@@ -996,7 +996,14 @@ select {
   padding-bottom: 6px; scroll-snap-type: x proximity;
 }
 .oyuncu-serit::-webkit-scrollbar, .oneri-serit::-webkit-scrollbar { height: 6px; }
-.oyuncu-serit::-webkit-scrollbar-thumb, .oneri-serit::-webkit-scrollbar-thumb { background: var(--kenar); border-radius: 3px; }
+.oyuncu-serit::-webkit-scrollbar-thumb, .oneri-serit::-webkit-scrollbar-thumb {
+  background: var(--kenar); border-radius: 3px; transition: background var(--gecis);
+}
+/* Sürüklerken tıklandığı hissedilsin diye vurgu rengine geçiyor
+   (scrollbar-thumb'ı büyütmek tarayıcılar arası güvenilir değil,
+   renk değişimi daha tutarlı bir "basıldı" sinyali veriyor) */
+.oyuncu-serit::-webkit-scrollbar-thumb:hover, .oneri-serit::-webkit-scrollbar-thumb:hover { background: var(--soluk); }
+.oyuncu-serit::-webkit-scrollbar-thumb:active, .oneri-serit::-webkit-scrollbar-thumb:active { background: var(--vurgu); }
 
 .oyuncu-kart { flex: 0 0 72px; width: 72px; text-align: center; scroll-snap-align: start; }
 .oyuncu-foto {
@@ -1583,7 +1590,9 @@ select {
   min-height: 144px;
 }
 .kesfet-serit::-webkit-scrollbar { height: 6px; }
-.kesfet-serit::-webkit-scrollbar-thumb { background: var(--kenar); border-radius: 3px; }
+.kesfet-serit::-webkit-scrollbar-thumb { background: var(--kenar); border-radius: 3px; transition: background var(--gecis); }
+.kesfet-serit::-webkit-scrollbar-thumb:hover { background: var(--soluk); }
+.kesfet-serit::-webkit-scrollbar-thumb:active { background: var(--vurgu); }
 .kesfet-serit .bilgi { padding: 0; align-self: center; }
 
 /* Masaüstünde posterler mobil boyutunda (96px) kalınca üstteki 640px'lik

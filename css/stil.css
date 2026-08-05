@@ -340,6 +340,7 @@ button, input, select, textarea {
 /* ---------- Bölüm çipleri (mobilde bölümler arası geçiş) ---------- */
 .bolum-cipleri { display: none; }
 .bolum-cip {
+  position: relative;
   border: 1px solid var(--kenar);
   background: var(--kart);
   color: var(--soluk);
@@ -349,6 +350,10 @@ button, input, select, textarea {
   white-space: nowrap;
   cursor: pointer;
 }
+/* Görünür boyut aynı kalsın diye şeffaf ::after ile dokunma alanı
+   dikeyde 40px'e genişletiliyor (yatayda komşu çipe taşmasın diye
+   sadece üst/alt genişletildi). */
+.bolum-cip::after { content: ""; position: absolute; inset: -5px 0; }
 .bolum-cip.aktif { background: var(--vurgu); border-color: var(--vurgu); color: #fff; font-weight: 600; }
 
 /* ---------- Liste bölümleri (tek sayfada üç bölüm) ---------- */
@@ -472,6 +477,7 @@ button, input, select, textarea {
   cursor: pointer;
   border-radius: 50%;
 }
+.arama-temizle::after { content: ""; position: absolute; inset: -6px; }
 .arama-temizle:hover { background: var(--kart-2); }
 
 /* ---------- Tüm <select> kutularının ortak temeli ----------
@@ -698,6 +704,7 @@ select {
 /* ---------- Yıldız puanlama ---------- */
 .puan-satiri { margin-top: 6px; }
 .yildiz-btn {
+  position: relative;
   background: none;
   border: none;
   font-size: 19px;
@@ -706,6 +713,10 @@ select {
   cursor: pointer;
   color: #f5c542;
 }
+/* En sık yanlış basılan kontrol — dokunma alanı görünür boyuttan
+   büyük (yıldızlar bitişik olsa da örtüşme algılanmıyor, en yakın
+   yıldız her zaman doğru tetikleniyor). */
+.yildiz-btn::after { content: ""; position: absolute; inset: -10px -3px; }
 
 /* ---------- Ekleme seçimi ---------- */
 .ekleme-secim-baslik { margin-top: 20px; font-weight: 600; font-size: 14px; }
@@ -763,6 +774,7 @@ select {
 }
 @keyframes snackbarGir { from { opacity: 0; transform: translateX(-50%) translateY(16px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 .snackbar button {
+  position: relative;
   background: none;
   border: none;
   color: var(--vurgu);
@@ -771,6 +783,7 @@ select {
   font-size: 14px;
   white-space: nowrap;
 }
+.snackbar button::after { content: ""; position: absolute; inset: -10px; }
 
 /* ---------- Modal ---------- */
 .modal-arkaplan {
@@ -828,6 +841,7 @@ select {
   cursor: pointer;
   font-size: 15px;
 }
+.modal-kapat::after { content: ""; position: absolute; inset: -6px; }
 .modal-ust { display: flex; gap: 14px; margin-top: 10px; }
 .modal-ust img {
   width: 84px; height: 124px;
@@ -1427,10 +1441,12 @@ select {
 }
 .ani-kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ani-tarih { font-size: 12px; color: var(--vurgu); font-weight: 700; }
-.ani-kart-islem { display: flex; align-items: center; gap: 2px; }
+.ani-kart-islem { display: flex; align-items: center; gap: 4px; }
 .ani-sil-btn, .ani-duzenle-btn {
   border: none; background: transparent; cursor: pointer;
-  font-size: 15px; opacity: .55; padding: 2px 5px; border-radius: 8px;
+  font-size: 15px; opacity: .55; border-radius: 8px;
+  min-width: 36px; min-height: 36px;
+  display: inline-flex; align-items: center; justify-content: center;
 }
 .ani-sil-btn:hover, .ani-duzenle-btn:hover { opacity: 1; }
 .ani-form-baslik { font-size: 13px; font-weight: 700; color: var(--vurgu); margin-bottom: 6px; }

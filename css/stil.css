@@ -1552,7 +1552,13 @@ select {
 /* min-width:0 şart: #listem bir grid, bu yüzden bu flex kutusu bir grid item —
    grid item'ların varsayılan min-width:auto'su içindeki yatay şeridin taşan
    min-content genişliğini grid track'ine yansıtıp sayfayı sağa genişletiyordu. */
-.kesfet-sarmal { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+/* #listem masaüstünde kişisel liste kartları için 2 sütuna bölünüyor
+   (bkz. "@media (min-width: 820px) { #listem {...} }"). Keşfet ekranı
+   #listem'in içine kart yerine TEK bir sarmalayıcı koyduğu için o kural
+   sarmalayıcıyı ilk sütuna sıkıştırıp ikinci sütunu boş bırakıyordu —
+   sağda göze batan büyük boşluğun sebebi buydu. Sarmalayıcı her iki
+   sütunu da kaplasın. */
+.kesfet-sarmal { display: flex; flex-direction: column; gap: 26px; min-width: 0; grid-column: 1 / -1; }
 
 .kesfet-bolum-ust {
   display: flex; align-items: center; justify-content: space-between;
@@ -1579,6 +1585,15 @@ select {
 .kesfet-serit::-webkit-scrollbar { height: 6px; }
 .kesfet-serit::-webkit-scrollbar-thumb { background: var(--kenar); border-radius: 3px; }
 .kesfet-serit .bilgi { padding: 0; align-self: center; }
+
+/* Masaüstünde posterler mobil boyutunda (96px) kalınca üstteki 640px'lik
+   arama/buton satırıyla aynı sırada yarım kartla kesilip sağda büyük boş
+   alan bırakıyordu (bkz. .arac-satiri max-width kuralı) — büyüt. */
+@media (min-width: 820px) {
+  .oneri-kart { flex-basis: 128px; width: 128px; }
+  .oneri-poster { width: 128px; height: 192px; }
+  .kesfet-serit { gap: 14px; min-height: 192px; }
+}
 
 .oneri-alt { font-size: 11px; color: var(--soluk); margin-top: 2px; }
 

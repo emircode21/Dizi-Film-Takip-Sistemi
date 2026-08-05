@@ -505,7 +505,11 @@ button, input, select, textarea {
 
 /* ---------- Tüm <select> kutularının ortak temeli ----------
    Tarayıcının varsayılan (temayla uyumsuz, kalın) ok ikonunu kaldırıp
-   yerine ince, temaya uygun renkli bir ok koyar. Her select bunu miras alır. */
+   yerine ince, temaya uygun renkli bir ok koyar. Her select bunu miras alır.
+   NOT: data-URI SVG içinde CSS değişkeni (var()) çalışmıyor, bu yüzden
+   --soluk'un hex karşılığı burada elle kopyalanmış (%23a99fba = koyu,
+   %236f635c = açık tema). --soluk paleti değişirse bu iki satır da
+   elle güncellenmeli, yoksa ok rengi sessizce eskide kalır. */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -516,7 +520,7 @@ select {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23a99fba' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 :root[data-tema="acik"] select {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%2394867f' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%236f635c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 
 .siralama-secici {
@@ -840,6 +844,8 @@ select {
 }
 @keyframes modalGir { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 .modal-geri {
+  display: inline-flex; /* align-items/gap sessizce etkisiz kalmasın diye;
+    gösterme/gizleme hâlâ js/detay.js:52'deki inline style ile yapılıyor */
   align-items: center;
   gap: 3px;
   margin: 0 0 14px;
@@ -1083,7 +1089,10 @@ select {
 }
 /* İnce sıralama "çipi" — sekmelerdeki/tur-toggle'lardaki aktif-filtre renk
    dilini (yumuşak vurgu zemin + vurgu yazı) ödünç alır, native select'in
-   kalın/kutulu haline göre çok daha az yer kaplar. */
+   kalın/kutulu haline göre çok daha az yer kaplar.
+   NOT: ok ikonundaki %23e79aa8/%23c67689 --vurgu'nun elle kopyalanmış hex
+   karşılığı (yukarıdaki <select> notuna bkz.) — --vurgu değişirse burası
+   da elle güncellenmeli. */
 .kisi-sirala-secici {
   background-color: var(--vurgu-yumusak);
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' fill='none' stroke='%23e79aa8' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/></svg>");

@@ -69,6 +69,11 @@
   --punto-8: 30px;
 
   --gecis: 0.15s ease;
+
+  /* --vurgu her iki temada da orta tonlu bir pembe olduğundan üzerine
+     beyaz yazı AA kontrastını (4.5:1) geçemiyor (~2.1-3.3:1). Koyu bir
+     "mürekkep" tonu iki temada da 5:1'in üzerinde kalıyor. */
+  --vurgu-yazi: #2a1420;
 }
 
 * { box-sizing: border-box; }
@@ -129,7 +134,9 @@ button, input, select, textarea {
   line-height: 1;
   cursor: pointer;
   box-shadow: var(--golge);
+  transition: background var(--gecis), transform 0.12s ease;
 }
+.tema-btn:hover { background: var(--kart-2); }
 .tema-btn:active { transform: scale(0.94); }
 .tema-btn-istatistik { right: 60px; font-size: 15px; }
 .tema-btn-bildirim { right: 108px; font-size: 15px; }
@@ -142,7 +149,7 @@ button, input, select, textarea {
   padding: 0 3px;
   border-radius: 8px;
   background: var(--vurgu);
-  color: #fff;
+  color: var(--vurgu-yazi);
   font-size: 10px;
   display: flex;
   align-items: center;
@@ -306,7 +313,7 @@ button, input, select, textarea {
 }
 .sekme-btn:hover { background: var(--kart); color: var(--yazi); }
 .sekme-btn.aktif { background: var(--vurgu-yumusak); color: var(--vurgu); }
-.sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: #fff; }
+.sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: var(--vurgu-yazi); }
 
 /* ---------- Sidebar akordeon: ana sekmenin altındaki bölüm maddeleri ---------- */
 .alt-sekmeler {
@@ -335,7 +342,7 @@ button, input, select, textarea {
 .alt-sekme-etiket { flex: 1; text-align: left; white-space: nowrap; }
 .alt-sekme-btn:hover { background: var(--kart); color: var(--yazi); }
 .alt-sekme-btn.aktif { background: var(--vurgu-yumusak); color: var(--vurgu); font-weight: 600; }
-.alt-sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: #fff; }
+.alt-sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: var(--vurgu-yazi); }
 
 /* ---------- Bölüm çipleri (mobilde bölümler arası geçiş) ---------- */
 .bolum-cipleri { display: none; }
@@ -349,12 +356,14 @@ button, input, select, textarea {
   font-size: 12px;
   white-space: nowrap;
   cursor: pointer;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
 }
 /* Görünür boyut aynı kalsın diye şeffaf ::after ile dokunma alanı
    dikeyde 40px'e genişletiliyor (yatayda komşu çipe taşmasın diye
    sadece üst/alt genişletildi). */
 .bolum-cip::after { content: ""; position: absolute; inset: -5px 0; }
-.bolum-cip.aktif { background: var(--vurgu); border-color: var(--vurgu); color: #fff; font-weight: 600; }
+.bolum-cip:hover { border-color: var(--vurgu); color: var(--yazi); }
+.bolum-cip.aktif { background: var(--vurgu); border-color: var(--vurgu); color: var(--vurgu-yazi); font-weight: 600; }
 
 /* ---------- Liste bölümleri (tek sayfada üç bölüm) ---------- */
 /* #listem bir grid (masaüstünde 2 sütun); her bölüm kart değil, kendi içinde
@@ -608,7 +617,7 @@ select {
   flex-shrink: 0;
   border: none;
   background: var(--vurgu);
-  color: #fff;
+  color: var(--vurgu-yazi);
   width: 40px; height: 40px;
   border-radius: 50%;
   font-size: 24px;
@@ -657,7 +666,7 @@ select {
   white-space: nowrap;
   transition: background var(--gecis);
 }
-.sonraki-btn:hover { background: var(--vurgu); color: #fff; }
+.sonraki-btn:hover { background: var(--vurgu); color: var(--vurgu-yazi); }
 .sonraki-btn:disabled { opacity: 0.5; cursor: default; }
 
 .durum-secici {
@@ -712,7 +721,9 @@ select {
   padding: 2px;
   cursor: pointer;
   color: #f5c542;
+  transition: transform 0.12s ease;
 }
+.yildiz-btn:hover { transform: scale(1.15); }
 /* En sık yanlış basılan kontrol — dokunma alanı görünür boyuttan
    büyük (yıldızlar bitişik olsa da örtüşme algılanmıyor, en yakın
    yıldız her zaman doğru tetikleniyor). */
@@ -840,7 +851,10 @@ select {
   border-radius: 50%;
   cursor: pointer;
   font-size: 15px;
+  transition: background var(--gecis), transform 0.12s ease;
 }
+.modal-kapat:hover { background: var(--kenar); }
+.modal-kapat:active { transform: scale(0.92); }
 .modal-kapat::after { content: ""; position: absolute; inset: -6px; }
 .modal-ust { display: flex; gap: 14px; margin-top: 10px; }
 .modal-ust img {
@@ -912,7 +926,7 @@ select {
   display: inline-flex; align-items: center; gap: 6px;
   margin: 4px 0 12px;
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: #fff; font-weight: 600; font-size: 13px;
+  color: var(--vurgu-yazi); font-weight: 600; font-size: 13px;
   padding: 9px 16px; border-radius: var(--yari-2);
   text-decoration: none; border: none; cursor: pointer;
 }
@@ -1008,7 +1022,7 @@ select {
   border-radius: var(--yari-2);
   border: none;
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: #fff;
+  color: var(--vurgu-yazi);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -1031,7 +1045,7 @@ select {
 .detay-baska-btn:hover { border-color: var(--vurgu); color: var(--vurgu); }
 
 /* ---------- Kişi (oyuncu/yönetmen) ---------- */
-.rozet.kisi { background: var(--altin); color: #fff; }
+.rozet.kisi { background: var(--altin); color: var(--vurgu-yazi); }
 
 /* Aramadaki kişi kartı — yuvarlak fotoğraf */
 .kisi-arama-foto {
@@ -1115,7 +1129,7 @@ select {
   border: none;
   border-radius: var(--yari-2);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: #fff;
+  color: var(--vurgu-yazi);
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
@@ -1147,7 +1161,9 @@ select {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: background var(--gecis), color var(--gecis);
 }
+.surpriz-mod-btn:hover { color: var(--yazi); }
 .surpriz-mod-btn.aktif { background: var(--arka); color: var(--vurgu); box-shadow: var(--golge); }
 
 .surpriz-turtoggle { display: flex; gap: 6px; margin-bottom: 14px; }
@@ -1161,7 +1177,9 @@ select {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
 }
+.tur-toggle-btn:hover { border-color: var(--vurgu); color: var(--yazi); }
 .tur-toggle-btn.aktif { border-color: var(--vurgu); background: var(--vurgu-yumusak); color: var(--vurgu); }
 
 .surpriz-etiket { display: block; font-size: 12px; color: var(--soluk); margin: 12px 0 6px; font-weight: 600; }
@@ -1205,7 +1223,7 @@ select {
   border: none;
   border-radius: var(--yari-2);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
-  color: #fff;
+  color: var(--vurgu-yazi);
   font-size: 15px;
   font-weight: 700;
   cursor: pointer;
@@ -1252,10 +1270,10 @@ select {
 }
 .surpriz-aksiyon:hover { border-color: var(--vurgu); color: var(--vurgu); }
 .surpriz-aksiyon.birincil {
-  border: none; color: #fff;
+  border: none; color: var(--vurgu-yazi);
   background: linear-gradient(90deg, var(--vurgu), var(--altin));
 }
-.surpriz-aksiyon.birincil:hover { filter: brightness(1.05); color: #fff; }
+.surpriz-aksiyon.birincil:hover { filter: brightness(1.05); color: var(--vurgu-yazi); }
 
 /* ---------- Birlikte İzlenenler (ortak liste) ---------- */
 .ortak-bilgi-kutu {
@@ -1370,7 +1388,7 @@ select {
 }
 .ani-ekle-ac-btn {
   border: none; cursor: pointer;
-  background: var(--vurgu); color: #fff;
+  background: var(--vurgu); color: var(--vurgu-yazi);
   padding: 7px 12px; border-radius: 999px;
   font-size: 12px; font-weight: 600;
   transition: transform 0.12s ease, filter 0.12s ease;
@@ -1422,9 +1440,11 @@ select {
 .ani-form-alt { display: flex; gap: 10px; margin-top: 14px; }
 .ani-kaydet-btn {
   border: none; cursor: pointer; flex: 1;
-  background: var(--vurgu); color: #fff;
+  background: var(--vurgu); color: var(--vurgu-yazi);
   padding: 10px; border-radius: var(--yari-2); font-size: 14px; font-weight: 700;
+  transition: background var(--gecis);
 }
+.ani-kaydet-btn:hover { background: var(--vurgu-koyu); }
 .ani-kaydet-btn:disabled { opacity: .6; cursor: default; }
 .ani-form-durum { font-size: 12px; color: var(--vurgu); margin-top: 8px; min-height: 1em; }
 

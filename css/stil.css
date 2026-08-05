@@ -31,7 +31,7 @@
   --kart-2: #f7efeb;
   --kenar: #ecdcd4;
   --yazi: #3a2f36;
-  --soluk: #94867f;
+  --soluk: #6f635c; /* açık temada eski ton (#94867f) ~3.2:1 kontrastta kalıp AA'yı geçemiyordu */
   --vurgu: #c67689;
   --vurgu-koyu: #a95a70;
   --vurgu-yumusak: rgba(198, 118, 137, 0.14);

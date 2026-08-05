@@ -62,14 +62,26 @@ document.addEventListener("touchend", (e) => {
   if (!kaydirmaBaslangic) return;
   const { kutu, y, enUstteydi } = kaydirmaBaslangic;
   kaydirmaBaslangic = null;
-  kutu.style.transition = "transform 0.2s ease";
-  kutu.style.transform = "";
   if (!enUstteydi) return;
 
   const delta = (e.changedTouches[0].clientY - y);
-  if (delta < 90) return;
   const arkaplan = kutu.closest(".modal-arkaplan");
-  if (arkaplan) modalKapatById(arkaplan.id);
+  if (delta >= 90 && arkaplan) {
+    // Eşik aşıldı: geri fırlatmak yerine aşağı kaydırıp ekrandan çıkararak kapat
+    kutu.style.transition = "transform 0.22s ease-in, opacity 0.22s ease-in";
+    kutu.style.transform = "translateY(120%)";
+    kutu.style.opacity = "0";
+    setTimeout(() => {
+      modalKapatById(arkaplan.id);
+      kutu.style.transition = "";
+      kutu.style.transform = "";
+      kutu.style.opacity = "";
+    }, 220);
+    return;
+  }
+
+  kutu.style.transition = "transform 0.2s ease";
+  kutu.style.transform = "";
 });
 
 // PWA: ana ekrana eklenince gerçek uygulama gibi açılması için servis çalışanı

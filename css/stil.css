@@ -21,6 +21,7 @@
   --mavi-yumusak: rgba(140, 180, 255, 0.16);
   --tehlike: #ff8fa3;
   --golge: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --golge-alt: 0 -6px 20px rgba(0, 0, 0, 0.12); /* mobil alt gezinme çubuğu */
   --gradyan-yazi: #fff; /* pembe/altın gradyan üzerindeki büyük CTA butonları için */
 }
 
@@ -41,6 +42,7 @@
   --mavi-yumusak: rgba(91, 127, 199, 0.13);
   --tehlike: #d05a72;
   --golge: 0 8px 24px rgba(180, 140, 130, 0.18);
+  --golge-alt: 0 -6px 20px rgba(180, 140, 130, 0.15); /* mobil alt gezinme çubuğu — eskiden temadan bağımsız hep siyahtı */
   --gradyan-yazi: var(--vurgu-yazi); /* açık temada gradyan daha pastel; beyaz yerine koyu mürekkep okunur */
 }
 
@@ -71,6 +73,7 @@
   --punto-8: 30px;
 
   --gecis: 0.15s ease;
+  --yildiz-altin: #f5c542; /* puan yıldızları — evrensel yıldız sarısı, temayla değişmez */
 
   /* Katman (z-index) ölçeği. Rastgele sayılar iki çakışmaya yol açmıştı
      (popover/modal-arkaplan ikisi de 130, karşılama/foto-büyütme ikisi
@@ -738,7 +741,7 @@ select {
   line-height: 1;
   padding: 2px;
   cursor: pointer;
-  color: #f5c542;
+  color: var(--yildiz-altin);
   transition: transform 0.12s ease;
 }
 .yildiz-btn:hover { transform: scale(1.15); }
@@ -977,7 +980,7 @@ select {
 }
 .degerlendirme-ad { font-size: 13px; font-weight: 700; color: var(--yazi); margin-bottom: 4px; }
 .degerlendirme-yildiz-satiri { margin-bottom: 6px; }
-.yildiz-salt { font-size: 19px; line-height: 1; padding: 2px; color: #f5c542; }
+.yildiz-salt { font-size: 19px; line-height: 1; padding: 2px; color: var(--yildiz-altin); }
 .degerlendirme-yorum { min-height: 50px; margin-top: 4px; }
 .degerlendirme-yorum-salt { font-size: 13px; color: var(--yazi); line-height: 1.45; white-space: pre-wrap; }
 .bilgi-soluk { color: var(--soluk); }
@@ -1365,7 +1368,7 @@ select {
     background: var(--arka-2);
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
     z-index: var(--z-2);
-    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--golge-alt);
   }
   .marka { display: none; }
 
@@ -1526,7 +1529,7 @@ select {
 .istatistik-satir { font-size: 13px; color: var(--yazi); margin-bottom: 14px; }
 .istatistik-puan-dagilimi { display: flex; flex-direction: column; gap: 6px; }
 .istatistik-puan-satiri { display: flex; align-items: center; gap: 8px; }
-.istatistik-puan-etiket { font-size: 11px; color: #f5c542; white-space: nowrap; width: 70px; }
+.istatistik-puan-etiket { font-size: 11px; color: var(--yildiz-altin); white-space: nowrap; width: 70px; }
 .istatistik-puan-cubuk { flex: 1; height: 8px; background: var(--kart-2); border-radius: 4px; overflow: hidden; }
 .istatistik-puan-dolu { height: 100%; background: linear-gradient(90deg, var(--vurgu), var(--altin)); }
 .istatistik-puan-sayi { font-size: 12px; color: var(--soluk); width: 18px; text-align: right; }

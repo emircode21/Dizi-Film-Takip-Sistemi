@@ -513,7 +513,7 @@ detayKaydetBtn.addEventListener("click", async () => {
   if (sonBolumMu(o)) {
     // Gerçek hayatta hâlâ devam eden (final yapmamış) diziler otomatik "Bitenler"e taşınmasın
     const halaDevamEdiyor = o.type === "tv" && await diziDevamEdiyorMu(o.tmdbId);
-    if (!halaDevamEdiyor) o.durum = "bitirdi";
+    if (!halaDevamEdiyor) durumAta(o, "bitirdi");
   } else if (o.durum === "izlemek_istiyor") o.durum = "izliyor";
 
   detayKaydet(o);

@@ -24,6 +24,6 @@ const firebaseConfig = {
    İlk girişte hesap.js ekrana UID'ni yazar; onu buraya ve firestore.rules'a
    ekleyip Firebase konsolundan kuralları yayınla. */
 const IZINLI_UID_LISTESI = [
-  // "BURAYA_ILK_UID",
-  // "BURAYA_IKINCI_UID",
+  "oq0ZRE8FhBNvAzOuUzoSBX6hnUy2",
+  "oFiZ9XViCngXI07fmNtumbIjUcf2",
 ];

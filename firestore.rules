@@ -13,8 +13,8 @@ rules_version = '2';
 
 function izinliMi() {
   return request.auth != null && request.auth.uid in [
-    // "BURAYA_ILK_UID",
-    // "BURAYA_IKINCI_UID"
+    "oq0ZRE8FhBNvAzOuUzoSBX6hnUy2",
+    "oFiZ9XViCngXI07fmNtumbIjUcf2"
   ];
 }
 

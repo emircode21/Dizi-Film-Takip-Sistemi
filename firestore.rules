@@ -1,0 +1,37 @@
+rules_version = '2';
+
+/* CineMory — Firestore güvenlik kuralları.
+   Uygulama şu an sadece iki kişiye (Emir & Özge) özel. Erişim kontrolü
+   Google hesabı kimliğine (auth.uid) dayanıyor — kod/şifre değil.
+
+   YAYINLAMA: bu dosyayı değiştirdikten sonra Firebase konsolu →
+   Firestore Database → Rules sekmesine yapıştırıp "Publish" demen lazım
+   (bu repoda firebase CLI kurulu değil, otomatik yayınlanmıyor).
+
+   UID'leri doldurmadan bu kurallar HERKESİ reddeder (izinliMi() hep false
+   döner) — js/hesap.js ilk girişte ekrana UID'ni yazar, onu buraya kopyala. */
+
+function izinliMi() {
+  return request.auth != null && request.auth.uid in [
+    // "BURAYA_ILK_UID",
+    // "BURAYA_IKINCI_UID"
+  ];
+}
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Kişisel liste (Adım 2'de kullanılmaya başlanacak)
+    match /kullanicilar/{uid} {
+      allow read, write: if izinliMi();
+    }
+
+    // Ortak liste — kod artık şifre değil, sadece bir isim; güvenlik uid'den geliyor
+    match /ortakListeler/{kod} {
+      allow read, write: if izinliMi();
+
+      match /{document=**} {
+        allow read, write: if izinliMi();
+      }
+    }
+  }
+}

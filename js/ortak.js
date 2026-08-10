@@ -3,11 +3,16 @@
    ortak listeyi yönetir. Aynı "ortak kod"u giren herkes aynı listeyi görür
    ve değişiklikler anlık senkron olur (onSnapshot ile canlı dinleme). */
 
-/* ---- Firebase başlat ---- */
+/* ---- Firebase başlat ----
+   firebase.initializeApp zaten hesap.js'te (giriş duvarı için) çağrıldı;
+   burada sadece firestore örneğini alıyoruz. */
 let db = null;
 try {
-  firebase.initializeApp(firebaseConfig);
   db = firebase.firestore();
+  // Çevrimdışı açılışta ortak liste boş gelmesin, yazmalar kaybolmasın diye
+  // yerel önbellek açık. Birden fazla sekme açıksa ikincisi sessizce reddedilir,
+  // uygulamayı bozmaz — o yüzden hatayı yutuyoruz.
+  db.enablePersistence().catch(() => {});
 } catch (e) {
   console.warn("Firebase başlatılamadı, ortak liste çalışmayabilir:", e);
 }

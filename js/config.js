@@ -17,3 +17,13 @@ const firebaseConfig = {
   messagingSenderId: "364221872880",
   appId: "1:364221872880:web:029da94ef333642c59a035",
 };
+
+/* Uygulamaya girebilecek Google hesaplarının UID'leri. Bu liste bir gizlilik
+   önlemi değil (UID zaten hassas bilgi sayılmaz) — gerçek erişim kontrolü
+   firestore.rules'ta aynı listeyle yapılıyor, ikisi birbirini tamamlıyor.
+   İlk girişte hesap.js ekrana UID'ni yazar; onu buraya ve firestore.rules'a
+   ekleyip Firebase konsolundan kuralları yayınla. */
+const IZINLI_UID_LISTESI = [
+  "oq0ZRE8FhBNvAzOuUzoSBX6hnUy2",
+  "oFiZ9XViCngXI07fmNtumbIjUcf2",
+];

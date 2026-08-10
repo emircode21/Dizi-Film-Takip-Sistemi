@@ -37,7 +37,14 @@
   <meta name="apple-mobile-web-app-title" content="CineMory" />
 </head>
 
-<body>
+<body class="kilitli">
+  <!-- Giriş duvarı: yetkili Google hesabı doğrulanana kadar tek görünen şey bu
+       (hesap.js doldurur/kaldırır). Body'nin "kilitli" sınıfı geri kalan her
+       şeyi CSS ile gizler. -->
+  <div class="karsilama" id="girisEkrani">
+    <div class="karsilama-ic" id="girisIcerik"></div>
+  </div>
+
   <!-- İlk açılış karşılama ekranı (arayuz.js doldurur) -->
   <div class="karsilama" id="karsilama"></div>
 
@@ -323,12 +330,14 @@
     <div id="bildirimListe"></div>
   </div>
 
-  <!-- Firebase (Firestore) — ortak liste için, kendi sitemizin dışından yüklenir -->
+  <!-- Firebase (Firestore + Auth) — ortak liste ve giriş duvarı için, kendi sitemizin dışından yüklenir -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 
   <script src="js/ayarlar.js"></script>
   <script src="js/config.js"></script>
+  <script src="js/hesap.js"></script>
   <script src="js/depo.js"></script>
   <script src="js/tmdb.js"></script>
   <script src="js/liste.js"></script>

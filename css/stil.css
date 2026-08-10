@@ -268,6 +268,22 @@ button, input, select, textarea {
 @keyframes karsFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes karsFadeOut { to { opacity: 0; visibility: hidden; } }
 
+/* ---------- Giriş duvarı ----------
+   Yetkili Google hesabı doğrulanana kadar body "kilitli" sınıfını taşır;
+   #girisEkrani dışındaki her şey (karşılama ekranı dahil) gizlenir. */
+body.kilitli > *:not(#girisEkrani) { display: none !important; }
+#girisEkrani { display: flex; }
+.giris-aciklama { color: var(--soluk); margin-top: var(--bo-2); font-size: var(--punto-4); }
+.giris-ipucu { max-width: 340px; font-size: var(--punto-2); }
+.giris-uid { margin-top: var(--bo-2); font-size: var(--punto-3); }
+.giris-uid code, .giris-ipucu code {
+  background: var(--kart-2);
+  border-radius: var(--yari-1);
+  padding: 2px 6px;
+  word-break: break-all;
+}
+.giris-btn { margin-top: var(--bo-4); }
+
 /* ============================================================
    KABUK: masaüstünde sidebar + içerik, mobilde alt bar
    ============================================================ */

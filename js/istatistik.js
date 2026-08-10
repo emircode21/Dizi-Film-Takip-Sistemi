@@ -185,3 +185,21 @@ if (istatistikIcerik) {
     istatistikGoster();
   });
 }
+
+/* ---- Yedek al / geri yükle (geçici konum, Ayarlar ekranı gelince taşınacak) ---- */
+const yedekIndirBtn = document.getElementById("yedekIndirBtn");
+const yedekYukleBtn = document.getElementById("yedekYukleBtn");
+const yedekDosyaInput = document.getElementById("yedekDosyaInput");
+
+if (yedekIndirBtn) yedekIndirBtn.addEventListener("click", depoYedekIndir);
+if (yedekYukleBtn) yedekYukleBtn.addEventListener("click", () => yedekDosyaInput.click());
+if (yedekDosyaInput) {
+  yedekDosyaInput.addEventListener("change", () => {
+    const dosya = yedekDosyaInput.files[0];
+    yedekDosyaInput.value = "";
+    if (!dosya) return;
+    depoYedekYukle(dosya, (basarili) => {
+      alert(basarili ? "Yedek geri yüklendi." : "Yedek dosyası okunamadı.");
+    });
+  });
+}

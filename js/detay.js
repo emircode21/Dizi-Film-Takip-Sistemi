@@ -330,9 +330,9 @@ function detayDegerlendirmeCiz(o) {
 
   const duzenleModunda = detayYorumDuzenleniyor || !benim.yorum;
   const benimYorumHTML = duzenleModunda
-    ? `<textarea class="degerlendirme-yorum ani-textarea" data-degerlendirme-yorum placeholder="Yorumun...">${benim.yorum || ""}</textarea>
+    ? `<textarea class="degerlendirme-yorum ani-textarea" data-degerlendirme-yorum placeholder="Yorumun...">${aniOznitelikKacis(benim.yorum || "")}</textarea>
        <button class="degerlendirme-kaydet-btn" data-degerlendirme-kaydet>Yorumu kaydet</button>`
-    : `<div class="degerlendirme-yorum-salt">${benim.yorum}</div>
+    : `<div class="degerlendirme-yorum-salt">${aniKacis(benim.yorum)}</div>
        <button class="degerlendirme-kaydet-btn" data-degerlendirme-duzenle>Yorumu düzenle</button>`;
 
   yer.innerHTML = `
@@ -346,7 +346,7 @@ function detayDegerlendirmeCiz(o) {
       <div class="degerlendirme-kisi">
         <div class="degerlendirme-ad">${digeriAd}</div>
         ${yildizSatiri(digerObj, false)}
-        <div class="degerlendirme-yorum-salt">${digerObj.yorum ? digerObj.yorum : "<span class='bilgi-soluk'>Henüz yorum yok</span>"}</div>
+        <div class="degerlendirme-yorum-salt">${digerObj.yorum ? aniKacis(digerObj.yorum) : "<span class='bilgi-soluk'>Henüz yorum yok</span>"}</div>
       </div>
     </div>`;
 }

@@ -487,9 +487,11 @@ async function detayBolumleriCiz(o, sezonNo) {
   } else {
     detayBolumListesi.innerHTML = bolumler.map((b) => {
       const izlendiMi = sezonNo < o.sezon || (sezonNo === o.sezon && b.bolumNo <= o.bolum);
+      // Henüz izlenmemiş bölümün adı spoiler olabilir — gizle
+      const bolumAdi = izlendiMi ? (b.ad || "İsimsiz bölüm") : "İzlenmedi";
       return `
         <div class="bolum-satiri ${izlendiMi ? "izlendi-satir" : ""}">
-          <span class="bolum-adi">B${b.bolumNo}. ${b.ad || "İsimsiz bölüm"}</span>
+          <span class="bolum-adi">B${b.bolumNo}. ${bolumAdi}</span>
           <span class="bolum-tarih">${b.tarih || ""}</span>
         </div>`;
     }).join("");

@@ -145,7 +145,7 @@ document.getElementById("surprizCevirBtn").addEventListener("click", () => {
 function listeHavuzu() {
   let havuz = listem.filter((o) => o.durum === "izlemek_istiyor");
   if (typeof ortakListem !== "undefined" && ortakListem.length) {
-    havuz = havuz.concat(ortakListem);
+    havuz = havuz.concat(ortakListem.filter((o) => o.durum === "izlemek_istiyor"));
   }
   if (surprizListeTur !== "hepsi") havuz = havuz.filter((o) => o.type === surprizListeTur);
   return havuz;

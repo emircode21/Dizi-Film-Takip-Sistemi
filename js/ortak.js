@@ -105,6 +105,7 @@ async function ortakEkle(x, durum) {
     durum: durum || "izliyor",
     eklenmeZamani: Date.now(),
   };
+  if (yeniOge.durum === "bitirdi") yeniOge.bitirmeZamani = Date.now();
 
   if (diziMi) {
     yeniOge.sezon = 1;
@@ -149,7 +150,7 @@ async function ortakSonrakiBolume(key) {
     }
   }
 
-  if (sonBolumMu(o)) o.durum = "bitirdi";
+  if (sonBolumMu(o)) durumAta(o, "bitirdi");
   await ortakGuncelle(o);
 }
 
@@ -232,7 +233,7 @@ async function ortakListeTiklama(e) {
   if (izledimBtn) {
     const o = ortakListem.find((x) => x.key === izledimBtn.dataset.izledim);
     if (o) {
-      o.durum = "bitirdi";
+      durumAta(o, "bitirdi");
       await ortakGuncelle(o);
     }
     return;

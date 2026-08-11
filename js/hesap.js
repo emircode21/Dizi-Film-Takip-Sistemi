@@ -55,7 +55,7 @@ async function girisYap() {
   }
 }
 
-auth.onAuthStateChanged((kullanici) => {
+auth.onAuthStateChanged(async (kullanici) => {
   if (!kullanici) {
     document.body.classList.add("kilitli");
     girisEkraniniCiz("bekleniyor");
@@ -66,7 +66,13 @@ auth.onAuthStateChanged((kullanici) => {
     girisEkraniniCiz("yetkisiz", kullanici.uid);
     return;
   }
-  // Yetkili: kilidi kaldır, uygulama görünür olsun
+
+  // Yetkili: kişisel listeyi buluta bağla/birleştir, sonra kilidi kaldır.
+  // Kilit kaldırılmadan önce bitirdiği için kullanıcı yerel-önce/bulut-sonra
+  // yanıp sönmesini hiç görmüyor.
+  if (typeof depoBulutBaglan === "function") await depoBulutBaglan(kullanici.uid);
+  if (typeof listeyiCiz === "function") listeyiCiz();
+
   document.body.classList.remove("kilitli");
   if (girisEkrani) girisEkrani.style.display = "none";
 });

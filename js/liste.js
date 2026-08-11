@@ -262,6 +262,7 @@ async function ekle(x, secilenDurum) {
     durum: secilenDurum,
     eklenmeZamani: Date.now(),
   };
+  if (secilenDurum === "bitirdi") yeniOge.bitirmeZamani = Date.now();
 
   // "İzlemek İstiyorum" seçilirse bölüm bilgisini şimdiden çekmiyoruz,
   // "İzlemeye Başla"ya basınca (bolumTakibiBaslat ile) lazım olduğunda çekilir
@@ -592,7 +593,7 @@ listeAlani.addEventListener("click", async (e) => {
   if (izledimBtn) {
     const o = listem.find((x) => x.key === izledimBtn.dataset.izledim);
     if (o) {
-      o.durum = "bitirdi";
+      durumAta(o, "bitirdi");
       kaydet();
       listeyiCiz();
     }
@@ -660,7 +661,7 @@ async function sonrakiBolume(key) {
     }
   }
 
-  if (sonBolumMu(o)) o.durum = "bitirdi"; // tüm bölümler bitince otomatik "Bitirdim"e taşı
+  if (sonBolumMu(o)) durumAta(o, "bitirdi"); // tüm bölümler bitince otomatik "Bitirdim"e taşı
 
   kaydet();
   listeyiCiz();

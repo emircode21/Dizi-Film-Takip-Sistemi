@@ -11,6 +11,7 @@ const siralamaSecici = document.getElementById("siralamaSecici");
 const snackbarAlani = document.getElementById("snackbar");
 
 let sonSonuclar = [];
+let sonKelime = "";
 let zamanlayici;
 let aktifSekme = "kesfet"; // "kesfet" | "kisisel" | "birlikte"
 let aktifBolum = "izliyor"; // kişisel/birlikte sayfasında o an bulunulan bölüm
@@ -58,9 +59,28 @@ aramaTemizleBtn.addEventListener("click", () => {
   kutu.focus();
 });
 
+// Aktif sekmedeki kendi listende (kişisel/birlikte) eşleşen yapımları üstte gösterir
+function yerelAramaHTML(kelime) {
+  if (aktifSekme !== "kisisel" && aktifSekme !== "birlikte") return "";
+  const kaynak = aktifSekme === "birlikte" ? (typeof ortakListem !== "undefined" ? ortakListem : []) : listem;
+  const kucuk = kelime.toLocaleLowerCase("tr");
+  const eslesenler = kaynak.filter((o) => o.ad.toLocaleLowerCase("tr").includes(kucuk));
+  if (!eslesenler.length) return "";
+  return `<div class="detay-baslik-kucuk">Listende</div>` + eslesenler.map((o) => `
+    <div class="sonuc-kart" data-yerel-detay="${o.key}">
+      <img class="sonuc-poster" src="${posterUrl(o.poster)}" alt="">
+      <div class="sonuc-bilgi">
+        <div class="sonuc-ad">${o.ad}</div>
+        <div class="sonuc-yil">${o.yil}</div>
+        <span class="rozet ${o.type === "tv" ? "dizi" : "film"}">${o.type === "tv" ? "Dizi" : "Film"}</span>
+      </div>
+    </div>`).join("");
+}
+
 async function aramaCalistir(kelime) {
   sonucBaslik.style.display = "block";
-  sonucAlani.innerHTML = iskeletHTML(3);
+  sonKelime = kelime;
+  sonucAlani.innerHTML = yerelAramaHTML(kelime) + iskeletHTML(3);
 
   try {
     const sonuc = await tmdbAra(kelime);
@@ -71,7 +91,7 @@ async function aramaCalistir(kelime) {
     sonucGoster(sonSonuclar);
   } catch (hata) {
     if (kutu.value.trim() !== kelime) return;
-    sonucAlani.innerHTML = "<div class='bilgi'>Bir şeyler ters gitti.</div>";
+    sonucAlani.innerHTML = yerelAramaHTML(kelime) + "<div class='bilgi'>Bir şeyler ters gitti.</div>";
   }
 }
 
@@ -87,12 +107,13 @@ function iskeletHTML(adet) {
 }
 
 function sonucGoster(liste) {
+  const yerelHTML = yerelAramaHTML(sonKelime);
   if (liste.length === 0) {
-    sonucAlani.innerHTML = "<div class='bilgi'>Sonuç bulunamadı.</div>";
+    sonucAlani.innerHTML = yerelHTML + "<div class='bilgi'>Sonuç bulunamadı.</div>";
     return;
   }
 
-  sonucAlani.innerHTML = liste.map((x, i) => {
+  sonucAlani.innerHTML = yerelHTML + liste.map((x, i) => {
     // Kişi (oyuncu/yönetmen) sonucu — yuvarlak fotoğraflı kart
     if (x.media_type === "person") {
       const dept = x.known_for_department === "Directing" ? "Yönetmen" : "Oyuncu";
@@ -134,6 +155,12 @@ function sonucGoster(liste) {
 }
 
 sonucAlani.addEventListener("click", (e) => {
+  // Kendi listendeki bir eşleşmeye tıklandıysa doğrudan onun detayını aç
+  const yerelKart = e.target.closest("[data-yerel-detay]");
+  if (yerelKart) {
+    detayAc(yerelKart.dataset.yerelDetay);
+    return;
+  }
   // "+" butonuna basıldıysa "nereye eklensin" akışını aç
   const ekleBtn = e.target.closest("[data-ekle]");
   if (ekleBtn) {
@@ -160,9 +187,6 @@ const eklemeSecenekler = document.getElementById("eklemeSecenekler");
 
 let eklenecekOge = null;
 
-// "Nereye eklensin" penceresinin ilk adımı (Birlikte seçilirse ikinci adım gelir)
-const EKLEME_SECENEK_HTML = eklemeSecenekler.innerHTML;
-
 function eklemeSecimiAc(x) {
   // Kişisel sayfadayken arayıp eklersek, o an bulunulan bölüme doğrudan ekle
   // (kullanıcı zaten hangi listeye eklemek istediğini bölümde belirtmiş oluyor)
@@ -171,7 +195,6 @@ function eklemeSecimiAc(x) {
     return;
   }
 
-  eklemeSecenekler.innerHTML = EKLEME_SECENEK_HTML;
   const diziMi = x.media_type === "tv";
   const tarih = diziMi ? x.first_air_date : x.release_date;
 
@@ -201,43 +224,21 @@ eklemeDetayBtn.addEventListener("click", () => {
   detayAcTmdb(oge);
 });
 
-// Birlikte seçilince: ortak listenin hangi bölümüne ekleneceğini soran ikinci adım
-function eklemeOrtakAdimiCiz() {
-  eklemeSecenekler.innerHTML = `
-    <div class="ekleme-adim-bilgi">💛 Birlikte İzlenenler'in neresine eklensin?</div>
-    ${BOLUMLER.map((b) =>
-      `<button class="ekleme-secenek-btn ekleme-ortak" data-ortak-durum-ekle="${b.kod}">${b.ikon} ${b.ad}</button>`
-    ).join("")}
-    <button class="ekleme-secenek-btn ekleme-geri-btn" data-ekleme-geri>← Geri</button>`;
-}
-
 eklemeSecenekler.addEventListener("click", async (e) => {
   if (!eklenecekOge) return;
 
-  if (e.target.closest("[data-ekleme-geri]")) {
-    eklemeSecenekler.innerHTML = EKLEME_SECENEK_HTML;
-    return;
-  }
-
-  // İkinci adım: ortak (Firestore) listeye seçilen bölümle ekle
+  // Ortak (Firestore) listeye ekle
   const ortakBtn = e.target.closest("[data-ortak-durum-ekle]");
   if (ortakBtn) {
     const oge = eklenecekOge;
-    const durum = ortakBtn.dataset.ortakDurumEkle;
     eklemeKapat();
-    ortakEkleAkisi(oge, durum);
+    ortakEkleAkisi(oge, ortakBtn.dataset.ortakDurumEkle);
     aramayiSifirla();
     return;
   }
 
   const btn = e.target.closest("[data-durum-ekle]");
   if (!btn) return;
-
-  // "Birlikte İzlenenler" seçildiyse doğrudan eklemeyip önce bölümü sor
-  if (btn.dataset.durumEkle === "birlikte") {
-    eklemeOrtakAdimiCiz();
-    return;
-  }
 
   await ekle(eklenecekOge, btn.dataset.durumEkle);
   eklemeKapat();

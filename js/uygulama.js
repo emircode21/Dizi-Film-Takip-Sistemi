@@ -19,23 +19,55 @@ function modalKapatById(id) {
   if (el) el.style.display = "none";
 }
 
-// Esc: en üstteki açık pencereyi kapat (nested modallar için öncelik sırası önemli)
+// Esc / geri tuşu: en üstteki açık pencereyi kapat (nested modallar için öncelik sırası önemli)
 const ESC_ONCELIK_SIRASI = ["detayModal", "kesfetTumModal", "kisiModal", "eklemeModal", "ortakKodModal", "surprizModal"];
-document.addEventListener("keydown", (e) => {
-  if (e.key !== "Escape") return;
+function enUsttekiPencereyiKapat() {
   for (const id of ESC_ONCELIK_SIRASI) {
     const el = document.getElementById(id);
-    if (el && el.style.display !== "none" && el.style.display !== "") { modalKapatById(id); return; }
+    if (el && el.style.display !== "none" && el.style.display !== "") { modalKapatById(id); return true; }
   }
   // Bildirim popover'ı (arkaplansız, ayrı stil) — kendi kapatma fonksiyonu var
   if (typeof bildirimKapat === "function" && bildirimModal && bildirimModal.style.display !== "none" && bildirimModal.style.display !== "") {
     bildirimKapat();
-    return;
+    return true;
   }
   // Öncelik sırasında olmayan basit modallar (Anı Akışı, İstatistik)
+  let kapandi = false;
   document.querySelectorAll(".modal-arkaplan").forEach((m) => {
-    if (m.style.display !== "none" && m.style.display !== "") m.style.display = "none";
+    if (m.style.display !== "none" && m.style.display !== "") { m.style.display = "none"; kapandi = true; }
   });
+  return kapandi;
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") enUsttekiPencereyiKapat();
+});
+
+/* Android donanım geri tuşu: açık pencere varsa uygulamadan çıkmak yerine
+   pencereyi kapatsın. Her pencere açılışında sahte bir geçmiş kaydı eklenir;
+   geri tuşu o kaydı tüketip popstate tetikler. Pencere X/Esc/dışa tıklamayla
+   kapanırsa da aynı kaydı history.back() ile kendimiz tüketiriz, yoksa bir
+   sonraki gerçek geri tuşu basışı hiçbir şey yapmamış gibi görünür. */
+let gizliGeriTemizleniyor = false;
+function acikPencereVarMi() {
+  return [...document.querySelectorAll(".modal-arkaplan")].some(
+    (m) => m.style.display !== "none" && m.style.display !== ""
+  ) || (typeof bildirimModal !== "undefined" && bildirimModal && bildirimModal.style.display !== "none" && bildirimModal.style.display !== "");
+}
+new MutationObserver(() => {
+  if (gizliGeriTemizleniyor) return;
+  const acikMi = acikPencereVarMi();
+  if (acikMi && !history.state?.cmPencere) {
+    history.pushState({ cmPencere: true }, "");
+  } else if (!acikMi && history.state?.cmPencere) {
+    gizliGeriTemizleniyor = true;
+    history.back();
+    setTimeout(() => { gizliGeriTemizleniyor = false; }, 0);
+  }
+}).observe(document.body, { attributes: true, attributeFilter: ["style"], subtree: true });
+
+window.addEventListener("popstate", () => {
+  if (acikPencereVarMi()) enUsttekiPencereyiKapat();
 });
 
 /* Mobil: pencere içeriği en üstteyken aşağı doğru kaydırınca pencere kapanır

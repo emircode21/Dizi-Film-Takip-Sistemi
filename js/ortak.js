@@ -171,7 +171,6 @@ function ortakListeyiCiz() {
 
   const ustBar = `
     <div class="ortak-mini-bar">
-      <button class="ortak-degistir-btn" data-ani-akisi-ac>📖 Anı Akışı</button>
       <button class="ortak-degistir-btn" data-ortak-degistir>🔗 kodu değiştir</button>
     </div>`;
 

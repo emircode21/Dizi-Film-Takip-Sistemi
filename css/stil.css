@@ -1510,6 +1510,7 @@ select {
 }
 .ani-kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ani-tarih { font-size: 12px; color: var(--vurgu); font-weight: 700; }
+.ani-yazan { font-size: 12px; color: var(--soluk); }
 .ani-kart-islem { display: flex; align-items: center; gap: 4px; }
 .ani-sil-btn, .ani-duzenle-btn {
   border: none; background: transparent; cursor: pointer;

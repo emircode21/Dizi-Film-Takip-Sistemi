@@ -311,8 +311,8 @@ function sekmeSecimi(btn) {
   if (sekmeDegisti) listeyiCiz();
   else bolumVurgusuGuncelle();
 
-  // "Birlikte" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç
-  if (aktifSekme === "birlikte" && typeof ortakKod !== "undefined" && !ortakKod) {
+  // "Birlikte" veya "Anılar" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç
+  if ((aktifSekme === "birlikte" || aktifSekme === "anilar") && typeof ortakKod !== "undefined" && !ortakKod) {
     ortakKodModalAc();
     return;
   }
@@ -403,7 +403,7 @@ function bolumVurgusuGuncelle() {
 }
 
 function bolumCipleriniCiz() {
-  if (aktifSekme === "kesfet") {
+  if (aktifSekme === "kesfet" || aktifSekme === "anilar") {
     bolumCipleri.classList.remove("acik");
     bolumCipleri.innerHTML = "";
     return;
@@ -458,6 +458,13 @@ function listeyiCiz() {
   // "Birlikte İzlenenler" sekmesi tamamen ayrı bir kaynaktan (Firestore) çizilir
   if (aktifSekme === "birlikte") {
     ortakListeyiCiz();
+    return;
+  }
+
+  // "Anılarımız" da ayrı bir kaynaktan (Firestore, tüm ortak yapımların anıları) çizilir
+  if (aktifSekme === "anilar") {
+    if (siralamaSecici) siralamaSecici.style.display = "none";
+    anilarSekmesiCiz();
     return;
   }
 
@@ -554,6 +561,8 @@ function sonBolumMu(o) {
 listeAlani.addEventListener("click", async (e) => {
   // "Birlikte" sekmesindeyken kartlar ortak listeden gelir; olayları ortak.js yönetir
   if (aktifSekme === "birlikte") { ortakListeTiklama(e); return; }
+  // "Anılarımız" sekmesindeki tıklamaları ani.js yönetir
+  if (aktifSekme === "anilar") { anilarSekmesiTiklama(e); return; }
 
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatBtn = e.target.closest("[data-baslat]");

@@ -9,6 +9,9 @@
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+// Oturumu tarayıcı kapansa/PWA yeniden açılsa da hatırla (varsayılan zaten bu,
+// ama iOS'un depolamayı agresif temizlemesine karşı açıkça belirtiyoruz).
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 
 const girisEkrani = document.getElementById("girisEkrani");
 const girisIcerik = document.getElementById("girisIcerik");
@@ -68,29 +71,31 @@ function hesabimSekmesiCiz() {
     : `<div class="hesabim-avatar hesabim-avatar-bos">${(k.displayName || "?")[0]}</div>`;
 
   listeAlani.innerHTML = `
-    <div class="hesabim-satiri">
-      ${fotoHTML}
-      <div>
-        <div class="hesabim-ad">${k.displayName || "İsimsiz"}</div>
-        <div class="hesabim-email">${k.email || ""}</div>
+    <div class="hesabim-sayfa">
+      <div class="hesabim-satiri">
+        ${fotoHTML}
+        <div>
+          <div class="hesabim-ad">${k.displayName || "İsimsiz"}</div>
+          <div class="hesabim-email">${k.email || ""}</div>
+        </div>
       </div>
-    </div>
-    <p class="hesabim-durum">☁️ Kişisel listen buluta senkronize ediliyor.</p>
+      <p class="hesabim-durum">☁️ Kişisel listen buluta senkronize ediliyor.</p>
 
-    <div class="ekleme-secenekler">
-      <button class="ekleme-secenek-btn" data-hesabim-istatistik>📊 İstatistikler</button>
-      <button class="ekleme-secenek-btn" data-hesabim-ayarlar>⚙️ Ayarlar</button>
-    </div>
+      <div class="ekleme-secenekler">
+        <button class="ekleme-secenek-btn" data-hesabim-istatistik>📊 İstatistikler</button>
+        <button class="ekleme-secenek-btn" data-hesabim-ayarlar>⚙️ Ayarlar</button>
+      </div>
 
-    <div class="detay-baslik-kucuk">Veri Yedekleme</div>
-    <div class="ekleme-secenekler">
-      <button class="ekleme-secenek-btn" data-hesabim-yedek-indir>💾 Yedeği indir</button>
-      <button class="ekleme-secenek-btn" data-hesabim-yedek-yukle>📂 Yedekten geri yükle</button>
-      <input id="hesabimYedekDosyaInput" type="file" accept="application/json" style="display:none">
-    </div>
+      <div class="detay-baslik-kucuk">Veri Yedekleme</div>
+      <div class="ekleme-secenekler">
+        <button class="ekleme-secenek-btn" data-hesabim-yedek-indir>💾 Yedeği indir</button>
+        <button class="ekleme-secenek-btn" data-hesabim-yedek-yukle>📂 Yedekten geri yükle</button>
+        <input id="hesabimYedekDosyaInput" type="file" accept="application/json" style="display:none">
+      </div>
 
-    <div class="ekleme-secenekler">
-      <button class="ekleme-secenek-btn ekleme-geri-btn" data-hesabim-cikis>🚪 Çıkış yap</button>
+      <div class="ekleme-secenekler">
+        <button class="ekleme-secenek-btn ekleme-geri-btn" data-hesabim-cikis>🚪 Çıkış yap</button>
+      </div>
     </div>`;
 
   const dosyaInput = document.getElementById("hesabimYedekDosyaInput");
@@ -123,7 +128,7 @@ function hesabimSekmesiTiklama(e) {
     return;
   }
   if (e.target.closest("[data-hesabim-cikis]")) {
-    auth.signOut();
+    if (confirm("Çıkış yapmak istediğine emin misin?")) auth.signOut();
     return;
   }
 }

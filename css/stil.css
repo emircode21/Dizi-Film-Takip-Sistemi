@@ -990,6 +990,7 @@ select {
 .ben-kim-btn:hover { background: var(--vurgu-yumusak); color: var(--vurgu); border-color: var(--vurgu); }
 
 /* ---------- Hesabım ---------- */
+.hesabim-sayfa { grid-column: 1 / -1; max-width: 480px; }
 .hesabim-satiri { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
 .hesabim-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
 .hesabim-avatar-bos {

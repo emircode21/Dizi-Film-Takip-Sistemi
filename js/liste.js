@@ -311,8 +311,8 @@ function sekmeSecimi(btn) {
   if (sekmeDegisti) listeyiCiz();
   else bolumVurgusuGuncelle();
 
-  // "Birlikte" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç
-  if (aktifSekme === "birlikte" && typeof ortakKod !== "undefined" && !ortakKod) {
+  // "Birlikte" veya "Anılar" sekmesine girildiğinde henüz bağlı değilsek kod penceresini hemen aç
+  if ((aktifSekme === "birlikte" || aktifSekme === "anilar") && typeof ortakKod !== "undefined" && !ortakKod) {
     ortakKodModalAc();
     return;
   }
@@ -403,7 +403,7 @@ function bolumVurgusuGuncelle() {
 }
 
 function bolumCipleriniCiz() {
-  if (aktifSekme === "kesfet") {
+  if (aktifSekme === "kesfet" || aktifSekme === "anilar") {
     bolumCipleri.classList.remove("acik");
     bolumCipleri.innerHTML = "";
     return;
@@ -461,6 +461,13 @@ function listeyiCiz() {
     return;
   }
 
+  // "Anılarımız" da ayrı bir kaynaktan (Firestore, tüm ortak yapımların anıları) çizilir
+  if (aktifSekme === "anilar") {
+    if (siralamaSecici) siralamaSecici.style.display = "none";
+    anilarSekmesiCiz();
+    return;
+  }
+
   listeAlani.innerHTML = bolumlerHTML(listem);
   siradakiBadgeleriDoldur(listem);
   bolumGozlemiBaslat();
@@ -513,10 +520,13 @@ function kartHTML(o) {
     aksiyonHTML = `<button class="sonraki-btn ikon-btn" data-izledim="${o.key}">${SVG_TIK}İzledim</button>`;
   }
 
-  const yildizHTML = o.durum === "bitirdi" ? `
-    <div class="puan-satiri">
-      ${[1, 2, 3, 4, 5].map((i) => `<button class="yildiz-btn" data-puan-ver="${o.key}" data-yildiz="${i}">${o.puan && i <= o.puan ? "★" : "☆"}</button>`).join("")}
-    </div>` : "";
+  // Ortak listedeki öğelerin puanı kişi bazlı (detaydaki İkili Değerlendirme'de);
+  // kart üzerindeki tek puan rozeti sadece kişisel yapımlar için gösterilir.
+  const ortakMi = typeof ortakListem !== "undefined" && ortakListem.includes(o);
+  const yildizHTML = (o.durum === "bitirdi" && !ortakMi) ? `
+    <button class="kart-puanla-btn" data-puanla="${o.key}">
+      ${o.puan ? "⭐ " + Number(o.puan).toFixed(1) : "⭐ Puanla"}
+    </button>` : "";
 
   return `
     <div class="kart">
@@ -554,6 +564,8 @@ function sonBolumMu(o) {
 listeAlani.addEventListener("click", async (e) => {
   // "Birlikte" sekmesindeyken kartlar ortak listeden gelir; olayları ortak.js yönetir
   if (aktifSekme === "birlikte") { ortakListeTiklama(e); return; }
+  // "Anılarımız" sekmesindeki tıklamaları ani.js yönetir
+  if (aktifSekme === "anilar") { anilarSekmesiTiklama(e); return; }
 
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatBtn = e.target.closest("[data-baslat]");
@@ -561,16 +573,11 @@ listeAlani.addEventListener("click", async (e) => {
   const sonrakiBtn = e.target.closest("[data-sonraki]");
   const izledimBtn = e.target.closest("[data-izledim]");
   const silBtn = e.target.closest("[data-sil]");
-  const yildizBtn = e.target.closest("[data-puan-ver]");
+  const puanlaBtn = e.target.closest("[data-puanla]");
 
-  if (yildizBtn) {
-    const o = listem.find((x) => x.key === yildizBtn.dataset.puanVer);
-    if (o) {
-      const secilen = Number(yildizBtn.dataset.yildiz);
-      o.puan = o.puan === secilen ? 0 : secilen; // aynı yıldıza tekrar basınca puanı kaldır
-      kaydet();
-      listeyiCiz();
-    }
+  if (puanlaBtn) {
+    const o = listem.find((x) => x.key === puanlaBtn.dataset.puanla);
+    if (o && typeof kutlamaEkraniAc === "function") kutlamaEkraniAc(o);
     return;
   }
   if (baslatBtn) {

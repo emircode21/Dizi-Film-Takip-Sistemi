@@ -171,7 +171,6 @@ function ortakListeyiCiz() {
 
   const ustBar = `
     <div class="ortak-mini-bar">
-      <button class="ortak-degistir-btn" data-ani-akisi-ac>📖 Anı Akışı</button>
       <button class="ortak-degistir-btn" data-ortak-degistir>🔗 kodu değiştir</button>
     </div>`;
 
@@ -193,28 +192,13 @@ async function ortakListeTiklama(e) {
     ortakKodModalAc();
     return;
   }
-  if (e.target.closest("[data-ani-akisi-ac]")) {
-    if (typeof aniAkisiAc === "function") aniAkisiAc();
-    return;
-  }
-
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatIzlemeBtn = e.target.closest("[data-baslat-izleme]");
   const baslatBtn = e.target.closest("[data-baslat]");
   const sonrakiBtn = e.target.closest("[data-sonraki]");
   const izledimBtn = e.target.closest("[data-izledim]");
   const silBtn = e.target.closest("[data-sil]");
-  const yildizBtn = e.target.closest("[data-puan-ver]");
 
-  if (yildizBtn) {
-    const o = ortakListem.find((x) => x.key === yildizBtn.dataset.puanVer);
-    if (o) {
-      const secilen = Number(yildizBtn.dataset.yildiz);
-      o.puan = o.puan === secilen ? 0 : secilen;
-      await ortakGuncelle(o);
-    }
-    return;
-  }
   if (baslatBtn || baslatIzlemeBtn) {
     const key = (baslatBtn || baslatIzlemeBtn).dataset.baslat
       || (baslatBtn || baslatIzlemeBtn).dataset.baslatIzleme;
@@ -243,7 +227,7 @@ async function ortakListeTiklama(e) {
     return;
   }
   if (detayHedefi) {
-    detayAc(detayHedefi.dataset.detay);
+    detayAc(detayHedefi.dataset.detay, true, true);
   }
 }
 

@@ -20,7 +20,7 @@ function modalKapatById(id) {
 }
 
 // Esc / geri tuşu: en üstteki açık pencereyi kapat (nested modallar için öncelik sırası önemli)
-const ESC_ONCELIK_SIRASI = ["detayModal", "kesfetTumModal", "kisiModal", "eklemeModal", "ortakKodModal", "surprizModal"];
+const ESC_ONCELIK_SIRASI = ["kutlamaModal", "aniDetayModal", "detayModal", "kesfetTumModal", "kisiModal", "eklemeModal", "ortakKodModal", "surprizModal"];
 function enUsttekiPencereyiKapat() {
   for (const id of ESC_ONCELIK_SIRASI) {
     const el = document.getElementById(id);
@@ -77,6 +77,9 @@ let kaydirmaBaslangic = null;
 document.addEventListener("touchstart", (e) => {
   const kutu = e.target.closest(".modal-kutu");
   if (!kutu) return;
+  // Kendi sürükleme hareketi olan kontroller (kayan puan çubuğu, ses oynatıcı)
+  // swipe-kapatma jestiyle çakışmasın — dokunuş onlara ait kalsın.
+  if (e.target.closest('input[type="range"], audio')) return;
   kaydirmaBaslangic = { kutu, y: e.touches[0].clientY, enUstteydi: kutu.scrollTop <= 0 };
 }, { passive: true });
 

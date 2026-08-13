@@ -327,13 +327,18 @@ function detayDegerlendirmeCiz(o) {
   const benim = d[kim] || {};
   const digerObj = d[digeri] || {};
 
-  const yildizSatiri = (veri, duzenlenebilir) => `
-    <div class="degerlendirme-yildiz-satiri">
-      ${[1, 2, 3, 4, 5].map((i) => duzenlenebilir
-        ? `<button class="yildiz-btn" data-degerlendirme-yildiz="${i}">${veri.puan && i <= veri.puan ? "★" : "☆"}</button>`
-        : `<span class="yildiz-salt">${veri.puan && i <= veri.puan ? "★" : "☆"}</span>`
-      ).join("")}
+  const puanGosterge = (veri, duzenlenebilir) => {
+    if (!duzenlenebilir) {
+      return veri.puan
+        ? `<div class="degerlendirme-puan"><span class="degerlendirme-puan-salt">⭐ ${Number(veri.puan).toFixed(1)}</span></div>`
+        : `<div class="degerlendirme-puan"><span class="bilgi-soluk">Henüz puan yok</span></div>`;
+    }
+    return `<div class="degerlendirme-puan">
+      <button class="degerlendirme-puan-btn" data-degerlendirme-puanla>
+        ${veri.puan ? "⭐ " + Number(veri.puan).toFixed(1) + " · değiştir" : "⭐ Puanla"}
+      </button>
     </div>`;
+  };
 
   const duzenleModunda = detayYorumDuzenleniyor || !benim.yorum;
   const benimYorumHTML = duzenleModunda
@@ -347,12 +352,12 @@ function detayDegerlendirmeCiz(o) {
     <div class="degerlendirme-kutu">
       <div class="degerlendirme-kisi">
         <div class="degerlendirme-ad">${benimAd}</div>
-        ${yildizSatiri(benim, true)}
+        ${puanGosterge(benim, true)}
         ${benimYorumHTML}
       </div>
       <div class="degerlendirme-kisi">
         <div class="degerlendirme-ad">${digeriAd}</div>
-        ${yildizSatiri(digerObj, false)}
+        ${puanGosterge(digerObj, false)}
         <div class="degerlendirme-yorum-salt">${digerObj.yorum ? aniKacis(digerObj.yorum) : "<span class='bilgi-soluk'>Henüz yorum yok</span>"}</div>
       </div>
     </div>`;
@@ -383,19 +388,9 @@ detayEkstra.addEventListener("click", async (e) => {
     return;
   }
 
-  const yildizBtn = e.target.closest("[data-degerlendirme-yildiz]");
-  if (yildizBtn) {
+  if (e.target.closest("[data-degerlendirme-puanla]")) {
     const o = ortakListem.find((x) => x.key === acikOgeKey);
-    const kim = benKim();
-    if (o && kim) {
-      if (!o.degerlendirmeler) o.degerlendirmeler = {};
-      if (!o.degerlendirmeler[kim]) o.degerlendirmeler[kim] = {};
-      const secilen = Number(yildizBtn.dataset.degerlendirmeYildiz);
-      o.degerlendirmeler[kim].puan = o.degerlendirmeler[kim].puan === secilen ? 0 : secilen;
-      o.degerlendirmeler[kim].zaman = Date.now();
-      await ortakGuncelle(o);
-      detayDegerlendirmeCiz(o);
-    }
+    if (o && typeof kutlamaEkraniAc === "function") kutlamaEkraniAc(o);
     return;
   }
 
@@ -416,6 +411,97 @@ detayEkstra.addEventListener("click", async (e) => {
     return;
   }
 });
+
+/* ---------------- BİTİRME KUTLAMASI ----------------
+   Bir yapım gerçekten "az önce bitirildiğinde" (durumAta ile, bkz. js/depo.js)
+   çıkan puan isteği. Doğrudan "Bitenler"e eklenen (geçmiş kataloglama) yapımlar
+   için çıkmaz — durumAta sadece gerçek geçişlerde çağrılıyor. Kişisel yapımda
+   tek kayan puan (o.puan), ortak yapımda kişi bazlı (o.degerlendirmeler). */
+const kutlamaModal = document.getElementById("kutlamaModal");
+const kutlamaKapatBtn = document.getElementById("kutlamaKapatBtn");
+const kutlamaIcerik = document.getElementById("kutlamaIcerik");
+let kutlamaAcikOge = null;
+let kutlamaOrtakMi = false;
+
+function kutlamaEkraniAc(o) {
+  if (!kutlamaModal || !kutlamaIcerik || !o) return;
+  // Aynı yapımın detayı açıksa (ör. sezon/bölüm kaydından hemen sonra) altında kalmasın
+  kutlamaAcikOge = o;
+  kutlamaOrtakMi = typeof ortakListem !== "undefined" && ortakListem.includes(o);
+
+  if (kutlamaOrtakMi && !benKim()) {
+    kutlamaIcerik.innerHTML = `
+      <div class="modal-baslik">🎉 ${o.ad} bitti!</div>
+      <p class="ben-kim-soru">Puanını kaydedebilmemiz için önce sen kimsin söyle:</p>
+      <div class="ben-kim-satiri">
+        <button class="ben-kim-btn" data-kutlama-ben-kim="kisi1">${AYARLAR.isim1}</button>
+        <button class="ben-kim-btn" data-kutlama-ben-kim="kisi2">${AYARLAR.isim2}</button>
+      </div>`;
+  } else {
+    kutlamaFormCiz();
+  }
+  kutlamaModal.style.display = "flex";
+}
+
+function kutlamaFormCiz() {
+  const o = kutlamaAcikOge;
+  if (!o) return;
+  const mevcutPuan = kutlamaOrtakMi
+    ? ((o.degerlendirmeler && o.degerlendirmeler[benKim()] && o.degerlendirmeler[benKim()].puan) || 7)
+    : (o.puan || 7);
+
+  kutlamaIcerik.innerHTML = `
+    <div class="modal-baslik">🎉 ${o.ad} bitti!</div>
+    <p class="ben-kim-soru">Kaç puan verirsin?</p>
+    <div class="kutlama-puan-deger" id="kutlamaPuanDeger">${Number(mevcutPuan).toFixed(1)}</div>
+    <input id="kutlamaSlider" class="kutlama-slider" type="range" min="0" max="10" step="0.1" value="${mevcutPuan}">
+    <div class="ekleme-secenekler">
+      <button id="kutlamaKaydetBtn" class="ekleme-secenek-btn">💾 Kaydet</button>
+      <button id="kutlamaAtlaBtn" class="ekleme-secenek-btn">Şimdi değil</button>
+    </div>`;
+
+  const slider = document.getElementById("kutlamaSlider");
+  const deger = document.getElementById("kutlamaPuanDeger");
+  slider.addEventListener("input", () => { deger.textContent = Number(slider.value).toFixed(1); });
+  document.getElementById("kutlamaKaydetBtn").addEventListener("click", () => kutlamaKaydet(Number(slider.value)));
+  document.getElementById("kutlamaAtlaBtn").addEventListener("click", kutlamaKapat);
+}
+
+async function kutlamaKaydet(puan) {
+  const o = kutlamaAcikOge;
+  if (!o) return;
+  if (kutlamaOrtakMi) {
+    const kim = benKim();
+    if (!o.degerlendirmeler) o.degerlendirmeler = {};
+    if (!o.degerlendirmeler[kim]) o.degerlendirmeler[kim] = {};
+    o.degerlendirmeler[kim].puan = puan;
+    o.degerlendirmeler[kim].zaman = Date.now();
+    await ortakGuncelle(o);
+    if (acikOgeKey === o.key) detayDegerlendirmeCiz(o);
+  } else {
+    o.puan = puan;
+    kaydet();
+  }
+  kutlamaKapat();
+  listeyiCiz();
+}
+
+function kutlamaKapat() {
+  if (kutlamaModal) kutlamaModal.style.display = "none";
+  kutlamaAcikOge = null;
+}
+
+if (kutlamaKapatBtn) kutlamaKapatBtn.addEventListener("click", kutlamaKapat);
+if (kutlamaModal) {
+  kutlamaModal.addEventListener("click", (e) => {
+    if (e.target === kutlamaModal) { kutlamaKapat(); return; }
+    const benKimBtn = e.target.closest("[data-kutlama-ben-kim]");
+    if (benKimBtn) {
+      localStorage.setItem(BEN_KIM_ANAHTARI, benKimBtn.dataset.kutlamaBenKim);
+      kutlamaFormCiz();
+    }
+  });
+}
 
 /* "Benzer yapımlar" yatay poster şeridi */
 function detayOnerileriCiz(oneriler) {

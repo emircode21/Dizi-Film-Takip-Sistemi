@@ -46,7 +46,13 @@ function kaydet() {
 // (istatistik/Yıl Özeti bu tarihe ihtiyaç duyuyor, eklenme tarihi yetmiyor)
 function durumAta(o, yeniDurum) {
   o.durum = yeniDurum;
-  if (yeniDurum === "bitirdi") o.bitirmeZamani = Date.now();
+  if (yeniDurum === "bitirdi") {
+    o.bitirmeZamani = Date.now();
+    // Sadece gerçek "az önce bitirdim" geçişlerinde çağrılır (bkz. çağıranlar) —
+    // arama sonucundan direkt "Bitenler"e eklemek durumAta'yı hiç kullanmıyor,
+    // o yüzden geçmiş kataloglamada kutlama ekranı çıkmıyor.
+    if (typeof kutlamaEkraniAc === "function") kutlamaEkraniAc(o);
+  }
 }
 
 /* ---------------- BULUT SENKRON (kişisel liste) ----------------

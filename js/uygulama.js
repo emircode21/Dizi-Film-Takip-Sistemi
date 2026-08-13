@@ -20,7 +20,7 @@ function modalKapatById(id) {
 }
 
 // Esc / geri tuşu: en üstteki açık pencereyi kapat (nested modallar için öncelik sırası önemli)
-const ESC_ONCELIK_SIRASI = ["aniDetayModal", "detayModal", "kesfetTumModal", "kisiModal", "eklemeModal", "ortakKodModal", "surprizModal"];
+const ESC_ONCELIK_SIRASI = ["kutlamaModal", "aniDetayModal", "detayModal", "kesfetTumModal", "kisiModal", "eklemeModal", "ortakKodModal", "surprizModal"];
 function enUsttekiPencereyiKapat() {
   for (const id of ESC_ONCELIK_SIRASI) {
     const el = document.getElementById(id);

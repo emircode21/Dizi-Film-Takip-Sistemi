@@ -747,24 +747,21 @@ select {
   border-radius: var(--yari-3);
 }
 
-/* ---------- Yıldız puanlama ---------- */
-.puan-satiri { margin-top: 6px; }
-.yildiz-btn {
-  position: relative;
-  background: none;
-  border: none;
-  font-size: 19px;
-  line-height: 1;
-  padding: 2px;
-  cursor: pointer;
-  color: var(--yildiz-altin);
-  transition: transform 0.12s ease;
+/* ---------- Puanlama ---------- */
+.kart-puanla-btn {
+  margin-top: 6px; border: 1px solid var(--kenar); background: var(--kart);
+  color: var(--yildiz-altin); font-size: 13px; font-weight: 700;
+  padding: 5px 10px; border-radius: var(--yari-2); cursor: pointer;
 }
-.yildiz-btn:hover { transform: scale(1.15); }
-/* En sık yanlış basılan kontrol — dokunma alanı görünür boyuttan
-   büyük (yıldızlar bitişik olsa da örtüşme algılanmıyor, en yakın
-   yıldız her zaman doğru tetikleniyor). */
-.yildiz-btn::after { content: ""; position: absolute; inset: -10px -3px; }
+.kart-puanla-btn:hover { border-color: var(--vurgu); }
+
+/* ---------- Bitirme kutlaması ---------- */
+#kutlamaModal { z-index: var(--z-7); } /* detay modalının üzerinden açılabilir */
+.kutlama-puan-deger {
+  font-size: 42px; font-weight: 800; color: var(--yildiz-altin);
+  text-align: center; margin: 18px 0 6px;
+}
+.kutlama-slider { width: 100%; margin: 0 0 20px; accent-color: var(--vurgu); }
 
 /* ---------- Ekleme seçimi ---------- */
 .ekleme-secim-baslik { margin-top: 20px; font-weight: 600; font-size: 14px; }
@@ -995,8 +992,13 @@ select {
   border-radius: var(--yari-3); padding: var(--bo-3);
 }
 .degerlendirme-ad { font-size: 13px; font-weight: 700; color: var(--yazi); margin-bottom: 4px; }
-.degerlendirme-yildiz-satiri { margin-bottom: 6px; }
-.yildiz-salt { font-size: 19px; line-height: 1; padding: 2px; color: var(--yildiz-altin); }
+.degerlendirme-puan { margin-bottom: 6px; }
+.degerlendirme-puan-salt { font-size: 15px; font-weight: 700; color: var(--yildiz-altin); }
+.degerlendirme-puan-btn {
+  border: 1px solid var(--kenar); background: var(--kart); color: var(--yildiz-altin);
+  font-size: 13px; font-weight: 700; padding: 6px 10px; border-radius: var(--yari-2); cursor: pointer;
+}
+.degerlendirme-puan-btn:hover { border-color: var(--vurgu); }
 .degerlendirme-yorum { min-height: 50px; margin-top: 4px; }
 .degerlendirme-yorum-salt { font-size: 13px; color: var(--yazi); line-height: 1.45; white-space: pre-wrap; }
 .bilgi-soluk { color: var(--soluk); }

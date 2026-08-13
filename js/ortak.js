@@ -198,17 +198,7 @@ async function ortakListeTiklama(e) {
   const sonrakiBtn = e.target.closest("[data-sonraki]");
   const izledimBtn = e.target.closest("[data-izledim]");
   const silBtn = e.target.closest("[data-sil]");
-  const yildizBtn = e.target.closest("[data-puan-ver]");
 
-  if (yildizBtn) {
-    const o = ortakListem.find((x) => x.key === yildizBtn.dataset.puanVer);
-    if (o) {
-      const secilen = Number(yildizBtn.dataset.yildiz);
-      o.puan = o.puan === secilen ? 0 : secilen;
-      await ortakGuncelle(o);
-    }
-    return;
-  }
   if (baslatBtn || baslatIzlemeBtn) {
     const key = (baslatBtn || baslatIzlemeBtn).dataset.baslat
       || (baslatBtn || baslatIzlemeBtn).dataset.baslatIzleme;

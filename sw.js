@@ -1,7 +1,7 @@
 /* Uygulama kabuğunu (HTML/CSS/JS/ikonlar) önbelleğe alır.
    TMDB API isteklerine ve poster görsellerine hiç dokunmaz — onlar her zaman ağdan gelir. */
 
-const ONBELLEK_ADI = "cinemory-v65";
+const ONBELLEK_ADI = "cinemory-v66";
 
 const KABUK_DOSYALARI = [
   "./",

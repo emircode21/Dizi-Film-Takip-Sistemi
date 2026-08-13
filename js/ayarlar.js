@@ -25,6 +25,54 @@ const AYARLAR = {
   kalp: "💛",
 };
 
+// Kullanıcının Ayarlar ekranından değiştirdiği alanlar localStorage'dan üstüne yazılır
+const AYARLAR_OZEL_ANAHTARI = "ayarlarOzel";
+Object.assign(AYARLAR, JSON.parse(localStorage.getItem(AYARLAR_OZEL_ANAHTARI) || "{}"));
+
+function ayarlariKaydet(yeni) {
+  Object.assign(AYARLAR, yeni);
+  localStorage.setItem(AYARLAR_OZEL_ANAHTARI, JSON.stringify({
+    isim1: AYARLAR.isim1,
+    isim2: AYARLAR.isim2,
+    slogan: AYARLAR.slogan,
+    baslangicTarihi: AYARLAR.baslangicTarihi,
+  }));
+  if (typeof markayiCiz === "function") markayiCiz();
+}
+
+/* ---- Ayarlar ekranı ---- */
+const ayarlarBtn = document.getElementById("ayarlarBtn");
+const ayarlarModal = document.getElementById("ayarlarModal");
+const ayarlarKapatBtn = document.getElementById("ayarlarKapatBtn");
+const ayarlarKaydetBtn = document.getElementById("ayarlarKaydetBtn");
+
+function ayarlarAc() {
+  if (!ayarlarModal) return;
+  document.getElementById("ayarIsim1").value = AYARLAR.isim1 || "";
+  document.getElementById("ayarIsim2").value = AYARLAR.isim2 || "";
+  document.getElementById("ayarSlogan").value = AYARLAR.slogan || "";
+  document.getElementById("ayarBaslangicTarihi").value = AYARLAR.baslangicTarihi || "";
+  document.getElementById("ayarlarDurum").textContent = "";
+  ayarlarModal.style.display = "flex";
+}
+
+if (ayarlarBtn) ayarlarBtn.addEventListener("click", ayarlarAc);
+if (ayarlarKapatBtn) ayarlarKapatBtn.addEventListener("click", () => { ayarlarModal.style.display = "none"; });
+if (ayarlarModal) {
+  ayarlarModal.addEventListener("click", (e) => { if (e.target === ayarlarModal) ayarlarModal.style.display = "none"; });
+}
+if (ayarlarKaydetBtn) {
+  ayarlarKaydetBtn.addEventListener("click", () => {
+    ayarlariKaydet({
+      isim1: document.getElementById("ayarIsim1").value.trim() || AYARLAR.isim1,
+      isim2: document.getElementById("ayarIsim2").value.trim() || AYARLAR.isim2,
+      slogan: document.getElementById("ayarSlogan").value.trim(),
+      baslangicTarihi: document.getElementById("ayarBaslangicTarihi").value,
+    });
+    document.getElementById("ayarlarDurum").textContent = "Kaydedildi 💛";
+  });
+}
+
 /* Uygulama başlığını (üst yazı) hesaplar */
 function markaBasligi() {
   if (AYARLAR.kisiselMod && AYARLAR.isim1 && AYARLAR.isim2) {

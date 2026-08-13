@@ -55,6 +55,86 @@ async function girisYap() {
   }
 }
 
+/* ---------------- HESABIM EKRANI ---------------- */
+const hesabimBtn = document.getElementById("hesabimBtn");
+const hesabimModal = document.getElementById("hesabimModal");
+const hesabimKapatBtn = document.getElementById("hesabimKapatBtn");
+const hesabimIcerik = document.getElementById("hesabimIcerik");
+
+function hesabimIcerikCiz() {
+  if (!hesabimIcerik) return;
+  const k = auth.currentUser;
+  if (!k) { hesabimIcerik.innerHTML = ""; return; }
+
+  const fotoHTML = k.photoURL
+    ? `<img class="hesabim-avatar" src="${k.photoURL}" alt="">`
+    : `<div class="hesabim-avatar hesabim-avatar-bos">${(k.displayName || "?")[0]}</div>`;
+  const kodHTML = (typeof ortakKod !== "undefined" && ortakKod)
+    ? `<code>${ortakKod}</code>`
+    : `<span class="bilgi-soluk">Henüz bağlı değil</span>`;
+
+  hesabimIcerik.innerHTML = `
+    <div class="hesabim-satiri">
+      ${fotoHTML}
+      <div>
+        <div class="hesabim-ad">${k.displayName || "İsimsiz"}</div>
+        <div class="hesabim-email">${k.email || ""}</div>
+      </div>
+    </div>
+    <p class="hesabim-durum">☁️ Kişisel listen buluta senkronize ediliyor.</p>
+
+    <div class="detay-baslik-kucuk">💛 Birlikte İzlenenler kodu</div>
+    <p class="hesabim-kod-satiri">${kodHTML}</p>
+    <div class="ekleme-secenekler">
+      <button id="hesabimKoduDegistirBtn" class="ekleme-secenek-btn">🔗 Kodu değiştir</button>
+    </div>
+
+    <div class="detay-baslik-kucuk">Veri Yedekleme</div>
+    <div class="ekleme-secenekler">
+      <button id="hesabimYedekIndirBtn" class="ekleme-secenek-btn">💾 Yedeği indir</button>
+      <button id="hesabimYedekYukleBtn" class="ekleme-secenek-btn">📂 Yedekten geri yükle</button>
+      <input id="hesabimYedekDosyaInput" type="file" accept="application/json" style="display:none">
+    </div>
+
+    <div class="ekleme-secenekler">
+      <button id="hesabimCikisBtn" class="ekleme-secenek-btn ekleme-geri-btn">🚪 Çıkış yap</button>
+    </div>`;
+
+  document.getElementById("hesabimKoduDegistirBtn").addEventListener("click", () => {
+    hesabimModal.style.display = "none";
+    if (typeof ortakKodModalAc === "function") ortakKodModalAc();
+  });
+  document.getElementById("hesabimYedekIndirBtn").addEventListener("click", () => {
+    if (typeof depoYedekIndir === "function") depoYedekIndir();
+  });
+  const dosyaInput = document.getElementById("hesabimYedekDosyaInput");
+  document.getElementById("hesabimYedekYukleBtn").addEventListener("click", () => dosyaInput.click());
+  dosyaInput.addEventListener("change", () => {
+    const dosya = dosyaInput.files[0];
+    dosyaInput.value = "";
+    if (!dosya || typeof depoYedekYukle !== "function") return;
+    depoYedekYukle(dosya, (basarili) => {
+      alert(basarili ? "Yedek geri yüklendi." : "Yedek dosyası okunamadı.");
+    });
+  });
+  document.getElementById("hesabimCikisBtn").addEventListener("click", () => {
+    hesabimModal.style.display = "none";
+    auth.signOut();
+  });
+}
+
+if (hesabimBtn) {
+  hesabimBtn.addEventListener("click", () => {
+    if (!hesabimModal) return;
+    hesabimIcerikCiz();
+    hesabimModal.style.display = "flex";
+  });
+}
+if (hesabimKapatBtn) hesabimKapatBtn.addEventListener("click", () => { hesabimModal.style.display = "none"; });
+if (hesabimModal) {
+  hesabimModal.addEventListener("click", (e) => { if (e.target === hesabimModal) hesabimModal.style.display = "none"; });
+}
+
 auth.onAuthStateChanged(async (kullanici) => {
   if (!kullanici) {
     document.body.classList.add("kilitli");

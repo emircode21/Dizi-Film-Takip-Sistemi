@@ -53,6 +53,7 @@
   <button id="istatistikBtn" class="tema-btn tema-btn-istatistik" aria-label="İstatistikler">📊</button>
   <button id="bildirimBtn" class="tema-btn tema-btn-bildirim" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
   <button id="ayarlarBtn" class="tema-btn tema-btn-ayarlar" aria-label="Ayarlar">⚙️</button>
+  <button id="hesabimBtn" class="tema-btn tema-btn-hesabim" aria-label="Hesabım">👤</button>
 
   <div class="uygulama">
     <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
@@ -322,6 +323,15 @@
     </div>
   </div>
 
+  <!-- Hesabım: giriş yapan hesap, ortak kod, yedekleme, çıkış -->
+  <div id="hesabimModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="hesabimKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="modal-baslik">👤 Hesabım</div>
+      <div id="hesabimIcerik"></div>
+    </div>
+  </div>
+
   <!-- Ayarlar: isim, slogan, başlangıç tarihi -->
   <div id="ayarlarModal" class="modal-arkaplan" style="display:none">
     <div class="modal-kutu">
@@ -361,14 +371,6 @@
       <button id="istatistikKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
       <div class="modal-baslik">📊 İstatistikler</div>
       <div id="istatistikIcerik"></div>
-
-      <!-- Yedek al/geri yükle — geçici konum, Ayarlar ekranı gelince oraya taşınacak -->
-      <div class="detay-baslik-kucuk">Veri Yedekleme</div>
-      <div class="ekleme-secenekler">
-        <button id="yedekIndirBtn" class="ekleme-secenek-btn">💾 Yedeği indir</button>
-        <button id="yedekYukleBtn" class="ekleme-secenek-btn">📂 Yedekten geri yükle</button>
-        <input id="yedekDosyaInput" type="file" accept="application/json" style="display:none" />
-      </div>
     </div>
   </div>
 

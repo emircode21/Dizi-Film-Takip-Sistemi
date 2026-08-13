@@ -157,6 +157,7 @@ button, input, select, textarea {
 .tema-btn:active { transform: scale(0.94); }
 .tema-btn-istatistik { right: 60px; font-size: 15px; }
 .tema-btn-ayarlar { right: 156px; font-size: 15px; }
+.tema-btn-hesabim { right: 204px; font-size: 15px; }
 .tema-btn-bildirim { right: 108px; font-size: 15px; }
 .bildirim-rozet {
   position: absolute;
@@ -986,6 +987,18 @@ select {
   cursor: pointer; transition: background var(--gecis), color var(--gecis), border-color var(--gecis);
 }
 .ben-kim-btn:hover { background: var(--vurgu-yumusak); color: var(--vurgu); border-color: var(--vurgu); }
+
+/* ---------- Hesabım ---------- */
+.hesabim-satiri { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.hesabim-avatar { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.hesabim-avatar-bos {
+  display: flex; align-items: center; justify-content: center;
+  background: var(--vurgu-yumusak); color: var(--vurgu); font-size: 20px; font-weight: 700;
+}
+.hesabim-ad { font-size: 15px; font-weight: 700; color: var(--yazi); }
+.hesabim-email { font-size: 12px; color: var(--soluk); }
+.hesabim-durum { font-size: 13px; color: var(--soluk); margin: 8px 0 16px; }
+.hesabim-kod-satiri { font-size: 14px; margin: 4px 0 12px; }
 
 .degerlendirme-kutu { display: flex; gap: 14px; flex-wrap: wrap; }
 .degerlendirme-kisi {

@@ -502,15 +502,15 @@ function aniAkisCiz(anilar) {
     const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
     const yazan = aniYazanAdi(a.yazanUid);
     return `
-      <div class="ani-kart">
+      <div class="ani-kart ani-kart-tiklanabilir" data-ani-akis-git="${a.oge.key}">
         <div class="ani-kart-ust">
           <span class="ani-tarih">📅 ${aniTarihBicim(a.tarih)}</span>
           ${yazan ? `<span class="ani-yazan">✍️ ${yazan}</span>` : ""}
         </div>
-        <button class="ani-akis-yapim" data-ani-akis-git="${a.oge.key}">
+        <div class="ani-akis-yapim">
           <img class="ani-akis-poster" src="${posterUrl(a.oge.poster)}" alt="" loading="lazy">
           ${a.oge.ad}
-        </button>
+        </div>
         ${not}
         ${foto}
         ${ses}
@@ -518,13 +518,15 @@ function aniAkisCiz(anilar) {
   }).join("") + "</div>";
 }
 
-// Anılar sekmesindeki tıklamalar (liste.js'in ana listeAlani dinleyicisinden yönlendirilir)
+// Anılar sekmesindeki tıklamalar (liste.js'in ana listeAlani dinleyicisinden yönlendirilir).
+// Kartın tamamı tıklanabilir (küçük posterle sınırlı değil); foto/ses kendi işlevini korur.
 function anilarSekmesiTiklama(e) {
   if (e.target.closest("[data-ortak-baglan]")) { ortakKodModalAc(); return; }
-  const gitBtn = e.target.closest("[data-ani-akis-git]");
-  if (gitBtn) { detayAc(gitBtn.dataset.aniAkisGit); return; }
   const foto = e.target.closest("[data-ani-foto]");
-  if (foto && foto.tagName === "IMG") aniFotoBuyut(foto.getAttribute("src"));
+  if (foto && foto.tagName === "IMG") { aniFotoBuyut(foto.getAttribute("src")); return; }
+  if (e.target.closest("audio")) return; // ses oynatma kontrolleri kartı açmasın
+  const kart = e.target.closest("[data-ani-akis-git]");
+  if (kart) detayAc(kart.dataset.aniAkisGit, true, true);
 }
 
 // Anıyı kaydeden kişinin adı (UID → config.js'teki izinli sırayla ayarlar.js'teki isim1/isim2)

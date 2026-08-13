@@ -192,11 +192,6 @@ async function ortakListeTiklama(e) {
     ortakKodModalAc();
     return;
   }
-  if (e.target.closest("[data-ani-akisi-ac]")) {
-    if (typeof aniAkisiAc === "function") aniAkisiAc();
-    return;
-  }
-
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatIzlemeBtn = e.target.closest("[data-baslat-izleme]");
   const baslatBtn = e.target.closest("[data-baslat]");
@@ -242,7 +237,7 @@ async function ortakListeTiklama(e) {
     return;
   }
   if (detayHedefi) {
-    detayAc(detayHedefi.dataset.detay);
+    detayAc(detayHedefi.dataset.detay, true, true);
   }
 }
 

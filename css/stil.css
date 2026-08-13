@@ -1508,6 +1508,8 @@ select {
   background: var(--kart-2); border: 1px solid var(--kenar);
   border-radius: var(--yari-3); padding: var(--bo-3);
 }
+.ani-kart-tiklanabilir { cursor: pointer; }
+.ani-kart-tiklanabilir:hover { border-color: var(--vurgu); }
 .ani-kart-ust { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ani-tarih { font-size: 12px; color: var(--vurgu); font-weight: 700; }
 .ani-yazan { font-size: 12px; color: var(--soluk); }

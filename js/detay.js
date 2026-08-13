@@ -20,8 +20,15 @@ const detayBolumListesi = document.getElementById("detayBolumListesi");
 let acikOgeKey = null;
 let detayOrtakMi = false; // açık öğe ortak listeden mi geldi? (kaydetme yolunu belirler)
 
-// Öğeyi önce kişisel listede, yoksa ortak listede arar
-function detayOgeBul(key) {
+// Öğeyi arar. Aynı yapım hem kişisel hem ortak listede olabilir (aynı anahtar);
+// ortakOncelik=true ile çağıran taraf (Birlikte sekmesi, Anılar) hangi listeden
+// açtığını zaten biliyor, o yüzden önce oradan aranır — yoksa İkili Değerlendirme
+// yanlışlıkla kişisel kopyaya bağlanıp gizlenirdi.
+function detayOgeBul(key, ortakOncelik) {
+  if (ortakOncelik && typeof ortakListem !== "undefined") {
+    const o = ortakListem.find((x) => x.key === key);
+    if (o) { detayOrtakMi = true; return o; }
+  }
   let o = listem.find((x) => x.key === key);
   if (o) { detayOrtakMi = false; return o; }
   if (typeof ortakListem !== "undefined") {
@@ -108,12 +115,12 @@ async function detayGovdeCiz(type, tmdbId, ad, yil, poster, gecerliKey) {
 
 // Kayıtlı bir öğenin detayı (sezon/bölüm takibiyle)
 // kok=true → yeni bir gezinme kökü (geçmiş temizlenir); false → geri/ileri gezinme
-async function detayAc(key, kok = true) {
-  const o = detayOgeBul(key);
+async function detayAc(key, kok = true, ortakOncelik = false) {
+  const o = detayOgeBul(key, ortakOncelik);
   if (!o) return;
 
   if (kok) { detayGecmis = []; detaySurprizHavuz = null; detayDonusFn = null; }
-  detaySuAnkiAcici = () => detayAc(key, false);
+  detaySuAnkiAcici = () => detayAc(key, false, ortakOncelik);
   detayGeriGuncelle();
 
   acikOgeKey = key;

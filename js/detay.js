@@ -132,7 +132,7 @@ async function detayAc(key, kok = true, ortakOncelik = false) {
   if (detay === null) return;
 
   // Anılar: yalnızca ortak listedeki öğeler için (foto/ses senkronu gerektirir)
-  if (typeof anilariGoster === "function") anilariGoster(detayOrtakMi ? key : null);
+  if (typeof anilariGoster === "function") await anilariGoster(detayOrtakMi ? key : null);
 
   if (diziMi && o.bolumSayilari) {
     detaySezonAlani.style.display = "block";

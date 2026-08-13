@@ -490,19 +490,22 @@ function anilarSekmesiCiz() {
   });
 }
 
+let aniAkisMevcutListe = []; // akışta o an listelenen anılar (kart tıklamasında idx ile bulmak için)
+
 function aniAkisCiz(anilar) {
+  aniAkisMevcutListe = anilar;
   if (!anilar.length) {
     listeAlani.innerHTML = "<div class='ani-bos'>Henüz hiçbir yapıma anı eklenmedi. İlk anınızı bir yapımın detayından ekleyebilirsiniz 💛</div>";
     return;
   }
-  listeAlani.innerHTML = "<div class='ani-liste'>" + anilar.map((a) => {
-    const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" data-ani-foto="${a.id}" loading="lazy">` : "";
+  listeAlani.innerHTML = "<div class='ani-liste'>" + anilar.map((a, i) => {
+    const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" loading="lazy">` : "";
     const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
     const ses = sesListe.map((s) => `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
     const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
     const yazan = aniYazanAdi(a.yazanUid);
     return `
-      <div class="ani-kart ani-kart-tiklanabilir" data-ani-akis-git="${a.oge.key}">
+      <div class="ani-kart ani-kart-tiklanabilir" data-ani-akis-idx="${i}">
         <div class="ani-kart-ust">
           <span class="ani-tarih">📅 ${aniTarihBicim(a.tarih)}</span>
           ${yazan ? `<span class="ani-yazan">✍️ ${yazan}</span>` : ""}
@@ -519,14 +522,97 @@ function aniAkisCiz(anilar) {
 }
 
 // Anılar sekmesindeki tıklamalar (liste.js'in ana listeAlani dinleyicisinden yönlendirilir).
-// Kartın tamamı tıklanabilir (küçük posterle sınırlı değil); foto/ses kendi işlevini korur.
+// Kartın tamamı tıklanabilir → önce anının kendi detayı (büyütülmüş görünüm) açılır;
+// oradan isteğe bağlı olarak yapıma geçilebilir. Ses kontrollerine tıklama kartı açmaz.
 function anilarSekmesiTiklama(e) {
   if (e.target.closest("[data-ortak-baglan]")) { ortakKodModalAc(); return; }
-  const foto = e.target.closest("[data-ani-foto]");
-  if (foto && foto.tagName === "IMG") { aniFotoBuyut(foto.getAttribute("src")); return; }
-  if (e.target.closest("audio")) return; // ses oynatma kontrolleri kartı açmasın
-  const kart = e.target.closest("[data-ani-akis-git]");
-  if (kart) detayAc(kart.dataset.aniAkisGit, true, true);
+  if (e.target.closest("audio")) return;
+  const kart = e.target.closest("[data-ani-akis-idx]");
+  if (!kart) return;
+  const a = aniAkisMevcutListe[Number(kart.dataset.aniAkisIdx)];
+  if (a) aniDetayAc(a);
+}
+
+/* ---- Anı detayı: akıştan bir anıya tıklayınca açılan büyütülmüş görünüm ---- */
+const aniDetayModal = document.getElementById("aniDetayModal");
+const aniDetayKapatBtn = document.getElementById("aniDetayKapatBtn");
+const aniDetayIcerik = document.getElementById("aniDetayIcerik");
+let aniDetayAcikOge = null; // { ...anı verisi, oge } — üstteki katmanda gösterilen anı
+
+function aniDetayIcerikHTML(a) {
+  const yazan = aniYazanAdi(a.yazanUid);
+  const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
+  const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" data-ani-foto>` : "";
+  const ses = sesListe.map((s) => `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
+  const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
+  return `
+    <div class="ani-kart-ust">
+      <span class="ani-tarih">📅 ${aniTarihBicim(a.tarih)}</span>
+      ${yazan ? `<span class="ani-yazan">✍️ ${yazan}</span>` : ""}
+    </div>
+    ${foto}
+    ${not}
+    ${ses}
+    <div class="ekleme-secenekler">
+      <button class="ekleme-secenek-btn" data-ani-detay-git>🎬 ${a.oge.ad} yapımına git</button>
+      <button class="ekleme-secenek-btn" data-ani-detay-duzenle>✏️ Düzenle</button>
+      <button class="ekleme-secenek-btn" data-ani-detay-sil>🗑 Sil</button>
+    </div>`;
+}
+
+function aniDetayAc(a) {
+  if (!aniDetayModal || !aniDetayIcerik) return;
+  aniDetayAcikOge = a;
+  aniDetayIcerik.innerHTML = aniDetayIcerikHTML(a);
+  aniDetayModal.style.display = "flex";
+}
+
+function aniDetayKapat() {
+  if (aniDetayModal) aniDetayModal.style.display = "none";
+  aniDetayAcikOge = null;
+}
+
+// "Düzenle": ilgili yapımın detayını açar ve mevcut anı formunu doğrudan onunla doldurur
+async function aniDetayDuzenleyeGit(a) {
+  if (!a) return;
+  aniDetayKapat();
+  await detayAc(a.oge.key, true, true);
+  if (aniAcikKey !== a.oge.key) return;
+  const mevcut = aniMevcutListe.find((x) => x.id === a.id);
+  if (!mevcut) return;
+  aniFormAc(mevcut);
+  const sarmal = document.getElementById("aniFormSarmal");
+  if (sarmal) sarmal.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+async function aniDetaydanSil(a) {
+  if (!a) return;
+  if (!confirm("Bu anıyı silmek istediğine emin misin?")) return;
+  try {
+    await aniKoleksiyon(a.oge.key).doc(a.id).delete();
+  } catch (e) {
+    console.warn("Anı silinemedi:", e);
+    return;
+  }
+  aniDetayKapat();
+  if (aktifSekme === "anilar") anilarSekmesiCiz();
+}
+
+if (aniDetayKapatBtn) aniDetayKapatBtn.addEventListener("click", aniDetayKapat);
+if (aniDetayModal) {
+  aniDetayModal.addEventListener("click", (e) => {
+    if (e.target === aniDetayModal) { aniDetayKapat(); return; }
+    if (e.target.closest("[data-ani-detay-git]")) {
+      const a = aniDetayAcikOge;
+      aniDetayKapat();
+      if (a) detayAc(a.oge.key, true, true);
+      return;
+    }
+    if (e.target.closest("[data-ani-detay-duzenle]")) { aniDetayDuzenleyeGit(aniDetayAcikOge); return; }
+    if (e.target.closest("[data-ani-detay-sil]")) { aniDetaydanSil(aniDetayAcikOge); return; }
+    const foto = e.target.closest("[data-ani-foto]");
+    if (foto && foto.tagName === "IMG") aniFotoBuyut(foto.getAttribute("src"));
+  });
 }
 
 // Anıyı kaydeden kişinin adı (UID → config.js'teki izinli sırayla ayarlar.js'teki isim1/isim2)

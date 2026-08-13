@@ -155,10 +155,6 @@ button, input, select, textarea {
 }
 .tema-btn:hover { background: var(--kart-2); }
 .tema-btn:active { transform: scale(0.94); }
-.tema-btn-istatistik { right: 60px; font-size: 15px; }
-.tema-btn-ayarlar { right: 156px; font-size: 15px; }
-.tema-btn-hesabim { right: 204px; font-size: 15px; }
-.tema-btn-bildirim { right: 108px; font-size: 15px; }
 .bildirim-rozet {
   position: absolute;
   top: -4px;
@@ -349,6 +345,10 @@ body.kilitli > *:not(#girisEkrani) { display: none !important; }
 .sekme-btn:hover { background: var(--kart); color: var(--yazi); }
 .sekme-btn.aktif { background: var(--vurgu-yumusak); color: var(--vurgu); }
 .sekme-btn.aktif .sekme-sayi { background: var(--vurgu); color: var(--vurgu-yazi); }
+/* Masaüstünde Hesabım sidebar'ın en dibine yapışsın (mobilde alt bar akışında kalır) */
+@media (min-width: 820px) {
+  .sekme-btn-hesabim { margin-top: auto; }
+}
 
 /* ---------- Sidebar akordeon: ana sekmenin altındaki bölüm maddeleri ---------- */
 .alt-sekmeler {
@@ -786,6 +786,7 @@ select {
   border-color: var(--vurgu);
 }
 .ekleme-secenek-btn.ekleme-ortak { border-color: var(--vurgu); color: var(--vurgu); }
+.ayar-tema-btn { margin-bottom: 18px; font-size: 16px; }
 .ekleme-adim-bilgi { font-size: 13px; color: var(--soluk); margin-bottom: 4px; text-align: center; }
 .ekleme-secenek-btn.ekleme-geri-btn { border-style: dashed; color: var(--soluk); }
 
@@ -1418,9 +1419,9 @@ select {
   .sekme-sayi { font-size: 9.5px; padding: 0 6px; min-width: 0; }
 
   .icerik { padding: calc(20px + env(safe-area-inset-top, 0px)) 16px 92px; }
-  /* Sağ üstteki sabit tema/istatistik/bildirim ikonları (toplam ~136px) ile
-     çakışmasın diye başlık bloğu o kadar sağ boşluk bırakıp ortalanır */
-  .hero { text-align: center; padding-right: 136px; }
+  /* Sağ üstteki sabit bildirim ikonuyla çakışmasın diye başlık bloğu
+     o kadar sağ boşluk bırakıp ortalanır */
+  .hero { text-align: center; padding-right: 64px; }
   .hero-baslik { font-size: 27px; }
 
   #sonuclar { grid-template-columns: 1fr; }

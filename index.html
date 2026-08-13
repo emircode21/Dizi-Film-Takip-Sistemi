@@ -48,12 +48,9 @@
   <!-- İlk açılış karşılama ekranı (arayuz.js doldurur) -->
   <div class="karsilama" id="karsilama"></div>
 
-  <!-- Tema değiştirme + istatistikler (her ekranda sağ üstte, sekmeden bağımsız) -->
-  <button id="temaBtn" class="tema-btn" aria-label="Tema değiştir">🌙</button>
-  <button id="istatistikBtn" class="tema-btn tema-btn-istatistik" aria-label="İstatistikler">📊</button>
-  <button id="bildirimBtn" class="tema-btn tema-btn-bildirim" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
-  <button id="ayarlarBtn" class="tema-btn tema-btn-ayarlar" aria-label="Ayarlar">⚙️</button>
-  <button id="hesabimBtn" class="tema-btn tema-btn-hesabim" aria-label="Hesabım">👤</button>
+  <!-- Bildirimler (her ekranda sağ üstte, sekmeden bağımsız). Tema/İstatistik/
+       Ayarlar/Hesabım artık Hesabım sekmesinin altında toplu — bkz. js/hesap.js -->
+  <button id="bildirimBtn" class="tema-btn" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
 
   <div class="uygulama">
     <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
@@ -102,6 +99,11 @@
         <button class="sekme-btn" data-sekme="anilar">
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/></svg></span>
           <span class="sekme-etiket">Anılarımız</span>
+        </button>
+
+        <button class="sekme-btn sekme-btn-hesabim" data-sekme="hesabim">
+          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke-linecap="round"/></svg></span>
+          <span class="sekme-etiket">Hesabım</span>
         </button>
       </nav>
     </aside>
@@ -323,20 +325,13 @@
     </div>
   </div>
 
-  <!-- Hesabım: giriş yapan hesap, ortak kod, yedekleme, çıkış -->
-  <div id="hesabimModal" class="modal-arkaplan" style="display:none">
-    <div class="modal-kutu">
-      <button id="hesabimKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
-      <div class="modal-baslik">👤 Hesabım</div>
-      <div id="hesabimIcerik"></div>
-    </div>
-  </div>
-
-  <!-- Ayarlar: isim, slogan, başlangıç tarihi -->
+  <!-- Ayarlar: tema, isim, slogan, başlangıç tarihi -->
   <div id="ayarlarModal" class="modal-arkaplan" style="display:none">
     <div class="modal-kutu">
       <button id="ayarlarKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
       <div class="modal-baslik">⚙️ Ayarlar</div>
+
+      <button id="temaBtn" class="ekleme-secenek-btn ayar-tema-btn" aria-label="Tema değiştir">🌙</button>
 
       <label class="ani-etiket">Senin ismin</label>
       <input id="ayarIsim1" class="ani-input" type="text" maxlength="30">

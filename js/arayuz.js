@@ -9,8 +9,8 @@ function temaUygula(tema) {
   document.documentElement.dataset.tema = tema;
   const btn = document.getElementById("temaBtn");
   if (btn) {
-    // Koyu temadayken güneş (aydınlatmayı öner), açıkta ay göster
-    btn.textContent = tema === "koyu" ? "☀️" : "🌙";
+    // Satır mevcut durumu gösterir, dokununca karşıt temaya geçer
+    btn.textContent = tema === "koyu" ? "🌙 Koyu tema" : "☀️ Açık tema";
     btn.setAttribute("aria-label", tema === "koyu" ? "Açık temaya geç" : "Koyu temaya geç");
   }
 }

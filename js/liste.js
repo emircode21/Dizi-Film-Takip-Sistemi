@@ -403,7 +403,7 @@ function bolumVurgusuGuncelle() {
 }
 
 function bolumCipleriniCiz() {
-  if (aktifSekme === "kesfet" || aktifSekme === "anilar") {
+  if (aktifSekme === "kesfet" || aktifSekme === "anilar" || aktifSekme === "hesabim") {
     bolumCipleri.classList.remove("acik");
     bolumCipleri.innerHTML = "";
     return;
@@ -465,6 +465,13 @@ function listeyiCiz() {
   if (aktifSekme === "anilar") {
     if (siralamaSecici) siralamaSecici.style.display = "none";
     anilarSekmesiCiz();
+    return;
+  }
+
+  // "Hesabım" liste değil, hesap/ayarlar giriş noktalarının toplandığı sekme
+  if (aktifSekme === "hesabim") {
+    if (siralamaSecici) siralamaSecici.style.display = "none";
+    hesabimSekmesiCiz();
     return;
   }
 
@@ -566,6 +573,8 @@ listeAlani.addEventListener("click", async (e) => {
   if (aktifSekme === "birlikte") { ortakListeTiklama(e); return; }
   // "Anılarımız" sekmesindeki tıklamaları ani.js yönetir
   if (aktifSekme === "anilar") { anilarSekmesiTiklama(e); return; }
+  // "Hesabım" sekmesindeki tıklamaları hesap.js yönetir
+  if (aktifSekme === "hesabim") { hesabimSekmesiTiklama(e); return; }
 
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatBtn = e.target.closest("[data-baslat]");

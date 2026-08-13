@@ -17,9 +17,16 @@ try {
   console.warn("Firebase başlatılamadı, ortak liste çalışmayabilir:", e);
 }
 
-/* ---- Durum ---- */
+/* ---- Durum ----
+   Uygulama zaten sadece IZINLI_UID_LISTESI'ndeki iki hesaba kilitli (bkz.
+   hesap.js) — "ortak kod" artık kimseyi doğrulamıyor, sadece hangi Firestore
+   klasörüne bakılacağını belirliyor. Madem sadece iki kişi girebiliyor,
+   kodu sabit/otomatik yapıp hiç yazdırmıyoruz: her iki cihaz da kendiliğinden
+   aynı odaya bağlanır. */
 const ORTAK_KOD_ANAHTARI = "ortak_kod";
-let ortakKod = localStorage.getItem(ORTAK_KOD_ANAHTARI) || null;
+const VARSAYILAN_ORTAK_KOD = "zebra2023";
+let ortakKod = localStorage.getItem(ORTAK_KOD_ANAHTARI) || VARSAYILAN_ORTAK_KOD;
+if (!localStorage.getItem(ORTAK_KOD_ANAHTARI)) localStorage.setItem(ORTAK_KOD_ANAHTARI, ortakKod);
 let ortakListem = [];            // Firestore'dan gelen canlı liste
 let ortakAboneligi = null;       // onSnapshot dinleyicisini kapatmak için
 let ortakBekleyenEkleme = null;  // koda bağlanınca eklenmeyi bekleyen öğe

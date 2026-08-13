@@ -138,6 +138,7 @@ if (hesabimModal) {
 auth.onAuthStateChanged(async (kullanici) => {
   if (!kullanici) {
     document.body.classList.add("kilitli");
+    if (girisEkrani) girisEkrani.style.display = ""; // girişte "none" yapılmıştı, çıkışta geri aç
     girisEkraniniCiz("bekleniyor");
     return;
   }

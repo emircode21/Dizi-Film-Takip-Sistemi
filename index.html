@@ -52,6 +52,7 @@
   <button id="temaBtn" class="tema-btn" aria-label="Tema değiştir">🌙</button>
   <button id="istatistikBtn" class="tema-btn tema-btn-istatistik" aria-label="İstatistikler">📊</button>
   <button id="bildirimBtn" class="tema-btn tema-btn-bildirim" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
+  <button id="ayarlarBtn" class="tema-btn tema-btn-ayarlar" aria-label="Ayarlar">⚙️</button>
 
   <div class="uygulama">
     <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
@@ -318,6 +319,31 @@
       <input id="ortakKodInput" class="ortak-kod-input" type="text" placeholder="Ortak kod" autocomplete="off" autocapitalize="off" />
       <button id="ortakKodBaglanBtn" class="ekleme-secenek-btn">Bağlan</button>
       <div id="ortakKodHata" class="ortak-kod-hata" style="display:none"></div>
+    </div>
+  </div>
+
+  <!-- Ayarlar: isim, slogan, başlangıç tarihi -->
+  <div id="ayarlarModal" class="modal-arkaplan" style="display:none">
+    <div class="modal-kutu">
+      <button id="ayarlarKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
+      <div class="modal-baslik">⚙️ Ayarlar</div>
+
+      <label class="ani-etiket">Senin ismin</label>
+      <input id="ayarIsim1" class="ani-input" type="text" maxlength="30">
+
+      <label class="ani-etiket">Sevgilinin ismi</label>
+      <input id="ayarIsim2" class="ani-input" type="text" maxlength="30">
+
+      <label class="ani-etiket">Slogan</label>
+      <input id="ayarSlogan" class="ani-input" type="text" maxlength="80">
+
+      <label class="ani-etiket">Birlikte olduğunuz tarih</label>
+      <input id="ayarBaslangicTarihi" class="ani-input" type="date">
+
+      <div class="ekleme-secenekler">
+        <button id="ayarlarKaydetBtn" class="ekleme-secenek-btn">💾 Kaydet</button>
+      </div>
+      <div id="ayarlarDurum" class="ani-form-durum"></div>
     </div>
   </div>
 

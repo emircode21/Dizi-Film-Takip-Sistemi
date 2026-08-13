@@ -156,6 +156,7 @@ button, input, select, textarea {
 .tema-btn:hover { background: var(--kart-2); }
 .tema-btn:active { transform: scale(0.94); }
 .tema-btn-istatistik { right: 60px; font-size: 15px; }
+.tema-btn-ayarlar { right: 156px; font-size: 15px; }
 .tema-btn-bildirim { right: 108px; font-size: 15px; }
 .bildirim-rozet {
   position: absolute;

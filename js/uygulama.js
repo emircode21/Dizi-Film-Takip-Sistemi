@@ -77,6 +77,9 @@ let kaydirmaBaslangic = null;
 document.addEventListener("touchstart", (e) => {
   const kutu = e.target.closest(".modal-kutu");
   if (!kutu) return;
+  // Kendi sürükleme hareketi olan kontroller (kayan puan çubuğu, ses oynatıcı)
+  // swipe-kapatma jestiyle çakışmasın — dokunuş onlara ait kalsın.
+  if (e.target.closest('input[type="range"], audio')) return;
   kaydirmaBaslangic = { kutu, y: e.touches[0].clientY, enUstteydi: kutu.scrollTop <= 0 };
 }, { passive: true });
 

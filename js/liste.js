@@ -9,6 +9,9 @@ const sekmeAlani = document.getElementById("sekmeler");
 const bolumCipleri = document.getElementById("bolumCipleri");
 const siralamaSecici = document.getElementById("siralamaSecici");
 const snackbarAlani = document.getElementById("snackbar");
+const heroAlani = document.getElementById("hero");
+const surprizBtnEl = document.getElementById("surprizBtn");
+const aracSatiri = document.querySelector(".arac-satiri");
 
 let sonSonuclar = [];
 let sonKelime = "";
@@ -34,9 +37,15 @@ const SVG_TIK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 /* ---------------- ARAMA ---------------- */
 kutu.addEventListener("input", () => {
   clearTimeout(zamanlayici);
-  const kelime = kutu.value.trim();
   aramaTemizleBtn.style.display = kutu.value ? "flex" : "none";
 
+  // Anılar sekmesinde arama kutusu TMDB'ye değil, anı içeriğine bakar (ani.js)
+  if (aktifSekme === "anilar") {
+    if (typeof aniAkisUygula === "function") aniAkisUygula();
+    return;
+  }
+
+  const kelime = kutu.value.trim();
   if (kelime.length < 2) {
     sonucAlani.innerHTML = "";
     sonucBaslik.style.display = "none";
@@ -52,6 +61,7 @@ function aramayiSifirla() {
   aramaTemizleBtn.style.display = "none";
   sonucAlani.innerHTML = "";
   sonucBaslik.style.display = "none";
+  if (aktifSekme === "anilar" && typeof aniAkisUygula === "function") aniAkisUygula();
 }
 
 aramaTemizleBtn.addEventListener("click", () => {
@@ -403,7 +413,7 @@ function bolumVurgusuGuncelle() {
 }
 
 function bolumCipleriniCiz() {
-  if (aktifSekme === "kesfet" || aktifSekme === "anilar") {
+  if (aktifSekme === "kesfet" || aktifSekme === "anilar" || aktifSekme === "hesabim") {
     bolumCipleri.classList.remove("acik");
     bolumCipleri.innerHTML = "";
     return;
@@ -443,9 +453,23 @@ function bolumGozlemiBaslat() {
   bolumler.forEach((el) => bolumGozlemci.observe(el));
 }
 
+// Hero/sayaç/"Bugün Ne İzlesek?" ve arama kutusu sadece izleme listeleriyle
+// ilgili sekmelerde anlamlı; Anılar'da ve Hesabım'da yer kaplamasınlar.
+// Anılar'da arama kutusu TMDB yerine anı içeriğinde arar (bkz. ani.js).
+function ustAlaniGuncelle() {
+  const heroGizli = aktifSekme === "anilar" || aktifSekme === "hesabim";
+  if (heroAlani) heroAlani.style.display = heroGizli ? "none" : "";
+  if (surprizBtnEl) surprizBtnEl.style.display = heroGizli ? "none" : "";
+  if (aracSatiri) aracSatiri.style.display = aktifSekme === "hesabim" ? "none" : "";
+  if (kutu) kutu.placeholder = aktifSekme === "anilar"
+    ? "Anılarında ara (not veya yapım adı)..."
+    : "Dizi, film, oyuncu veya yönetmen ara...";
+}
+
 function listeyiCiz() {
   bolumCipleriniCiz();
   sekmeSayilariniGuncelle();
+  ustAlaniGuncelle();
 
   // Keşfet sekmesi: arama/liste değil, TMDB öneri şeritleri
   if (aktifSekme === "kesfet") {
@@ -465,6 +489,13 @@ function listeyiCiz() {
   if (aktifSekme === "anilar") {
     if (siralamaSecici) siralamaSecici.style.display = "none";
     anilarSekmesiCiz();
+    return;
+  }
+
+  // "Hesabım" liste değil, hesap/ayarlar giriş noktalarının toplandığı sekme
+  if (aktifSekme === "hesabim") {
+    if (siralamaSecici) siralamaSecici.style.display = "none";
+    hesabimSekmesiCiz();
     return;
   }
 
@@ -566,6 +597,8 @@ listeAlani.addEventListener("click", async (e) => {
   if (aktifSekme === "birlikte") { ortakListeTiklama(e); return; }
   // "Anılarımız" sekmesindeki tıklamaları ani.js yönetir
   if (aktifSekme === "anilar") { anilarSekmesiTiklama(e); return; }
+  // "Hesabım" sekmesindeki tıklamaları hesap.js yönetir
+  if (aktifSekme === "hesabim") { hesabimSekmesiTiklama(e); return; }
 
   const detayHedefi = e.target.closest("[data-detay]");
   const baslatBtn = e.target.closest("[data-baslat]");

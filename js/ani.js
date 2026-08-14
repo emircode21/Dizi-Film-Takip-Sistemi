@@ -482,20 +482,34 @@ function anilarSekmesiCiz() {
     return snap.docs.map((d) => Object.assign({ id: d.id, oge: o }, d.data()));
   })).then((tumu) => {
     if (aktifSekme !== buSekme) return; // beklerken sekme değiştiyse eski sonucu yazma
-    const birlesik = [].concat(...tumu).sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
-    aniAkisCiz(birlesik);
+    aniAkisTumListe = [].concat(...tumu).sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
+    aniAkisUygula();
   }).catch((e) => {
     console.warn("Anı akışı yüklenemedi:", e);
     if (aktifSekme === buSekme) listeAlani.innerHTML = "<div class='ani-bos'>Anılar yüklenemedi.</div>";
   });
 }
 
-let aniAkisMevcutListe = []; // akışta o an listelenen anılar (kart tıklamasında idx ile bulmak için)
+let aniAkisTumListe = [];    // fetch edilen tüm anılar (filtresiz)
+let aniAkisMevcutListe = []; // ekranda o an gösterilen (filtrelenmiş) anılar — kart tıklamasında idx ile bulmak için
 
-function aniAkisCiz(anilar) {
+// Arama kutusundaki kelimeye göre anı notunda veya yapım adında eşleşenleri gösterir
+function aniAkisUygula() {
+  const kelime = (typeof kutu !== "undefined" && kutu.value.trim()) || "";
+  const kucuk = kelime.toLocaleLowerCase("tr");
+  const filtreli = !kucuk ? aniAkisTumListe : aniAkisTumListe.filter((a) =>
+    (a.not || "").toLocaleLowerCase("tr").includes(kucuk) ||
+    (a.oge.ad || "").toLocaleLowerCase("tr").includes(kucuk)
+  );
+  aniAkisCiz(filtreli, !!kucuk);
+}
+
+function aniAkisCiz(anilar, filtreliMi) {
   aniAkisMevcutListe = anilar;
   if (!anilar.length) {
-    listeAlani.innerHTML = "<div class='ani-bos'>Henüz hiçbir yapıma anı eklenmedi. İlk anınızı bir yapımın detayından ekleyebilirsiniz 💛</div>";
+    listeAlani.innerHTML = filtreliMi
+      ? "<div class='ani-bos'>Aramanla eşleşen anı bulunamadı.</div>"
+      : "<div class='ani-bos'>Henüz hiçbir yapıma anı eklenmedi. İlk anınızı bir yapımın detayından ekleyebilirsiniz 💛</div>";
     return;
   }
   listeAlani.innerHTML = "<div class='ani-liste'>" + anilar.map((a, i) => {

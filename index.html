@@ -48,11 +48,9 @@
   <!-- İlk açılış karşılama ekranı (arayuz.js doldurur) -->
   <div class="karsilama" id="karsilama"></div>
 
-  <!-- Tema değiştirme + istatistikler (her ekranda sağ üstte, sekmeden bağımsız) -->
-  <button id="temaBtn" class="tema-btn" aria-label="Tema değiştir">🌙</button>
-  <button id="istatistikBtn" class="tema-btn tema-btn-istatistik" aria-label="İstatistikler">📊</button>
-  <button id="bildirimBtn" class="tema-btn tema-btn-bildirim" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
-  <button id="ayarlarBtn" class="tema-btn tema-btn-ayarlar" aria-label="Ayarlar">⚙️</button>
+  <!-- Bildirimler (her ekranda sağ üstte, sekmeden bağımsız). Tema/İstatistik/
+       Ayarlar/Hesabım artık Hesabım sekmesinin altında toplu — bkz. js/hesap.js -->
+  <button id="bildirimBtn" class="tema-btn" aria-label="Bildirimler">🔔<span id="bildirimRozet" class="bildirim-rozet" style="display:none">0</span></button>
 
   <div class="uygulama">
     <!-- Masaüstünde sol panel, mobilde alt gezinme çubuğu olur -->
@@ -67,7 +65,6 @@
         <button class="sekme-btn" data-sekme="kisisel">
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg></span>
           <span class="sekme-etiket">Senin İzlediklerin</span>
-          <span class="sekme-sayi">0</span>
         </button>
         <div class="alt-sekmeler" data-alt="kisisel">
           <button class="alt-sekme-btn" data-sekme="kisisel" data-bolum="izliyor">
@@ -84,7 +81,6 @@
         <button class="sekme-btn" data-sekme="birlikte">
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.35-9.5-8.5C1 9 2.5 5.5 6 5.5c2 0 3.2 1.2 4 2.3.8-1.1 2-2.3 4-2.3 3.5 0 5 3.5 3.5 7C19 16.65 12 21 12 21z"/></svg></span>
           <span class="sekme-etiket">Birlikte İzledikleriniz</span>
-          <span class="sekme-sayi">0</span>
         </button>
         <div class="alt-sekmeler" data-alt="birlikte">
           <button class="alt-sekme-btn" data-sekme="birlikte" data-bolum="izliyor">
@@ -101,6 +97,11 @@
         <button class="sekme-btn" data-sekme="anilar">
           <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 4.5v15z"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20"/></svg></span>
           <span class="sekme-etiket">Anılarımız</span>
+        </button>
+
+        <button class="sekme-btn sekme-btn-hesabim" data-sekme="hesabim">
+          <span class="sekme-ikon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8" stroke-linecap="round"/></svg></span>
+          <span class="sekme-etiket">Hesabım</span>
         </button>
       </nav>
     </aside>
@@ -322,11 +323,13 @@
     </div>
   </div>
 
-  <!-- Ayarlar: isim, slogan, başlangıç tarihi -->
+  <!-- Ayarlar: tema, isim, slogan, başlangıç tarihi -->
   <div id="ayarlarModal" class="modal-arkaplan" style="display:none">
     <div class="modal-kutu">
       <button id="ayarlarKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
       <div class="modal-baslik">⚙️ Ayarlar</div>
+
+      <button id="temaBtn" class="ekleme-secenek-btn ayar-tema-btn" aria-label="Tema değiştir">🌙</button>
 
       <label class="ani-etiket">Senin ismin</label>
       <input id="ayarIsim1" class="ani-input" type="text" maxlength="30">
@@ -361,14 +364,6 @@
       <button id="istatistikKapatBtn" class="modal-kapat" aria-label="Kapat">✕</button>
       <div class="modal-baslik">📊 İstatistikler</div>
       <div id="istatistikIcerik"></div>
-
-      <!-- Yedek al/geri yükle — geçici konum, Ayarlar ekranı gelince oraya taşınacak -->
-      <div class="detay-baslik-kucuk">Veri Yedekleme</div>
-      <div class="ekleme-secenekler">
-        <button id="yedekIndirBtn" class="ekleme-secenek-btn">💾 Yedeği indir</button>
-        <button id="yedekYukleBtn" class="ekleme-secenek-btn">📂 Yedekten geri yükle</button>
-        <input id="yedekDosyaInput" type="file" accept="application/json" style="display:none" />
-      </div>
     </div>
   </div>
 

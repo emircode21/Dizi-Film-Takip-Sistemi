@@ -1000,7 +1000,29 @@ select {
 .hesabim-ad { font-size: 15px; font-weight: 700; color: var(--yazi); }
 .hesabim-email { font-size: 12px; color: var(--soluk); }
 .hesabim-durum { font-size: 13px; color: var(--soluk); margin: 8px 0 16px; }
-.hesabim-kod-satiri { font-size: 14px; margin: 4px 0 12px; }
+
+.hesabim-avatar-btn {
+  border: none; background: none; padding: 0; cursor: pointer; border-radius: 50%;
+  position: relative; flex-shrink: 0; transition: transform 0.12s ease;
+}
+.hesabim-avatar-btn:hover { transform: scale(1.04); }
+.hesabim-avatar-btn::after {
+  content: "✏️"; position: absolute; right: -2px; bottom: -2px;
+  width: 20px; height: 20px; border-radius: 50%; background: var(--kart);
+  border: 1px solid var(--kenar); font-size: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.avatar-secici {
+  background: var(--kart-2); border: 1px solid var(--kenar); border-radius: var(--yari-3);
+  padding: var(--bo-3); margin-bottom: 16px;
+}
+.avatar-secici-izgara { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.avatar-secenek {
+  border: 2px solid transparent; background: var(--kart); border-radius: 50%;
+  padding: 3px; cursor: pointer; aspect-ratio: 1; overflow: hidden;
+}
+.avatar-secenek:hover { border-color: var(--vurgu); }
+.avatar-secenek img { width: 100%; height: 100%; border-radius: 50%; display: block; }
 
 .degerlendirme-kutu { display: flex; gap: 14px; flex-wrap: wrap; }
 .degerlendirme-kisi {

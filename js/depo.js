@@ -55,6 +55,27 @@ function durumAta(o, yeniDurum) {
   }
 }
 
+// Açılır menüden elle durum değiştirme: kutlama ekranı çıkmaz (geçmiş düzeltme
+// / kataloglama olabilir) ama "Bitenler"e geçişte bitirme tarihi yine damgalanır,
+// Bitenler'den çıkınca da silinir — istatistikler bu tarihe bakıyor.
+function durumSessizAta(o, yeniDurum) {
+  if (o.durum === yeniDurum) return;
+  o.durum = yeniDurum;
+  if (yeniDurum === "bitirdi") o.bitirmeZamani = Date.now();
+  else delete o.bitirmeZamani;
+}
+
+// Puanı 10'luk ölçekte okur. Ağustos öncesi 1-5 yıldız sistemi tam sayı
+// kaydediyordu; ölçek işareti (puanOlcek: 10) olmayan 1-5 arası tam sayılar
+// eski yıldız sayılıp ikiyle çarpılır. Veri değiştirilmez, sadece okunurken çevrilir.
+function puanOnluk(veri) {
+  if (!veri || veri.puan === undefined || veri.puan === null || veri.puan === "") return null;
+  const p = Number(veri.puan);
+  if (isNaN(p)) return null;
+  if (veri.puanOlcek !== 10 && Number.isInteger(p) && p >= 1 && p <= 5) return p * 2;
+  return p;
+}
+
 /* ---------------- BULUT SENKRON (kişisel liste) ----------------
    Giriş yaptıktan sonra listem hem localStorage'da hem Firestore'da
    kullanicilar/{uid} altında tek dokümanda tutulur (öğe başına doküman

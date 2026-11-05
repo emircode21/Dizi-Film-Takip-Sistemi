@@ -329,13 +329,13 @@ function detayDegerlendirmeCiz(o) {
 
   const puanGosterge = (veri, duzenlenebilir) => {
     if (!duzenlenebilir) {
-      return veri.puan
-        ? `<div class="degerlendirme-puan"><span class="degerlendirme-puan-salt">⭐ ${Number(veri.puan).toFixed(1)}</span></div>`
+      return puanOnluk(veri)
+        ? `<div class="degerlendirme-puan"><span class="degerlendirme-puan-salt">⭐ ${puanOnluk(veri).toFixed(1)}</span></div>`
         : `<div class="degerlendirme-puan"><span class="bilgi-soluk">Henüz puan yok</span></div>`;
     }
     return `<div class="degerlendirme-puan">
       <button class="degerlendirme-puan-btn" data-degerlendirme-puanla>
-        ${veri.puan ? "⭐ " + Number(veri.puan).toFixed(1) + " · değiştir" : "⭐ Puanla"}
+        ${puanOnluk(veri) ? "⭐ " + puanOnluk(veri).toFixed(1) + " · değiştir" : "⭐ Puanla"}
       </button>
     </div>`;
   };
@@ -447,8 +447,8 @@ function kutlamaFormCiz() {
   const o = kutlamaAcikOge;
   if (!o) return;
   const mevcutPuan = kutlamaOrtakMi
-    ? ((o.degerlendirmeler && o.degerlendirmeler[benKim()] && o.degerlendirmeler[benKim()].puan) || 7)
-    : (o.puan || 7);
+    ? (puanOnluk(o.degerlendirmeler && o.degerlendirmeler[benKim()]) || 7)
+    : (puanOnluk(o) || 7);
 
   kutlamaIcerik.innerHTML = `
     <div class="modal-baslik">🎉 ${o.ad} bitti!</div>
@@ -475,11 +475,13 @@ async function kutlamaKaydet(puan) {
     if (!o.degerlendirmeler) o.degerlendirmeler = {};
     if (!o.degerlendirmeler[kim]) o.degerlendirmeler[kim] = {};
     o.degerlendirmeler[kim].puan = puan;
+    o.degerlendirmeler[kim].puanOlcek = 10;
     o.degerlendirmeler[kim].zaman = Date.now();
     await ortakGuncelle(o);
     if (acikOgeKey === o.key) detayDegerlendirmeCiz(o);
   } else {
     o.puan = puan;
+    o.puanOlcek = 10;
     kaydet();
   }
   kutlamaKapat();

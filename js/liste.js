@@ -556,7 +556,7 @@ function kartHTML(o) {
   const ortakMi = typeof ortakListem !== "undefined" && ortakListem.includes(o);
   const yildizHTML = (o.durum === "bitirdi" && !ortakMi) ? `
     <button class="kart-puanla-btn" data-puanla="${o.key}">
-      ${o.puan ? "⭐ " + Number(o.puan).toFixed(1) : "⭐ Puanla"}
+      ${puanOnluk(o) ? "⭐ " + puanOnluk(o).toFixed(1) : "⭐ Puanla"}
     </button>` : "";
 
   return `
@@ -657,7 +657,7 @@ listeAlani.addEventListener("change", (e) => {
   if (!secici) return;
   const o = listem.find((x) => x.key === secici.dataset.durumSec);
   if (o) {
-    o.durum = secici.value;
+    durumSessizAta(o, secici.value);
     kaydet();
     listeyiCiz();
   }

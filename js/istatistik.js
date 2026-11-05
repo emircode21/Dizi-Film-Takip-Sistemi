@@ -50,10 +50,27 @@ function istatistikHesapla(kaynak) {
     if (sayi > enAktifSayi) { enAktifYil = yil; enAktifSayi = sayi; }
   });
 
+  // Puan dağılımı (10'luk): kişisel puanlar + ortak listedeki herkesin kişi bazlı puanı.
+  // Dilimler: [0-3), [3-5), [5-7), [7-9), [9-10]
+  const puanlar = [];
+  tumu.forEach((o) => {
+    const p = puanOnluk(o);
+    if (p) puanlar.push(p);
+    Object.values(o.degerlendirmeler || {}).forEach((d) => {
+      const dp = puanOnluk(d);
+      if (dp) puanlar.push(dp);
+    });
+  });
   const puanDagilimi = [0, 0, 0, 0, 0];
-  tumu.forEach((o) => { if (o.puan >= 1 && o.puan <= 5) puanDagilimi[o.puan - 1]++; });
+  puanlar.forEach((p) => {
+    const dilim = p >= 9 ? 4 : p >= 7 ? 3 : p >= 5 ? 2 : p >= 3 ? 1 : 0;
+    puanDagilimi[dilim]++;
+  });
+  const puanOrtalama = puanlar.length
+    ? (puanlar.reduce((t, p) => t + p, 0) / puanlar.length).toFixed(1) : null;
 
-  return { bitenler, bitenFilm, bitenDizi, toplamBolum, toplamSaat, enAktifYil, enAktifSayi, puanDagilimi };
+  return { bitenler, bitenFilm, bitenDizi, toplamBolum, toplamSaat, enAktifYil, enAktifSayi,
+    puanDagilimi, puanOrtalama, puanSayisi: puanlar.length };
 }
 
 /* ---- "En sevdikleriniz": tür / oyuncu / yönetmen (TMDB'den, kalıcı önbellekli) ---- */
@@ -133,12 +150,13 @@ function istatistikGovdeHTML(s) {
     <div class="detay-baslik-kucuk">En Sevdikleriniz</div>
     <div id="istatistikSevdikleri" class="istatistik-satir">Hesaplanıyor...</div>
     <div class="detay-baslik-kucuk">Puan Dağılımı</div>
+    ${s.puanOrtalama ? `<div class="istatistik-satir">⭐ Ortalama puan: <b>${s.puanOrtalama}</b> (${s.puanSayisi} puan)</div>` : ""}
     <div class="istatistik-puan-dagilimi">
-      ${[5, 4, 3, 2, 1].map((y) => `
+      ${[[4, "9 – 10"], [3, "7 – 8.9"], [2, "5 – 6.9"], [1, "3 – 4.9"], [0, "0 – 2.9"]].map(([i, etiket]) => `
         <div class="istatistik-puan-satiri">
-          <span class="istatistik-puan-etiket">${"★".repeat(y)}</span>
-          <div class="istatistik-puan-cubuk"><div class="istatistik-puan-dolu" style="width:${(s.puanDagilimi[y - 1] / maxPuan) * 100}%"></div></div>
-          <span class="istatistik-puan-sayi">${s.puanDagilimi[y - 1]}</span>
+          <span class="istatistik-puan-etiket">⭐ ${etiket}</span>
+          <div class="istatistik-puan-cubuk"><div class="istatistik-puan-dolu" style="width:${(s.puanDagilimi[i] / maxPuan) * 100}%"></div></div>
+          <span class="istatistik-puan-sayi">${s.puanDagilimi[i]}</span>
         </div>`).join("")}
     </div>`;
 }

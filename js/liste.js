@@ -556,7 +556,7 @@ function kartHTML(o) {
   const ortakMi = typeof ortakListem !== "undefined" && ortakListem.includes(o);
   const yildizHTML = (o.durum === "bitirdi" && !ortakMi) ? `
     <button class="kart-puanla-btn" data-puanla="${o.key}">
-      ${o.puan ? "⭐ " + Number(o.puan).toFixed(1) : "⭐ Puanla"}
+      ${puanOnluk(o) ? "⭐ " + puanOnluk(o).toFixed(1) : "⭐ Puanla"}
     </button>` : "";
 
   return `

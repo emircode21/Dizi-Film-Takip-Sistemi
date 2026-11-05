@@ -55,6 +55,16 @@ function durumAta(o, yeniDurum) {
   }
 }
 
+// Açılır menüden elle durum değiştirme: kutlama ekranı çıkmaz (geçmiş düzeltme
+// / kataloglama olabilir) ama "Bitenler"e geçişte bitirme tarihi yine damgalanır,
+// Bitenler'den çıkınca da silinir — istatistikler bu tarihe bakıyor.
+function durumSessizAta(o, yeniDurum) {
+  if (o.durum === yeniDurum) return;
+  o.durum = yeniDurum;
+  if (yeniDurum === "bitirdi") o.bitirmeZamani = Date.now();
+  else delete o.bitirmeZamani;
+}
+
 /* ---------------- BULUT SENKRON (kişisel liste) ----------------
    Giriş yaptıktan sonra listem hem localStorage'da hem Firestore'da
    kullanicilar/{uid} altında tek dokümanda tutulur (öğe başına doküman

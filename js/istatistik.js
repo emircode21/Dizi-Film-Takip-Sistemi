@@ -39,10 +39,10 @@ function istatistikHesapla(kaynak) {
   const toplamDk = bitenFilm * ISTATISTIK_ORT_FILM_DK + toplamBolum * ISTATISTIK_ORT_BOLUM_DK;
   const toplamSaat = Math.round(toplamDk / 60);
 
-  // En aktif yıl: bitirilen yapımların eklenme tarihine göre (gerçek "bitirme tarihi" tutulmuyor)
+  // En aktif yıl: bitirme tarihine göre; eski kayıtlarda yoksa eklenme tarihine düşer
   const yilSayaci = {};
   bitenler.forEach((o) => {
-    const yil = new Date(o.eklenmeZamani || Date.now()).getFullYear();
+    const yil = new Date(o.bitirmeZamani || o.eklenmeZamani || Date.now()).getFullYear();
     yilSayaci[yil] = (yilSayaci[yil] || 0) + 1;
   });
   let enAktifYil = null, enAktifSayi = 0;

@@ -243,7 +243,7 @@ async function ortakListeDegisim(e) {
   if (!secici) return;
   const o = ortakListem.find((x) => x.key === secici.dataset.durumSec);
   if (o) {
-    o.durum = secici.value;
+    durumSessizAta(o, secici.value);
     await ortakGuncelle(o);
   }
 }

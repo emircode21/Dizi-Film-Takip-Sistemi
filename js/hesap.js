@@ -64,7 +64,11 @@ async function girisYap() {
   const hataEl = document.getElementById("girisHata");
   try {
     if (hataEl) hataEl.style.display = "none";
-    await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+    const saglayici = new firebase.auth.GoogleAuthProvider();
+    // Google son kullanılan hesapla sessizce girmesin, her seferinde hesap seçtirsin
+    // (iPhone'da yan hesapla otomatik girip "yetkisiz" ekranına düşüyordu)
+    saglayici.setCustomParameters({ prompt: "select_account" });
+    await auth.signInWithPopup(saglayici);
   } catch (e) {
     if (hataEl) {
       hataEl.textContent = "Giriş yapılamadı. İnternetini kontrol edip tekrar dene.";

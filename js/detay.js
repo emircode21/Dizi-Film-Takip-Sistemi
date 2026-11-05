@@ -300,7 +300,17 @@ function detayEkstraCiz(d, diziMi) {
 
 /* ---------------- İKİLİ PUAN & YORUM (yalnızca Birlikte İzlenenler, bitmiş yapımda) ---------------- */
 const BEN_KIM_ANAHTARI = "benKim";
-function benKim() { return localStorage.getItem(BEN_KIM_ANAHTARI); }
+// Kimlik önce Google hesabından gelir: config.js'teki izinli UID sırası
+// (1. → isim1, 2. → isim2; anılardaki "✍️ yazan" ile aynı eşleme). Böylece
+// telefon değişse ya da depolama silinse de puanlar karışmaz. Hesap listede
+// yoksa (eski davranış) cihazda seçilen kimliğe düşülür.
+function hesapKim() {
+  const u = (typeof auth !== "undefined" && auth.currentUser) || null;
+  if (!u || typeof IZINLI_UID_LISTESI === "undefined") return null;
+  const idx = IZINLI_UID_LISTESI.indexOf(u.uid);
+  return idx === 0 ? "kisi1" : idx === 1 ? "kisi2" : null;
+}
+function benKim() { return hesapKim() || localStorage.getItem(BEN_KIM_ANAHTARI); }
 let detayYorumDuzenleniyor = false; // yorum kutusu açık mı? (kaydedince veya yeni öğe açılınca kapanır)
 
 function detayDegerlendirmeCiz(o) {
@@ -348,7 +358,7 @@ function detayDegerlendirmeCiz(o) {
        <button class="degerlendirme-kaydet-btn" data-degerlendirme-duzenle>Yorumu düzenle</button>`;
 
   yer.innerHTML = `
-    <div class="detay-baslik-kucuk">İkili Değerlendirme <button class="ben-kim-degistir" data-ben-kim-degistir title="Kimliği değiştir">(${benimAd} — değiştir)</button></div>
+    <div class="detay-baslik-kucuk">İkili Değerlendirme ${hesapKim() ? "" : `<button class="ben-kim-degistir" data-ben-kim-degistir title="Kimliği değiştir">(${benimAd} — değiştir)</button>`}</div>
     <div class="degerlendirme-kutu">
       <div class="degerlendirme-kisi">
         <div class="degerlendirme-ad">${benimAd}</div>

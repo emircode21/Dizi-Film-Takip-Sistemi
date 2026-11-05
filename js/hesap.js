@@ -156,6 +156,7 @@ function hesabimSekmesiCiz() {
       <p class="hesabim-durum">☁️ Kişisel listen buluta senkronize ediliyor.</p>
 
       <div class="ekleme-secenekler">
+        <button class="ekleme-secenek-btn" data-hesabim-yil-ozeti>🎁 Yıl Özeti</button>
         <button class="ekleme-secenek-btn" data-hesabim-istatistik>📊 İstatistikler</button>
         <button class="ekleme-secenek-btn" data-hesabim-ayarlar>⚙️ Ayarlar</button>
       </div>
@@ -224,6 +225,10 @@ function hesabimSekmesiTiklama(e) {
   }
   if (e.target.closest("[data-avatar-foto-yukle]")) {
     document.getElementById("avatarFotoInput").click();
+    return;
+  }
+  if (e.target.closest("[data-hesabim-yil-ozeti]")) {
+    if (typeof yilOzetiAc === "function") yilOzetiAc();
     return;
   }
   if (e.target.closest("[data-hesabim-istatistik]")) {

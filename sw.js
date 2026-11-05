@@ -1,7 +1,7 @@
 /* Uygulama kabuğunu (HTML/CSS/JS/ikonlar) önbelleğe alır.
    TMDB API isteklerine ve poster görsellerine hiç dokunmaz — onlar her zaman ağdan gelir. */
 
-const ONBELLEK_ADI = "cinemory-v73";
+const ONBELLEK_ADI = "cinemory-v74";
 
 const KABUK_DOSYALARI = [
   "./",
@@ -20,6 +20,7 @@ const KABUK_DOSYALARI = [
   "./js/kisi.js",
   "./js/ani.js",
   "./js/istatistik.js",
+  "./js/yilozeti.js",
   "./js/bildirim.js",
   "./js/kesfet.js",
   "./js/arayuz.js",

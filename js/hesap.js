@@ -35,12 +35,28 @@ function girisEkraniniCiz(durum, ekBilgi) {
       <div class="karsilama-kalp">🔒</div>
       <div class="karsilama-ad">Bu uygulama özel</div>
       <p class="giris-aciklama">Bu hesap yetkili değil.</p>
+      ${auth.currentUser && auth.currentUser.email
+        ? `<p class="giris-uid">Hesap: <b>${auth.currentUser.email}</b></p>` : ""}
       <p class="giris-uid">UID: <code>${ekBilgi}</code></p>
+      <button id="uidKopyalaBtn" class="ekleme-secenek-btn">📋 UID'yi kopyala</button>
       <p class="giris-aciklama giris-ipucu">Bu senin hesabınsa, bu UID'yi <code>js/config.js</code>
         içindeki <code>IZINLI_UID_LISTESI</code>'ne ve <code>firestore.rules</code>'a ekleyip
         Firebase konsolundan kuralları yeniden yayınla.</p>
       <button id="cikisBtn" class="ekleme-secenek-btn ekleme-geri-btn">Çıkış yap</button>`;
     document.getElementById("cikisBtn").addEventListener("click", () => auth.signOut());
+    const kopyalaBtn = document.getElementById("uidKopyalaBtn");
+    kopyalaBtn.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(ekBilgi);
+        kopyalaBtn.textContent = "✅ Kopyalandı";
+      } catch (e) {
+        // Pano izni yoksa metni seçili bırak, kullanıcı elle kopyalasın
+        const r = document.createRange();
+        r.selectNodeContents(girisIcerik.querySelector(".giris-uid code"));
+        const sec = window.getSelection(); sec.removeAllRanges(); sec.addRange(r);
+        kopyalaBtn.textContent = "Seçildi — basılı tutup kopyala";
+      }
+    });
   }
 }
 

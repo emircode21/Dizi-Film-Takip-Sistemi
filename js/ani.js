@@ -4,8 +4,12 @@
    base64 olarak Firestore alt-koleksiyonuna yazılır; ikiniz de görür/dinler.
 
    Depolama: ortakListeler/{kod}/ogeler/{key}/anilar/{aniId}
-   → { tarih, not, foto(base64), ses(base64), sesTur, olusturma }
-   Her anı kendi dokümanında (1MB doküman sınırına takılmamak için). */
+   → { tarih, not, olusturma, guncelleme, yazanUid, medyaAyri: true,
+       fotoVar, sesSayisi, kucukFoto(~20KB önizleme) }
+   Büyük foto + sesler ayrı dokümanda: .../anilar/{aniId}/medya/icerik → { foto, sesler }
+   Böylece akış yalnızca hafif dokümanları indirir; büyük medya kart ekrana
+   yaklaşınca (IntersectionObserver) çekilir. Eski anılar (foto/ses içinde gömülü)
+   ilk görüldüklerinde arka planda bir kez bu düzene taşınır. */
 
 const detayAnilar = document.getElementById("detayAnilar");
 
@@ -29,6 +33,137 @@ let aniDuzenlenenOlusturma = null; // düzenlemede orijinal oluşturma zamanın�
 function aniKoleksiyon(key) {
   return db.collection("ortakListeler").doc(ortakKod)
     .collection("ogeler").doc(key).collection("anilar");
+}
+
+/* ---------------- MEDYA: ayrı dokümanda, gerektiğinde yüklenir ---------------- */
+const ANI_KUCUK_FOTO_KENAR = 320;
+const ANI_KUCUK_FOTO_BAYT = 24000;
+const aniKayitlari = new Map();     // aniId → anı nesnesi (ekranda gösterilen son hali)
+const aniMedyaOnbellek = new Map(); // aniId|guncelleme → { foto, sesler }
+const aniTasinanlar = new Set();    // bu oturumda taşınan/taşınmaya çalışılan eski anılar
+
+function aniMedyaRef(key, aniId) {
+  return aniKoleksiyon(key).doc(aniId).collection("medya").doc("icerik");
+}
+function _aniSesler(a) { return (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []); }
+function _aniEskiMi(a) { return !a.medyaAyri && !!(a.foto || _aniSesler(a).length); }
+function _aniMedyaHazir(a) { return !a.medyaAyri || a.medyaYuklendi || (!a.fotoVar && !a.sesSayisi); }
+function _aniOnbellekAnahtar(a) { return a.id + "|" + (a.guncelleme || a.olusturma || 0); }
+
+// Firestore'dan gelen dokümanı anı nesnesine çevirir, önbellekte medyası varsa ekler
+function aniNesne(doc, key, oge) {
+  const a = Object.assign({ id: doc.id, _key: key }, doc.data());
+  if (oge) a.oge = oge;
+  const m = aniMedyaOnbellek.get(_aniOnbellekAnahtar(a));
+  if (a.medyaAyri && m) Object.assign(a, m, { medyaYuklendi: true });
+  aniKayitlari.set(a.id, a);
+  return a;
+}
+
+// Kartın foto + ses kısmı. Medya henüz yüklenmediyse önizleme + bekleme satırı.
+function aniMedyaIcHTML(a, fotoTiklanir) {
+  const fotoOz = fotoTiklanir ? ` data-ani-foto="${a.id}"` : "";
+  if (!_aniMedyaHazir(a)) {
+    const foto = a.fotoVar
+      ? (a.kucukFoto
+        ? `<img class="ani-foto ani-foto-bekliyor" src="${a.kucukFoto}" alt="anı fotoğrafı">`
+        : `<div class="ani-foto ani-foto-yer"></div>`)
+      : "";
+    const ses = a.sesSayisi ? `<div class="ani-ses-bekliyor">🎙 ${a.sesSayisi} sesli not yükleniyor…</div>` : "";
+    return foto + ses;
+  }
+  const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı"${fotoOz} loading="lazy">` : "";
+  const ses = _aniSesler(a).map((x) => `<audio class="ani-ses" controls preload="none" src="${x}"></audio>`).join("");
+  return foto + ses;
+}
+function aniMedyaHTML(a, fotoTiklanir) {
+  return `<div class="ani-medya" data-ani-medya="${a.id}"${_aniMedyaHazir(a) ? "" : " data-ani-medya-bekliyor"}>${aniMedyaIcHTML(a, fotoTiklanir)}</div>`;
+}
+
+async function aniMedyaYukle(a) {
+  if (!a || _aniMedyaHazir(a)) return a;
+  if (!a._medyaSozu) {
+    a._medyaSozu = aniMedyaRef(a._key, a.id).get().then((d) => {
+      const m = d.exists ? d.data() : {};
+      const medya = { foto: m.foto || "", sesler: m.sesler || [] };
+      aniMedyaOnbellek.set(_aniOnbellekAnahtar(a), medya);
+      Object.assign(a, medya, { medyaYuklendi: true });
+      document.querySelectorAll(`[data-ani-medya="${a.id}"]`).forEach((el) => {
+        el.removeAttribute("data-ani-medya-bekliyor");
+        el.innerHTML = aniMedyaIcHTML(a, !el.closest("[data-ani-akis-idx]"));
+      });
+    }).catch((e) => { a._medyaSozu = null; console.warn("Anı medyası yüklenemedi:", e); });
+  }
+  await a._medyaSozu;
+  return a;
+}
+
+const aniMedyaGozlemci = typeof IntersectionObserver !== "undefined"
+  ? new IntersectionObserver((girisler) => {
+    girisler.forEach((g) => {
+      if (!g.isIntersecting) return;
+      aniMedyaGozlemci.unobserve(g.target);
+      aniMedyaYukle(aniKayitlari.get(g.target.dataset.aniMedya));
+    });
+  }, { rootMargin: "400px 0px" })
+  : null;
+
+function aniMedyaGozle(kapsayici) {
+  if (!kapsayici) return;
+  kapsayici.querySelectorAll("[data-ani-medya-bekliyor]").forEach((el) => {
+    if (aniMedyaGozlemci) aniMedyaGozlemci.observe(el);
+    else aniMedyaYukle(aniKayitlari.get(el.dataset.aniMedya));
+  });
+}
+
+async function aniKucukFotoUret(foto) {
+  try {
+    const blob = await (await fetch(foto)).blob();
+    return await fotoKucult(blob, ANI_KUCUK_FOTO_KENAR, ANI_KUCUK_FOTO_BAYT);
+  } catch (e) { return ""; }
+}
+
+// Anıyı yeni düzende yazar: önce medya (varsa), sonra hafif ana doküman.
+// Medya yazılmadan ana doküman "medyaAyri" işaretlenmez → yarıda kalırsa veri kaybolmaz.
+async function aniYaz(key, aniId, veri) {
+  const ref = aniId ? aniKoleksiyon(key).doc(aniId) : aniKoleksiyon(key).doc();
+  const foto = veri.foto || "";
+  const sesler = veri.sesler || [];
+  const medyaRef = ref.collection("medya").doc("icerik");
+  if (foto || sesler.length) await medyaRef.set({ foto, sesler });
+  else if (aniId) await medyaRef.delete().catch(() => {});
+  const ana = {
+    tarih: veri.tarih, not: veri.not || "", olusturma: veri.olusturma || Date.now(),
+    guncelleme: Date.now(), yazanUid: veri.yazanUid || "",
+    medyaAyri: true, fotoVar: !!foto, sesSayisi: sesler.length,
+    kucukFoto: foto ? await aniKucukFotoUret(foto) : "",
+  };
+  await ref.set(ana);
+  aniMedyaOnbellek.set(ref.id + "|" + ana.guncelleme, { foto, sesler });
+  return Object.assign(ana, { id: ref.id });
+}
+
+async function aniBelgeSil(key, aniId) {
+  await aniMedyaRef(key, aniId).delete().catch(() => {});
+  await aniKoleksiyon(key).doc(aniId).delete();
+}
+
+// Eski (medyası gömülü) anıları arka planda tek tek yeni düzene taşır
+async function aniEskileriTasi(anilar) {
+  for (const a of anilar) {
+    if (!_aniEskiMi(a) || aniTasinanlar.has(a.id) || !a._key) continue;
+    aniTasinanlar.add(a.id);
+    try {
+      const yeni = await aniYaz(a._key, a.id, {
+        tarih: a.tarih, not: a.not, olusturma: a.olusturma, yazanUid: a.yazanUid,
+        foto: a.foto, sesler: _aniSesler(a),
+      });
+      Object.assign(a, yeni, { sesler: _aniSesler(a), medyaYuklendi: true });
+      delete a.ses;
+    } catch (e) {
+      console.warn("Eski anı taşınamadı (sonra tekrar denenecek):", e);
+    }
+  }
 }
 
 /* Detay açılınca çağrılır. key verilirse o ortak öğenin anıları yüklenir;
@@ -64,8 +199,9 @@ async function anilariYenile(key) {
   try {
     const snap = await aniKoleksiyon(key).orderBy("tarih", "desc").get();
     if (aniAcikKey !== key) return; // kullanıcı bu arada başka öğe açtı
-    const anilar = snap.docs.map((d) => Object.assign({ id: d.id }, d.data()));
+    const anilar = snap.docs.map((d) => aniNesne(d, key));
     aniListeCiz(anilar);
+    aniEskileriTasi(anilar);
   } catch (e) {
     console.warn("Anılar yüklenemedi:", e);
     const liste = document.getElementById("aniListe");
@@ -84,16 +220,10 @@ function aniListeCiz(anilar) {
     return;
   }
   liste.innerHTML = anilar.map(aniKartHTML).join("");
+  aniMedyaGozle(liste);
 }
 
 function aniKartHTML(a) {
-  const foto = a.foto
-    ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" data-ani-foto="${a.id}" loading="lazy">`
-    : "";
-  // Yeni anılar sesler[] dizisi tutar; eski anılarda tek ses alanı olabilir
-  const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
-  const ses = sesListe.map((s) =>
-    `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
   const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
   const yazan = aniYazanAdi(a.yazanUid);
   return `
@@ -106,8 +236,7 @@ function aniKartHTML(a) {
         </div>
       </div>
       ${not}
-      ${foto}
-      ${ses}
+      ${aniMedyaHTML(a, true)}
     </div>`;
 }
 
@@ -403,8 +532,8 @@ async function aniKaydet() {
   const anahtar = aniAcikKey;
   const duzId = aniDuzenlenenId;
   try {
-    if (duzenleMi) await aniKoleksiyon(anahtar).doc(duzId).set(oge);
-    else await aniKoleksiyon(anahtar).add(oge);
+    await aniYaz(anahtar, duzenleMi ? duzId : null, oge);
+    aniAkisOnbellekKod = null; // Anılar sekmesi bir sonraki açılışta tazelensin
   } catch (e) {
     console.warn("Anı kaydedilemedi:", e);
     aniDurumYaz("Kaydedilemedi. (İnternet ve Firestore kuralları güncel mi?)");
@@ -422,7 +551,8 @@ async function aniSil(aniId) {
   if (!confirm("Bu anıyı silmek istediğine emin misin?")) return;
   const key = aniAcikKey;
   try {
-    await aniKoleksiyon(key).doc(aniId).delete();
+    await aniBelgeSil(key, aniId);
+    aniAkisOnbellekKod = null;
   } catch (e) {
     console.warn("Anı silinemedi:", e);
     return;
@@ -441,12 +571,16 @@ function aniFotoBuyut(src) {
 
 /* ---- Olay yönlendirme (detayAnilar kapsayıcısı kalıcı) ---- */
 if (detayAnilar) {
-  detayAnilar.addEventListener("click", (e) => {
+  detayAnilar.addEventListener("click", async (e) => {
     if (e.target.closest("#aniEkleAcBtn")) { aniFormAc(); return; }
     const duzBtn = e.target.closest("[data-ani-duzenle]");
     if (duzBtn) {
       const a = aniMevcutListe.find((x) => x.id === duzBtn.dataset.aniDuzenle);
       if (a) {
+        duzBtn.disabled = true;
+        await aniMedyaYukle(a); // formda mevcut foto/ses görünsün ve kaydederken kaybolmasın
+        duzBtn.disabled = false;
+        if (!_aniMedyaHazir(a)) { alert("Anının fotoğraf/sesi yüklenemedi, internetini kontrol et."); return; }
         aniFormAc(a);
         const sarmal = document.getElementById("aniFormSarmal");
         if (sarmal) sarmal.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -456,7 +590,7 @@ if (detayAnilar) {
     const silBtn = e.target.closest("[data-ani-sil]");
     if (silBtn) { aniSil(silBtn.dataset.aniSil); return; }
     const foto = e.target.closest("[data-ani-foto]");
-    if (foto && foto.tagName === "IMG") { aniFotoBuyut(foto.getAttribute("src")); return; }
+    if (foto && foto.tagName === "IMG" && !foto.classList.contains("ani-foto-bekliyor")) { aniFotoBuyut(foto.getAttribute("src")); return; }
   });
 }
 
@@ -474,23 +608,30 @@ function anilarSekmesiCiz() {
     return;
   }
 
-  listeAlani.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
+  // Daha önce yüklendiyse hemen göster, arka planda tazele
+  const onbellekVar = aniAkisOnbellekKod === ortakKod && aniAkisTumListe.length;
+  if (onbellekVar) aniAkisUygula();
+  else listeAlani.innerHTML = "<div class='bilgi'>Yükleniyor...</div>";
   const buSekme = aktifSekme;
+  const buKod = ortakKod;
 
   Promise.all(ortakListem.map(async (o) => {
     const snap = await aniKoleksiyon(o.key).get();
-    return snap.docs.map((d) => Object.assign({ id: d.id, oge: o }, d.data()));
+    return snap.docs.map((d) => aniNesne(d, o.key, o));
   })).then((tumu) => {
-    if (aktifSekme !== buSekme) return; // beklerken sekme değiştiyse eski sonucu yazma
+    if (aktifSekme !== buSekme || ortakKod !== buKod) return; // beklerken sekme/kod değiştiyse yazma
     aniAkisTumListe = [].concat(...tumu).sort((a, b) => (b.tarih || "").localeCompare(a.tarih || ""));
+    aniAkisOnbellekKod = buKod;
     aniAkisUygula();
+    aniEskileriTasi(aniAkisTumListe);
   }).catch((e) => {
     console.warn("Anı akışı yüklenemedi:", e);
-    if (aktifSekme === buSekme) listeAlani.innerHTML = "<div class='ani-bos'>Anılar yüklenemedi.</div>";
+    if (aktifSekme === buSekme && !onbellekVar) listeAlani.innerHTML = "<div class='ani-bos'>Anılar yüklenemedi.</div>";
   });
 }
 
 let aniAkisTumListe = [];    // fetch edilen tüm anılar (filtresiz)
+let aniAkisOnbellekKod = null; // aniAkisTumListe hangi ortak koda ait (null → tazele)
 let aniAkisMevcutListe = []; // ekranda o an gösterilen (filtrelenmiş) anılar — kart tıklamasında idx ile bulmak için
 
 // Arama kutusundaki kelimeye göre anı notunda veya yapım adında eşleşenleri gösterir
@@ -513,9 +654,6 @@ function aniAkisCiz(anilar, filtreliMi) {
     return;
   }
   listeAlani.innerHTML = "<div class='ani-liste'>" + anilar.map((a, i) => {
-    const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" loading="lazy">` : "";
-    const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
-    const ses = sesListe.map((s) => `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
     const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
     const yazan = aniYazanAdi(a.yazanUid);
     return `
@@ -529,10 +667,10 @@ function aniAkisCiz(anilar, filtreliMi) {
           ${a.oge.ad}
         </div>
         ${not}
-        ${foto}
-        ${ses}
+        ${aniMedyaHTML(a, false)}
       </div>`;
   }).join("") + "</div>";
+  aniMedyaGozle(listeAlani);
 }
 
 // Anılar sekmesindeki tıklamalar (liste.js'in ana listeAlani dinleyicisinden yönlendirilir).
@@ -555,18 +693,14 @@ let aniDetayAcikOge = null; // { ...anı verisi, oge } — üstteki katmanda gö
 
 function aniDetayIcerikHTML(a) {
   const yazan = aniYazanAdi(a.yazanUid);
-  const sesListe = (a.sesler && a.sesler.length) ? a.sesler : (a.ses ? [a.ses] : []);
-  const foto = a.foto ? `<img class="ani-foto" src="${a.foto}" alt="anı fotoğrafı" data-ani-foto>` : "";
-  const ses = sesListe.map((s) => `<audio class="ani-ses" controls preload="none" src="${s}"></audio>`).join("");
   const not = a.not ? `<div class="ani-not">${aniKacis(a.not)}</div>` : "";
   return `
     <div class="ani-kart-ust">
       <span class="ani-tarih">📅 ${aniTarihBicim(a.tarih)}</span>
       ${yazan ? `<span class="ani-yazan">✍️ ${yazan}</span>` : ""}
     </div>
-    ${foto}
+    ${aniMedyaHTML(a, true)}
     ${not}
-    ${ses}
     <div class="ekleme-secenekler">
       <button class="ekleme-secenek-btn" data-ani-detay-git>🎬 ${a.oge.ad} yapımına git</button>
       <button class="ekleme-secenek-btn" data-ani-detay-duzenle>✏️ Düzenle</button>
@@ -579,6 +713,7 @@ function aniDetayAc(a) {
   aniDetayAcikOge = a;
   aniDetayIcerik.innerHTML = aniDetayIcerikHTML(a);
   aniDetayModal.style.display = "flex";
+  aniMedyaYukle(a); // önizleme hemen, tam boy foto + sesler gelince yerine geçer
 }
 
 function aniDetayKapat() {
@@ -594,6 +729,8 @@ async function aniDetayDuzenleyeGit(a) {
   if (aniAcikKey !== a.oge.key) return;
   const mevcut = aniMevcutListe.find((x) => x.id === a.id);
   if (!mevcut) return;
+  await aniMedyaYukle(mevcut);
+  if (!_aniMedyaHazir(mevcut)) { alert("Anının fotoğraf/sesi yüklenemedi, internetini kontrol et."); return; }
   aniFormAc(mevcut);
   const sarmal = document.getElementById("aniFormSarmal");
   if (sarmal) sarmal.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -603,7 +740,8 @@ async function aniDetaydanSil(a) {
   if (!a) return;
   if (!confirm("Bu anıyı silmek istediğine emin misin?")) return;
   try {
-    await aniKoleksiyon(a.oge.key).doc(a.id).delete();
+    await aniBelgeSil(a.oge.key, a.id);
+    aniAkisOnbellekKod = null;
   } catch (e) {
     console.warn("Anı silinemedi:", e);
     return;
@@ -625,7 +763,7 @@ if (aniDetayModal) {
     if (e.target.closest("[data-ani-detay-duzenle]")) { aniDetayDuzenleyeGit(aniDetayAcikOge); return; }
     if (e.target.closest("[data-ani-detay-sil]")) { aniDetaydanSil(aniDetayAcikOge); return; }
     const foto = e.target.closest("[data-ani-foto]");
-    if (foto && foto.tagName === "IMG") aniFotoBuyut(foto.getAttribute("src"));
+    if (foto && foto.tagName === "IMG" && !foto.classList.contains("ani-foto-bekliyor")) aniFotoBuyut(foto.getAttribute("src"));
   });
 }
 

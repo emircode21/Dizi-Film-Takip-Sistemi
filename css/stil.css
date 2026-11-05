@@ -1722,3 +1722,12 @@ select {
 .yo-gezinme .ekleme-secenek-btn { flex: 1; }
 .yo-gezinme .ekleme-secenek-btn:disabled { opacity: 0.35; }
 .yo-istatistik-btn { width: 100%; margin-top: 12px; }
+
+/* Anı medyası ayrı yüklenirken: bulanık önizleme / yer tutucu */
+.ani-foto.ani-foto-bekliyor { filter: blur(6px); cursor: progress; width: 100%; max-width: 320px; object-fit: cover; }
+.ani-foto.ani-foto-yer {
+  margin-top: 10px; width: 100%; max-width: 320px; aspect-ratio: 4 / 3;
+  border-radius: 12px; background: var(--kart-2); animation: aniNabiz 1.2s ease-in-out infinite;
+}
+.ani-ses-bekliyor { margin-top: 10px; font-size: 13px; color: var(--soluk); }
+@keyframes aniNabiz { 50% { opacity: 0.5; } }

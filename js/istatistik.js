@@ -146,6 +146,7 @@ function istatistikGovdeHTML(s) {
       <div class="istatistik-kutu"><div class="istatistik-sayi">${s.toplamBolum}</div><div class="istatistik-etiket">İzlenen Bölüm</div></div>
       <div class="istatistik-kutu"><div class="istatistik-sayi">~${s.toplamSaat}</div><div class="istatistik-etiket">Tahmini Saat</div></div>
     </div>
+    <button class="ekleme-secenek-btn yo-istatistik-btn" data-yil-ozeti-ac>🎁 ${new Date().getFullYear()} Yıl Özeti'ni aç</button>
     ${s.enAktifYil ? `<div class="istatistik-satir">🏆 En aktif yılınız: <b>${s.enAktifYil}</b> (${s.enAktifSayi} yapım bitirdiniz)</div>` : ""}
     <div class="detay-baslik-kucuk">En Sevdikleriniz</div>
     <div id="istatistikSevdikleri" class="istatistik-satir">Hesaplanıyor...</div>
@@ -197,6 +198,11 @@ if (istatistikModal) {
 }
 if (istatistikIcerik) {
   istatistikIcerik.addEventListener("click", (e) => {
+    if (e.target.closest("[data-yil-ozeti-ac]")) {
+      istatistikModal.style.display = "none";
+      if (typeof yilOzetiAc === "function") yilOzetiAc();
+      return;
+    }
     const btn = e.target.closest("[data-kaynak]");
     if (!btn) return;
     istatistikKaynak = btn.dataset.kaynak;
